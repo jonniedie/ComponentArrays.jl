@@ -3,14 +3,15 @@ getval(::Type{Val{x}}) where x = x
 
 Base.to_index(x::CArray, i) = i
 
+totuple(x) = (x, NamedTuple())
+totuple(x::Tuple) = x
+
 
 ## Axis indexing
-Base.@inline Base.getindex(::Axis{L,IdxMap}, x::FlatIdx) where {L,IdxMap} = totuple(x)
-Base.@inline Base.getindex(::Axis{L,IdxMap}, x::Symbol) where {L,IdxMap} = totuple(getfield(IdxMap, x))
-Base.@inline Base.getindex(::Axis{L,IdxMap}, x::Colon) where {L,IdxMap} = (:, IdxMap)
-Base.@inline Base.getindex(::Type{Axis{L,IdxMap}}, x::FlatIdx) where {L,IdxMap} = totuple(x)
-Base.@inline Base.getindex(::Type{Axis{L,IdxMap}}, x::Symbol) where {L,IdxMap} = totuple(getfield(IdxMap, x))
-Base.@inline Base.getindex(::Type{Axis{L,IdxMap}}, x::Colon) where {L,IdxMap} = (:, IdxMap)
+Base.@inline Base.getindex(::Ax, x) where Ax<:Axis = getindex(Ax, x)
+Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::FlatIdx) where IdxMap = totuple(x)
+Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Symbol) where IdxMap = totuple(getfield(IdxMap, x))
+Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Colon) where IdxMap = (:, IdxMap)
 
 
 ## CArray indexing

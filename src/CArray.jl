@@ -6,7 +6,7 @@ struct CArray{Axes,T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
 end
 CArray(data, ::Tuple{}) = data
 CArray(data, ax::Axis...) = CArray(data, remove_nulls(ax...))
-CArray(data, ax::FlatAxis...) = data
+CArray(data, ax::NullorFlatAxis...) = data
 CArray{Axes}(data) where Axes = CArray(data, map(Axis, (Axes.types...,))...)
 # CArray(data::Number, ax) = data
 # CArray(data::AbstractArray, ax::Tuple{Vararg{Axis{L,NamedTuple()}}}) where L = data

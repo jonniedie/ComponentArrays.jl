@@ -2,7 +2,7 @@ using BenchmarkTools
 using ComponentArrays
 using Test
 
-ax = Axis{10,(a=1, b=2:3, c=(4:10, (a=1, b=2:7)))}()
+ax = Axis{(a=1, b=2:3, c=(4:10, (a=1, b=2:7)))}()
 a = collect(1:10.0)
 
 ca = CArray(a, ax)
