@@ -2,10 +2,10 @@
 struct CArray{Axes,T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     data::A
     axes::Axes
-    CArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple{Vararg{Axis}}} where {T,N} = new{Axes,T,N,A}(data, ax)
+    CArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} = new{Axes,T,N,A}(data, ax)
 end
 CArray(data, ::Tuple{}) = data
-CArray(data, ax...) = CArray(data, remove_nulls(ax...))
+CArray(data, ax::Axis...) = CArray(data, remove_nulls(ax...))
 CArray(data, ax::FlatAxis...) = data
 CArray{Axes}(data) where Axes = CArray(data, map(Axis, (Axes.types...,))...)
 # CArray(data::Number, ax) = data
@@ -20,9 +20,9 @@ const CMatrix{Axes,T,A} = CArray{Axes,T,2,A}
 ## Field access through these functions to reserve dot-getting for keys
 _axes(x::CArray) = getfield(x, :axes)
 _axes(::Type{CArray{Axes,T,N,A}}) where {Axes,T,N,A} = map(x->x(), (Axes.types...,))
-_axes(::Type{Axes}) where {Axes<:Tuple{Vararg{Axis}}} = map(x->x(), (Axes.types...,))
 
 _data(x::CArray) = getfield(x, :data)
+_data(x) = x
 
 
 ## Copying and such
@@ -38,6 +38,8 @@ end
 Base.copy(x::CArray) = CArray(copy(_data(x)), _axes(x), )
 
 Base.copyto!(dest::AbstractArray, src::CArray) = copyto!(dest, _data(src))
+Base.copyto!(dest::CArray, src::AbstractArray) = copyto!(_data(dest), src)
+Base.copyto!(dest::CArray, src::CArray) = copyto!(_data(dest), _data(src))
 
 Base.deepcopy(x::CArray) = CArray(deepcopy(_data(x)), _axes(x))
 
