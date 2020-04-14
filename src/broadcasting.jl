@@ -27,8 +27,16 @@ Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1
     CAStyle{promote_type(Ax1,Ax2), promote_type(T1,T2), max(N1,N2)}()
 # Base.BroadcastStyle(cvs::CVS, cms::CMS) where {CVS<:CVecStyle, CMS<:CMatStyle} = cms
 # Base.BroadcastStyle(::CAS, ::TT) where {CAS<:CAStyle,TT<:DefArrStyle} = CAS()
-Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2} = 
-    CAStyle{fill_flat(Ax1,N2), T1, max(N1,N2)}()
+# @generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
+#     ax = fill_flat(Ax1,N2)
+#     N = max(N1,N2)
+#     return :(CAStyle{$ax, T1, $N}())
+# end
+function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
+    ax = fill_flat(Ax1,N2)
+    N = max(N1,N2)
+    return CAStyle{ax, T1, N}()
+end
 
 
 function Base.similar(bc::BroadCAStyle{Axes,T,N}, ::Type{<:TT}) where {Axes,T,N,TT}

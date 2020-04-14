@@ -8,7 +8,7 @@ totuple(x::Tuple) = x
 
 
 ## Axis indexing
-Base.@inline Base.getindex(::Ax, x) where Ax<:Axis = getindex(Ax, x)
+Base.@inline Base.getindex(::Ax, x::Union{FlatIdx, Symbol, Colon}) where Ax<:Axis = getindex(Ax, x)
 Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::FlatIdx) where IdxMap = totuple(x)
 Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Symbol) where IdxMap = totuple(getfield(IdxMap, x))
 Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Colon) where IdxMap = (:, IdxMap)
