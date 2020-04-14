@@ -21,11 +21,6 @@ _axes(::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Axes.types...,))
 idxmap(::Axis{IdxMap}) where IdxMap = IdxMap
 idxmap(::Type{Axis{IdxMap}}) where IdxMap = IdxMap
 
-# Base.length(::Axis{L,IdxMap}) where {L,IdxMap} = L
-# Base.length(::Type{Axis{L,IdxMap}}) where {L,IdxMap} = L
-
-# Base.IndexStyle(::Type{<:Axis}) = IndexLinear()
-
 lastof(x) = x[end]
 lastof(x::Union{Tuple, NamedTuple}) = lastof(x[end])
 
