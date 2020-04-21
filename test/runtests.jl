@@ -10,6 +10,7 @@ ax_c = (a=(1:3, (a=1, b=2:3)), b=4:7)
 a = Float64[100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
 ca = CArray(nt)
 ca_Float32 = CArray{Float32}(nt)
+ca_composed = CArray(a=1, b=ca)
 
 nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0), (a=(a=44, b=4), b=3)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
 ca2 = CArray(nt)
@@ -20,6 +21,7 @@ cmat = CArray(a .* a', ax, ax)
     @test ca == CArray(a=100, b=[4, 1.3], c=(a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45]))
     @test ca_Float32 == CArray(Float32.(a), ax)
     @test eltype(CArray{ForwardDiff.Dual}(nt)) == ForwardDiff.Dual
+    @test_skip ca_composed.b isa CArray
 end
 
 @testset "Set/get" begin
