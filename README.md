@@ -13,26 +13,29 @@ flat vectors is fair game.
 ### General use
 The easiest way to construct 1-dimensional ```CArray```s is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
 ```julia
-  julia> c = (a=2, b=[1, 2]);
+julia> c = (a=2, b=[1, 2]);
   
-  julia> x = CArray(a=1, b=[2, 1, 4], c=c)
-  CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+julia> x = CArray(a=1, b=[2, 1, 4], c=c)
+CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
   
-  julia> x.c.a = 400; x
-  CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
+julia> x.c.a = 400; x
+CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
   
-  julia> x[5]
-  400.0
+julia> x[5]
+400.0
   
-  julia> collect(x)
-  7-element Array{Float64,1}:
-     1.0
-     2.0
-     1.0
-     4.0
-   400.0
-     1.0
-     2.0
+julia> collect(x)
+7-element Array{Float64,1}:
+   1.0
+   2.0
+   1.0
+   4.0
+ 400.0
+   1.0
+   2.0
+
+julia> typeof(similar(x, Int32)) === typeof(CArray{Int32}(a=1, b=[2, 1, 4], c=c))
+true
 ```
 
 Higher dimensional ```CArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```CArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```CArray```s with proper axes.
