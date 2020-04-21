@@ -1,10 +1,17 @@
-# ComponentArrays
-
-## What is this useful for?
-```ComponentArrays``` are useful for composing models together on the fly. The main targets are differential equations and optimization, but really anything that requires flat vectors is fair game.
+# ComponentArrays.jl
+The main export of this package is the ````CArray```` type. "Components" of ````CArray````s
+are really just matrix blocks that can be accessed through a named index. The magic here is
+that this named indexing can create a new CArray whose data is a view into the original,
+allowing for standalone models to be composed together by simple function composition. In
+essence, ```CArray````s allow you to do the things you would usually need a modeling
+language for, but without actually needing a modeling language. The main targets are for use
+in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl) and
+[Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
+flat vectors is fair game.
 
 ### Differential equation example
-This example uses ```@unpack``` from Parameters.jl for nice syntax. Example taken from:
+This example uses ```@unpack``` from [Parameters.jl](https://github.com/mauro3/Parameters.jl)
+for nice syntax. Example taken from:
 https://github.com/JuliaDiffEq/ModelingToolkit.jl/issues/36#issuecomment-536221300
 ```julia
 using ComponentArrays
@@ -27,8 +34,8 @@ function lorenz!(D, u, (p, f), t)
 end
 
 lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
-lorenz_ic = (x=0.0, y=0.0, z=0.0)
-lorenz_prob = ODEProblem(lorenz!, CArray(lorenz_ic), tspan, (lorenz_p, 0.0))
+lorenz_ic = CArray(x=0.0, y=0.0, z=0.0)
+lorenz_prob = ODEProblem(lorenz!, lorenz_ic, tspan, (lorenz_p, 0.0))
 
 
 ## Lotka-Volterra system
@@ -42,8 +49,8 @@ function lotka!(D, u, (p, f), t)
 end
 
 lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
-lotka_ic = (x=1.0, y=1.0)
-lotka_prob = ODEProblem(lotka!, CArray(lotka_ic), tspan, (lotka_p, 0.0))
+lotka_ic = CArray(x=1.0, y=1.0)
+lotka_prob = ODEProblem(lotka!, lotka_ic, tspan, (lotka_p, 0.0))
 
 
 ## Composed Lorenz and Lotka-Volterra system

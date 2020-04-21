@@ -18,8 +18,8 @@ function lorenz!(D, u, (p, f), t)
 end
 
 lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
-lorenz_ic = (x=0.0, y=0.0, z=0.0)
-lorenz_prob = ODEProblem(lorenz!, CArray(lorenz_ic), tspan, (lorenz_p, 0.0))
+lorenz_ic = CArray(x=0.0, y=0.0, z=0.0)
+lorenz_prob = ODEProblem(lorenz!, lorenz_ic, tspan, (lorenz_p, 0.0))
 
 
 ## Lotka-Volterra system
@@ -33,8 +33,8 @@ function lotka!(D, u, (p, f), t)
 end
 
 lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
-lotka_ic = (x=1.0, y=1.0)
-lotka_prob = ODEProblem(lotka!, CArray(lotka_ic), tspan, (lotka_p, 0.0))
+lotka_ic = CArray(x=1.0, y=1.0)
+lotka_prob = ODEProblem(lotka!, lotka_ic, tspan, (lotka_p, 0.0))
 
 
 ## Composed Lorenz and Lotka-Volterra system
