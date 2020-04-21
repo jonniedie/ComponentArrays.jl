@@ -40,9 +40,6 @@ Axis(tup) = Axis(tup...)
 Axis(nt::NamedTuple) = Axis{nt}()
 Axis(;kwargs...) = Axis{(;kwargs...)}()
 
-_axes(x::VarAxes) = _axes(typeof(x))
-_axes(::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Axes.types...,))
-
 idxmap(::Axis{IdxMap}) where IdxMap = IdxMap
 idxmap(::Type{Axis{IdxMap}}) where IdxMap = IdxMap
 
@@ -61,15 +58,17 @@ remove_nulls(x::NullAxis) = ()
 remove_nulls(x1, x2, args...) = (x1, remove_nulls(x2, args...)...)
 remove_nulls(x1::NullAxis, x2, args...) = (remove_nulls(x2, args...)...,)
 
-fill_flat(::Type{Axes}, N) where Axes<:VarAxes = fill_flat(_axes(Axes), N) |> typeof
+fill_flat(::Type{Axes}, N) where Axes<:VarAxes = fill_flat(getaxes(Axes), N) |> typeof
 function fill_flat(Ax::VarAxes, N)
-    axs = _axes(Ax)
+    axs = getaxes(Ax)
     n = length(axs)
     if N>n
         axs = (axs..., ntuple(x -> FlatAxis(), N-n)...)
     end
     return axs
 end
+
+Base.propertynames(ax::Axis{IdxMap}) where IdxMap = propertynames(IdxMap)
 
 # Not sure merging is actually a good idea
 Base.merge(ax1::Ax1, ax2::Ax2) where {Ax1<:Axis, Ax2<:Axis} = merge(Ax1, Ax2)()
@@ -85,7 +84,7 @@ Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:Axis,Ax2<:Axis} = promote_type(
 
 Base.promote_rule(Ax1::Type{<:Axis}, Ax2::Type{<:Axis}) = promote_type(Ax1, Ax2)
 
-Base.promote_type(Ax1::Type{<:VarAxes}, Ax2::Type{<:VarAxes}) = typeof(promote.(_axes(Ax1), _axes(Ax2))[1])
+Base.promote_type(Ax1::Type{<:VarAxes}, Ax2::Type{<:VarAxes}) = typeof(promote.(getaxes(Ax1), getaxes(Ax2))[1])
 function Base.promote_type(Ax1::Type{<:Axis{I1}}, Ax2::Type{<:Axis{I2}}) where {I1,I2}
     return merge(Ax1, Ax2)
 end

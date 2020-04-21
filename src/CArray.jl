@@ -39,7 +39,6 @@ CArray(data::AbstractArray, ax::Axis...) = CArray(data, remove_nulls(ax...))
 CArray(data::AbstractArray, ax::NullorFlatAxis...) = data
 CArray{Axes}(data) where Axes = CArray(data, map(Axis, (Axes.types...,))...)
 CArray(data::Number, ax::Axis...) = data
-
 # CArray(data::AbstractArray, ax::Tuple{Vararg{Axis{L,NamedTuple()}}}) where L = data
 # CArray(tup::Tuple) = CArray(tup...)
 CArray{T}(nt::NamedTuple) where T = CArray(make_CArray_args(nt, T)...)
@@ -85,8 +84,10 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
     else
         error("Only homogeneous arrays are allowed. This one has eltype $(eltype(x)).")
     end
-    
 end
+make_idx(data, x::CVector, last_val) =
+    (push!(data, x...), (last_index(last_val) .+ (1:length(x)), idxmap(getaxes(x)[1])))
+
 
 recursive_length(x) = length(x)
 recursive_length(a::AbstractVector{N}) where N<:Number = length(a)
@@ -96,33 +97,10 @@ recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
 last_index(x) = last(x)
 last_index(x::Tuple) = last_index(x[1])
 
-## Field access through these functions to reserve dot-getting for keys
-_axes(x::CArray) = getfield(x, :axes)
-_axes(::Type{CArray{Axes,T,N,A}}) where {Axes,T,N,A} = map(x->x(), (Axes.types...,))
 
-_data(x::CArray) = getfield(x, :data)
-_data(x) = x
+## Base attributes
+Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
 
 Base.parent(x::CArray) = getfield(x, :data)
 
-Base.size(x::CArray) = size(_data(x))
-
-
-## Copying and such
-Base.similar(x::CArray) = CArray(similar(_data(x)), _axes(x)...)
-Base.similar(x::CArray, ::Type{T}) where T = CArray(similar(_data(x), T), _axes(x)...)
-function Base.similar(::Type{CA}) where CA<:CArray{Axes,T,N,A} where {Axes,T,N,A}
-    axs = _axes(CA)
-    return CArray(similar(A, length.(axs)...), axs...)
-end
-
-Base.copy(x::CArray) = CArray(copy(_data(x)), _axes(x), )
-
-Base.copyto!(dest::AbstractArray, src::CArray) = copyto!(dest, _data(src))
-Base.copyto!(dest::CArray, src::AbstractArray) = copyto!(_data(dest), src)
-Base.copyto!(dest::CArray, src::CArray) = copyto!(_data(dest), _data(src))
-
-Base.deepcopy(x::CArray) = CArray(deepcopy(_data(x)), _axes(x))
-
-Base.zeros(x::CArray) = (similar(x) .= 0)
-Base.ones(x::CArray) = (similar(x) .= 1) 
+Base.size(x::CArray) = size(getdata(x))

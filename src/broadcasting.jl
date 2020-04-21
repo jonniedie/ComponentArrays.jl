@@ -58,6 +58,6 @@ end
     return dest
 end
 function Base.convert(::Type{<:BC.Broadcasted{Nothing}}, bc::BC.Broadcasted{Style,Axes,F,Args}) where {Style<:CAStyle,Axes,F,Args}
-    args = map(_data, bc.args)
+    args = map(getdata, bc.args)
     return BC.Broadcasted{Nothing,Axes,F,typeof(args)}(bc.f, args, bc.axes)
 end
