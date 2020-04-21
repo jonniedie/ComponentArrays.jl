@@ -10,6 +10,7 @@ include("set_get.jl")
 include("broadcasting.jl")
 include("math.jl")
 
-export Axis, CArray
+export Axis, NAxis
+export CArray, CVector, CMatrix
 
 end # module

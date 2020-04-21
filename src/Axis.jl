@@ -1,10 +1,32 @@
+"""
+    ax = Axis(nt::NamedTuple)
 
-# Axis
+Axes for named component access of CArrays. These are a little confusing and poorly
+    thought-out, so maybe don't use them directly.
+
+# Examples
+
+```julia-repl
+julia> ax = Axis(a=1, b=2:3, c=(4:10, (a=(1:3, (a=1, b=2:3)), b=4:7)));
+
+julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
+
+julia> cvec = CArray(A, ax); cmat = CArray(a .* a', ax, ax);
+
+julia> cmat[:c,:c] * ca.c
+
+```
+"""
 struct Axis{IdxMap} end
+
+struct NAxis{N, IdxMap} end
+NAxis(N::Integer, nt::NamedTuple) = NAxis{N,nt}()
+NAxis(N::Integer, ax::Axis{IdxMap}) where IdxMap = N > 0 ? NAxis{N,IdxMap}() : error("N must be greater than 0, this one is $N")
 
 const NullAxis = Axis{Nothing}
 const FlatAxis = Axis{NamedTuple()}
 const NullorFlatAxis = Union{NullAxis, FlatAxis}
+const AxisorNAxis = Union{Axis, NAxis}
 
 const VarAxes = Tuple{Vararg{<:Axis}}
 
@@ -13,9 +35,12 @@ Axis(x::Type{Axis{IdxMap}}) where {IdxMap} = Axis{IdxMap}()
 Axis(L, IdxMap) = Axis{IdxMap}()
 Axis(::Number, IdxMap) = NullAxis()
 Axis(::Colon, IdxMap) = Axis{IdxMap}()
+Axis(i, IdxMap, N) = NAxis(N, Axis(i, IdxMap))
 Axis(tup) = Axis(tup...)
+Axis(nt::NamedTuple) = Axis{nt}()
+Axis(;kwargs...) = Axis{(;kwargs...)}()
 
-_axes(x::VarAxes) where {Axes<:VarAxes} = _axes(typeof(x))
+_axes(x::VarAxes) = _axes(typeof(x))
 _axes(::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Axes.types...,))
 
 idxmap(::Axis{IdxMap}) where IdxMap = IdxMap
