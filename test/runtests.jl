@@ -87,6 +87,8 @@ end
     @test ca .* ca' == cmat
     @test 1 .* (ca .+ ca) == CArray(a .+ a)
     @test typeof(ca .+ cmat) == typeof(cmat)
+    @test getaxes(false .* ca .* ca') == (ax, ax)
+    @test getaxes(false .* ca' .* ca) == (ax, ax)
 end
 
 @testset "Math" begin

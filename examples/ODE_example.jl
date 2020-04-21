@@ -57,4 +57,4 @@ comp_prob = ODEProblem(composed!, comp_ic, tspan, comp_p)
 comp_sol = solve(comp_prob)
 
 # ...or we can unit test one of the component systems
-lotka_sol = solve(lotka_prob)
+# lotka_sol = solve(lotka_prob)

@@ -21,12 +21,13 @@ Base.BroadcastStyle(::Type{<:CMatrix{Axes,T,A}}) where A<:AbstractMatrix{T} wher
 @generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
     if N1>=N2
         N = N1
-        ax = fill_flat(Ax1,N)
+        Ax1 = fill_flat(Ax1,N)
     else
         N = N2
-        ax = fill_flat(Ax2,N)
+        Ax2 = fill_flat(Ax2,N)
     end
-    return :(CAStyle{$ax, T1, $N}())
+    Ax = promote_type(Ax1, Ax2)
+    return :(CAStyle{$Ax, T1, $N}())
 end
 @generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
     ax = fill_flat(Ax1,N2)
