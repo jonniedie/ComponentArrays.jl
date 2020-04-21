@@ -67,6 +67,7 @@ end
     @test cmat'' == cmat
     @test ca'' == ca
     @test ca.c' * cmat[:c,:c] * ca.c isa Number
+    @test ca * 1 isa CVector
     @test_skip ca' * 1 isa CVector
 end
 

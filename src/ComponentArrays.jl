@@ -2,7 +2,7 @@ module ComponentArrays
 
 using LinearAlgebra: Adjoint
 
-const FlatIdx = Union{UnitRange, Int, CartesianIndex}
+const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray{<:Int}}
 
 include("Axis.jl")
 include("CArray.jl")
