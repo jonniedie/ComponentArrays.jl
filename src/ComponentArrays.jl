@@ -10,6 +10,7 @@ include("set_get.jl")
 include("similar_convert_copy.jl")
 include("broadcasting.jl")
 include("math.jl")
+include("show.jl")
 
 export Axis, NAxis
 export CArray, CVector, CMatrix
