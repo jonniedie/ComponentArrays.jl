@@ -16,10 +16,10 @@ The easiest way to construct 1-dimensional ```CArray```s is as if they were ```N
 julia> c = (a=2, b=[1, 2]);
   
 julia> x = CArray(a=1, b=[2, 1, 4], c=c)
-CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+CArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
   
 julia> x.c.a = 400; x
-CArray(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
+CArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
   
 julia> x[5]
 400.0
