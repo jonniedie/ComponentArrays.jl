@@ -9,8 +9,7 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
 flat vectors is fair game.
 
-## Examples
-### General use
+## General use
 The easiest way to construct 1-dimensional ```CArray```s is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
 ```julia
 julia> c = (a=2, b=[1, 2]);
@@ -70,6 +69,7 @@ julia> x2[:b,:c]
 ```
 
 
+## Examples
 ### Differential equation example
 This example uses ```@unpack``` from [Parameters.jl](https://github.com/mauro3/Parameters.jl)
 for nice syntax. Example taken from:
