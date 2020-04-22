@@ -50,16 +50,16 @@ julia> x2 = x .* x'
  1.0  2.0  1.0   4.0  2.0  1.0  2.0
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
  
- julia> x2[:c,:c]
+julia> x2[:c,:c]
 3×3 CArray{Tuple{Axis{(a = 1, b = 2:3)},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
  4.0  2.0  4.0
  2.0  1.0  2.0
  4.0  2.0  4.0
  
- julia> x2[:a,:a]
+julia> x2[:a,:a]
  1.0
  
- julia> x2[:a,:c]
+julia> x2[:a,:c]
 CArray{Float64}(a = 2.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
