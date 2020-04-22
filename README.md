@@ -59,7 +59,7 @@ julia> x2 = x .* x'
  julia> x2[:a,:a]
  1.0
  
- x2[:a,:c]
+ julia> x2[:a,:c]
 CArray{Float64}(a = 2.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
