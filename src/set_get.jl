@@ -1,11 +1,7 @@
-getval(::Val{x}) where x = x
-getval(::Type{Val{x}}) where x = x
-
 Base.to_index(x::CArray, i) = i
 
 totuple(x) = (x, NamedTuple())
 totuple(x::Tuple) = x
-
 
 
 ## Field access through these functions to reserve dot-getting for keys

@@ -9,7 +9,7 @@ Base.adjoint(x::CMatrix) = CArray(adjoint(getdata(x)), reverse(getaxes(x))...)
 Base.transpose(x::CVector) = CArray(transpose(getdata(x)), FlatAxis(), getaxes(x)[1])
 Base.transpose(x::CMatrix) = CArray(transpose(getdata(x)), reverse(getaxes(x))...)
 
-const AdjointVector{T,A} = Adjoint{T,A} where A<:AbstractVector{T}
+const AdjointVector{T,A} = Union{Adjoint{T,A}, Transpose{T,A}} where A<:AbstractVector{T}
 const AdjointCVector{Axes,T,A} = CMatrix{Axes,T,A} where A<:AdjointVector
 
 Base.:(*)(x::AdjointCVector, y::AbstractArray{<:T,<:N}) where {T,N} = CArray(getdata(x)*y, getaxes(x)...)
