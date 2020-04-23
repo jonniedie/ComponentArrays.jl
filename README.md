@@ -37,7 +37,7 @@ julia> typeof(similar(x, Int32)) === typeof(CArray{Int32}(a=1, b=[2, 1, 4], c=c)
 true
 ```
 
-Higher dimensional ```CArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```CArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```CArray```s with proper axes.
+Higher dimensional ```CArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```CArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```CArray```s with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this works in practice.
 ```julia
 julia> x2 = x .* x'
 7×7 CArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
