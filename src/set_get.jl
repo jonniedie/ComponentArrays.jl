@@ -61,7 +61,7 @@ Base.@inline Base.getindex(x::CArray, idx::FlatIdx...) = getdata(x)[idx...]
 Base.@inline Base.getindex(x::CVector, idx::Colon) = x
 Base.@inline Base.getindex(x::CArray, idx::Colon) = view(getdata(x), :)
 @noinline Base.getindex(x::CArray, idx) = getindex(x, Val(idx))
-@noinline Base.getindex(x::CArray, idx...) = getindex(x, map(Val, idx)...) #Val.(idx)...)
+@noinline Base.getindex(x::CArray, idx...) = getindex(x, fastindices(idx)...) #Val.(idx)...)
 Base.@inline Base.getindex(x::CArray, idx::Val...) = _getindex(x, idx...) #CArray(_getindex(x, idx...)...)
 @generated function _getindex(x::CArray, args...)
     axs = getaxes(x)
@@ -74,7 +74,7 @@ end
 # Set index
 Base.@inline Base.setindex!(x::CArray, v, idx::FlatIdx...) = setindex!(getdata(x), v, idx...)
 Base.@inline Base.setindex!(x::CArray, v, idx::Colon) = setindex!(getdata(x), v, :)
-Base.@inline Base.setindex!(x::CArray, v, idx...) = setindex!(x, v, Val.(idx)...)
+Base.@inline Base.setindex!(x::CArray, v, idx...) = setindex!(x, v, fastindices(idx)...)
 Base.@inline Base.setindex!(x::CArray, v, idx::Val...) = _setindex!(x, v, idx...)
 @generated function _setindex!(x::CArray, v, args...)
     axs = getaxes(x)

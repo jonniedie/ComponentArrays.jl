@@ -72,7 +72,7 @@ end
 
     @test ca[_a] == ca[:a]
     @test cmat[_c,_b] == cmat[:c,:b]
-    @test_skip cmat[_c, :a] == cmat[:c, :a]
+    @test cmat[_c, :a] == cmat[:c, :a]
 end
 
 @testset "Similar" begin
@@ -116,4 +116,5 @@ end
 
 @testset "Utilities" begin
     @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
+    @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
 end

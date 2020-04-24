@@ -31,7 +31,11 @@ julia> @btime \$ca2[\$_c, \$_c];
   14.728 ns (2 allocations: 80 bytes)
 ```
 """
-fastindices(i...) = Val.(i)
+fastindices(i...) = toval.(i)
+fastindices(i::Tuple) = toval.(i)
+
+toval(x::Val) = x
+toval(x) = Val(x)
 
 # Get value from Val type
 getval(::Val{x}) where x = x
