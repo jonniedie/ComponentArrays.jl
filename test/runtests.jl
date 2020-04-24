@@ -18,6 +18,8 @@ ca2 = CArray(nt)
 
 cmat = CArray(a .* a', ax, ax)
 
+_a, _b, _c = fastindices(:a, :b, :c)
+
 
 ## Tests
 @testset "Construction" begin
@@ -46,6 +48,11 @@ end
     @test getaxes(ca) == (ax,)
     @test getaxes(cmat) == (ax, ax)
 
+    @test ca[1] == a[1]
+    @test ca[1:5] == a[1:5]
+    @test cmat[:,:] == cmat
+    @test getaxes(cmat[:a,:]) == getaxes(ca)
+
     @test ca.a == 100.0
     @test ca.b == Float64[4, 1.3]
     @test ca.c.a.a == 1.0
@@ -62,6 +69,10 @@ end
     @test cmat[:c, :c] == CArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c))
     @test cmat[:c,:][:a,:][:a,:] == ca
     @test cmat[:a, :c] == cmat[:c, :a]
+
+    @test ca[_a] == ca[:a]
+    @test cmat[_c,_b] == cmat[:c,:b]
+    @test_skip cmat[_c, :a] == cmat[:c, :a]
 end
 
 @testset "Similar" begin
@@ -103,4 +114,6 @@ end
     @test_skip ca' * 1 isa AdjointCVector
 end
 
-
+@testset "Utilities" begin
+    @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
+end
