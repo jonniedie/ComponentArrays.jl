@@ -13,5 +13,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/jonniedie/ComponentArrays.jl",
+    repo="github.com/jonniedie/ComponentArrays.jl.git",
 )
