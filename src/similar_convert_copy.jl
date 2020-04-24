@@ -19,6 +19,8 @@ Base.copyto!(dest::CArray, src::CArray) = copyto!(getdata(dest), getdata(src))
 
 Base.deepcopy(x::CArray) = CArray(deepcopy(getdata(x)), getaxes(x))
 
+Base.convert(::Type{CA}, A::AbstractArray) where CA<:CArray = CArray(A, getaxes(CA))
+Base.convert(::Type{CA}, x::CArray) where CA<:CArray = CArray(getdata(x), getaxes(CA))
 
 ## Conversion to NamedTuple (note, does not preserve numeric types of original NamedTuple)
 function _namedtuple(x::CVector)
