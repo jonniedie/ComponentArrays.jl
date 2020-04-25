@@ -10,6 +10,25 @@ totuple(x::Tuple) = x
 
 Access ```.axes``` field of a ```CArray```. This is different than ```axes(x::CArray)```, which
     returns the axes of the contained array.
+
+# Examples
+
+```jldoctest
+julia> using ComponentArrays
+julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
+Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
+julia> A = zeros(6,6);
+julia> ca = CArray(A, (ax, ax))
+6×6 CArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+julia> getaxes(ca)
+(Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
+```
 """
 getaxes(x::CArray) = getfield(x, :axes)
 getaxes(::Type{CArray{Axes,T,N,A}}) where {Axes,T,N,A} = map(x->x(), (Axes.types...,))
@@ -20,29 +39,6 @@ getaxes(::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Axes.types...,))
     getdata(x::CArray)
 
 Access ```.data``` field of a ```CArray```, which contains the array that ```CArray``` wraps.
-
-# Examples
-
-```jldoctest
-julia> using ComponentArrays
-
-julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
-Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
-
-julia> A = zeros(6,6);
-
-julia> ca = CArray(A, (ax, ax))
-6×6 CArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
-
-julia> getaxes(ca)
-(Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
-```
 """
 getdata(x::CArray) = getfield(x, :data)
 getdata(x) = x
