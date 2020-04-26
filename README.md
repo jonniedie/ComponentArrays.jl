@@ -7,7 +7,7 @@
 [![GitHub](https://img.shields.io/github/license/jonniedie/ComponentArrays.jl)](https://github.com/jonniedie/ComponentArrays.jl/blob/master/LICENSE.txt)
 
 The main export of this package is the ````CArray```` type. "Components" of ````CArray````s
-are really just matrix blocks that can be accessed through a named index. The magic here is
+are really just array blocks that can be accessed through a named index. The magic here is
 that this named indexing can create a new ```CArray``` whose data is a view into the original,
 allowing for standalone models to be composed together by simple function composition. In
 essence, ```CArray```s allow you to do the things you would usually need a modeling
