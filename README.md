@@ -4,6 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jonniedie.github.io/ComponentArrays.jl/dev)
 [![Build Status](https://travis-ci.com/jonniedie/ComponentArrays.jl.svg?branch=master)](https://travis-ci.com/jonniedie/ComponentArrays.jl)
 [![Codecov](https://codecov.io/gh/jonniedie/ComponentArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jonniedie/ComponentArrays.jl)
+[![GitHub](https://img.shields.io/github/license/jonniedie/ComponentArrays.jl)](https://github.com/jonniedie/ComponentArrays.jl/blob/master/LICENSE.txt)
 
 The main export of this package is the ````CArray```` type. "Components" of ````CArray````s
 are really just matrix blocks that can be accessed through a named index. The magic here is
