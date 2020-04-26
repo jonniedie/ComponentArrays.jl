@@ -2,7 +2,9 @@ using Documenter, ComponentArrays
 
 makedocs(;
     modules=[ComponentArrays],
-    format=Documenter.HTML(),
+    format=Documenter.HTML(
+        canonical = "https://jonniedie.github.io/ComponentArrays.jl/stable",
+        ),
     pages=[
         "Home" => "index.md",
     ],
