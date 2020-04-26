@@ -7,22 +7,21 @@ tspan = (0.0, 20.0)
 
 
 ## Lorenz system
-function lorenz!(D, u, (p, f), t)
+function lorenz!(D, u, p, t; f=0.0)
     @unpack σ, ρ, β = p
     @unpack x, y, z = u
     
     D.x = σ*(y - x)
-    D.y = x*(ρ - z) - y + f
+    D.y = x*(ρ - z) - y - f
     D.z = x*y - β*z
     return nothing
 end
-function lorenz_jac!(D, u, (p, f), t)
+function lorenz_jac!(D, u, p, t)
     @unpack σ, ρ, β = p
     @unpack x, y, z = u
     
     D[:x,:x] = -σ
     D[:x,:y] = σ
-    D[:x,:z] = 0
 
     D[:y,:x] = ρ
     D[:y,:y] = -1
@@ -37,11 +36,11 @@ end
 lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
 lorenz_ic = CArray(x=0.0, y=0.0, z=0.0)
 lorenz_fun = ODEFunction(lorenz!, jac=lorenz_jac!)
-lorenz_prob = ODEProblem(lorenz_fun, lorenz_ic, tspan, (lorenz_p, 0.0))
+lorenz_prob = ODEProblem(lorenz_fun, lorenz_ic, tspan, lorenz_p)
 
 
 ## Lotka-Volterra system
-function lotka!(D, u, (p, f), t)
+function lotka!(D, u, p, t; f=0.0)
     @unpack α, β, γ, δ = p
     @unpack x, y = u
     
@@ -49,7 +48,7 @@ function lotka!(D, u, (p, f), t)
     D.y = -γ*y + δ*x*y
     return nothing
 end
-function lotka_jac!(D, u, (p, f), t)
+function lotka_jac!(D, u, p, t)
     @unpack α, β, γ, δ = p
     @unpack x, y = u
     
@@ -64,7 +63,7 @@ end
 lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
 lotka_ic = CArray(x=1.0, y=1.0)
 lotka_fun = ODEFunction(lotka!, jac=lotka_jac!)
-lotka_prob = ODEProblem(lotka_fun, lotka_ic, tspan, (lotka_p, 0.0))
+lotka_prob = ODEProblem(lotka_fun, lotka_ic, tspan, lotka_p)
 
 
 ## Composed Lorenz and Lotka-Volterra system
@@ -72,16 +71,16 @@ function composed!(D, u, p, t)
     c = p.c #coupling parameter
     @unpack lorenz, lotka = u
     
-    lorenz!(D.lorenz, lorenz, (p.lorenz, -c*lotka.x), t)
-    lotka!(D.lotka, lotka, (p.lotka, c*lorenz.x), t)
+    lorenz!(D.lorenz, lorenz, p.lorenz, t, f=c*lotka.x)
+    lotka!(D.lotka, lotka, p.lotka, t, f=c*lorenz.x)
     return nothing
 end
 function composed_jac!(D, u, p, t)
     c = p.c
     @unpack lorenz, lotka = u
     
-    lorenz_jac!(D[:lorenz,:lorenz], lorenz, (p.lorenz, 0), t)
-    lotka_jac!(D[:lotka,:lotka], lotka, (p.lotka, 0), t)
+    lorenz_jac!(D[:lorenz,:lorenz], lorenz, p.lorenz, t)
+    lotka_jac!(D[:lotka,:lotka], lotka, p.lotka, t)
 
     D[:lorenz,:lotka][:y,:x] = -c
     D[:lotka,:lorenz][:x,:x] = c
