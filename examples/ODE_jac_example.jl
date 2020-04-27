@@ -52,11 +52,11 @@ function lotka_jac!(D, u, p, t)
     @unpack α, β, γ, δ = p
     @unpack x, y = u
     
-    D[:x,:x] = α
+    D[:x,:x] = α - β*y
     D[:x,:y] = -β*x
 
-    D[:y,:x] = δ*x
-    D[:y,:y] = -γ
+    D[:y,:x] = δ*y
+    D[:y,:y] = -γ + δ*x
     return nothing
 end
 
