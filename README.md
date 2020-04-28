@@ -1,6 +1,6 @@
 # ComponentArrays.jl
 
-<!---[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jonniedie.github.io/ComponentArrays.jl/stable)--->
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jonniedie.github.io/ComponentArrays.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jonniedie.github.io/ComponentArrays.jl/dev)
 [![Build Status](https://travis-ci.com/jonniedie/ComponentArrays.jl.svg?branch=master)](https://travis-ci.com/jonniedie/ComponentArrays.jl)
 [![Codecov](https://codecov.io/gh/jonniedie/ComponentArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jonniedie/ComponentArrays.jl)
