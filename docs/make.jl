@@ -7,6 +7,11 @@ makedocs(;
         ),
     pages=[
         "Home" => "index.md",
+        "Quick Start" => "quickstart.md",
+        "Examples" => [
+            "examples/example1.md",
+        ],
+        "API" => "api.md",
     ],
     repo="https://github.com/jonniedie/ComponentArrays.jl/blob/{commit}{path}#L{line}",
     sitename="ComponentArrays.jl",
