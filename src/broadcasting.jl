@@ -50,7 +50,8 @@ end
     if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!
         A = bc.args[1]
         if axes(dest) == axes(A)
-            return copyto!(dest, A)
+            copyto!(dest, A)
+            return dest
         end
     end
     @simd for i in eachindex(dest)
