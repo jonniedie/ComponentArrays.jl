@@ -96,12 +96,14 @@ end
 end
 
 @testset "Broadcasting" begin
+    temp = deepcopy(ca)
     @test Float32.(ca) == CArray{Float32}(nt)
     @test ca .* ca' == cmat
     @test 1 .* (ca .+ ca) == CArray(a .+ a)
     @test typeof(ca .+ cmat) == typeof(cmat)
     @test getaxes(false .* ca .* ca') == (ax, ax)
     @test getaxes(false .* ca' .* ca) == (ax, ax)
+    @test (vec(temp) .= vec(ca_Float32)) isa CArray
 end
 
 @testset "Math" begin
