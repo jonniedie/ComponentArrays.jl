@@ -9,7 +9,7 @@ makedocs(;
         "Home" => "index.md",
         "Quick Start" => "quickstart.md",
         "Examples" => [
-            "examples/example1.md",
+            "examples/ODE_jac.md",
         ],
         "API" => "api.md",
     ],
