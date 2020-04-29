@@ -41,7 +41,7 @@ toval(x) = Val(x)
 getval(::Val{x}) where x = x
 getval(::Type{Val{x}}) where x = x
 
-partition(A, N) = collect(Iterators.partition(A, N))
+partition(A, N) = @views [A[i-N+1:i] for i in N:N:length(A)]
 function partition(A, N...)
     part_size = prod(N)
     n_parts = size(A) .÷ N

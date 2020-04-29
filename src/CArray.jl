@@ -39,7 +39,7 @@ ComponentArray(data::AbstractArray, ax::Axis...) = ComponentArray(data, remove_n
 ComponentArray(data::AbstractArray, ax::NullorFlatAxis...) = data
 ComponentArray(data::AbstractArray, ax::NAxis{N,IdxMap}) where {N,IdxMap} = ComponentArray.(partition(data, N), [Axis{IdxMap}()])
 function ComponentArray(data::AbstractArray, ax::AxisorNAxis...)
-    naxs = filter(x -> x isa NAxis, ax)
+    naxs = Iterators.filter(x -> x isa NAxis, ax)
     part_data = partition(data, numaxes.(naxs)...)
     return [ComponentArray(x, Axis.(ax)...) for x in part_data]
 end
