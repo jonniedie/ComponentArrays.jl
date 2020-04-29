@@ -1,4 +1,4 @@
-Base.to_index(x::CArray, i) = i
+Base.to_index(x::ComponentArray, i) = i
 
 totuple(x) = (x, NamedTuple())
 totuple(x::Tuple) = x
@@ -6,9 +6,9 @@ totuple(x::Tuple) = x
 
 ## Field access through these functions to reserve dot-getting for keys
 """
-    getaxes(x::CArray)
+    getaxes(x::ComponentArray)
 
-Access ```.axes``` field of a ```CArray```. This is different than ```axes(x::CArray)```, which
+Access ```.axes``` field of a ```ComponentArray```. This is different than ```axes(x::ComponentArray)```, which
     returns the axes of the contained array.
 
 # Examples
@@ -21,8 +21,8 @@ Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
 
 julia> A = zeros(6,6);
 
-julia> ca = CArray(A, (ax, ax))
-6×6 CArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+julia> ca = ComponentArray(A, (ax, ax))
+6×6 ComponentArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
  0.0  0.0  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0  0.0
@@ -34,18 +34,21 @@ julia> getaxes(ca)
 (Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
 ```
 """
-getaxes(x::CArray) = getfield(x, :axes)
-getaxes(::Type{CArray{Axes,T,N,A}}) where {Axes,T,N,A} = map(x->x(), (Axes.types...,))
+getaxes(x::ComponentArray) = getfield(x, :axes)
+getaxes(::Type{ComponentArray{Axes,T,N,A}}) where {Axes,T,N,A} = map(x->x(), (Axes.types...,))
 getaxes(x::VarAxes) = getaxes(typeof(x))
 getaxes(::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Axes.types...,))
 
 """
-    getdata(x::CArray)
+    getdata(x::ComponentArray)
 
-Access ```.data``` field of a ```CArray```, which contains the array that ```CArray``` wraps.
+Access ```.data``` field of a ```ComponentArray```, which contains the array that ```ComponentArray``` wraps.
 """
-getdata(x::CArray) = getfield(x, :data)
+getdata(x::ComponentArray) = getfield(x, :data)
 getdata(x) = x
+
+
+Base.keys(x::CVector) = keys(idxmap(getaxes(x)[1]))
 
 
 ## Axis indexing
@@ -55,28 +58,28 @@ Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Symbol) where IdxMap = totup
 Base.@inline Base.getindex(::Type{Axis{IdxMap}}, x::Colon) where IdxMap = (:, IdxMap)
 
 
-## CArray indexing
+## ComponentArray indexing
 # Get index
-Base.@inline Base.getindex(x::CArray, idx::FlatIdx...) = getdata(x)[idx...]
+Base.@inline Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
 Base.@inline Base.getindex(x::CVector, idx::Colon) = x
-Base.@inline Base.getindex(x::CArray, idx::Colon) = view(getdata(x), :)
-@noinline Base.getindex(x::CArray, idx) = getindex(x, Val(idx))
-@noinline Base.getindex(x::CArray, idx...) = getindex(x, fastindices(idx)...) #Val.(idx)...)
-Base.@inline Base.getindex(x::CArray, idx::Val...) = _getindex(x, idx...) #CArray(_getindex(x, idx...)...)
-@generated function _getindex(x::CArray, args...)
+Base.@inline Base.getindex(x::ComponentArray, idx::Colon) = view(getdata(x), :)
+@noinline Base.getindex(x::ComponentArray, idx) = getindex(x, Val(idx))
+@noinline Base.getindex(x::ComponentArray, idx...) = getindex(x, fastindices(idx)...) #Val.(idx)...)
+Base.@inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(x, idx...) #ComponentArray(_getindex(x, idx...)...)
+@generated function _getindex(x::ComponentArray, args...)
     axs = getaxes(x)
     ind_tups = @. getindex(axs, getval(args))
     inds = first.(ind_tups)
     new_axs = @. Axis(ind_tups)
-    return :(Base.@_inline_meta; CArray(Base.maybeview(getdata(x), $inds...), $new_axs...))
+    return :(Base.@_inline_meta; ComponentArray(Base.maybeview(getdata(x), $inds...), $new_axs...))
 end
 
 # Set index
-Base.@inline Base.setindex!(x::CArray, v, idx::FlatIdx...) = setindex!(getdata(x), v, idx...)
-Base.@inline Base.setindex!(x::CArray, v, idx::Colon) = setindex!(getdata(x), v, :)
-Base.@inline Base.setindex!(x::CArray, v, idx...) = setindex!(x, v, fastindices(idx)...)
-Base.@inline Base.setindex!(x::CArray, v, idx::Val...) = _setindex!(x, v, idx...)
-@generated function _setindex!(x::CArray, v, args...)
+Base.@inline Base.setindex!(x::ComponentArray, v, idx::FlatIdx...) = setindex!(getdata(x), v, idx...)
+Base.@inline Base.setindex!(x::ComponentArray, v, idx::Colon) = setindex!(getdata(x), v, :)
+Base.@inline Base.setindex!(x::ComponentArray, v, idx...) = setindex!(x, v, fastindices(idx)...)
+Base.@inline Base.setindex!(x::ComponentArray, v, idx::Val...) = _setindex!(x, v, idx...)
+@generated function _setindex!(x::ComponentArray, v, args...)
     axs = getaxes(x)
     ind_tups = @. getindex(axs, getval(args))
     inds = first.(ind_tups)
@@ -85,8 +88,8 @@ Base.@inline Base.setindex!(x::CArray, v, idx::Val...) = _setindex!(x, v, idx...
 end
 
 # Need this for faster x.key .= val index setting
-Base.dotview(x::CArray, args...) = getindex(x, args...)
+Base.dotview(x::ComponentArray, args...) = getindex(x, args...)
 
 # Property access for CVectors goes through _get/_setindex
-Base.@inline Base.getproperty(x::CVector, s::Symbol) = _getindex(x, Val(s)) #CArray(_getindex(x, Val(s))...)
+Base.@inline Base.getproperty(x::CVector, s::Symbol) = _getindex(x, Val(s)) #ComponentArray(_getindex(x, Val(s))...)
 Base.@inline Base.setproperty!(x::CVector, s::Symbol, v) = _setindex!(x, v, Val(s))

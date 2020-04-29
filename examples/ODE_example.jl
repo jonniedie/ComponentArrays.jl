@@ -18,7 +18,7 @@ function lorenz!(D, u, p, t; f=0.0)
 end
 
 lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
-lorenz_ic = CArray(x=0.0, y=0.0, z=0.0)
+lorenz_ic = ComponentArray(x=0.0, y=0.0, z=0.0)
 lorenz_prob = ODEProblem(lorenz!, lorenz_ic, tspan, lorenz_p)
 
 
@@ -33,7 +33,7 @@ function lotka!(D, u, p, t; f=0.0)
 end
 
 lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
-lotka_ic = CArray(x=1.0, y=1.0)
+lotka_ic = ComponentArray(x=1.0, y=1.0)
 lotka_prob = ODEProblem(lotka!, lotka_ic, tspan, lotka_p)
 
 
@@ -48,7 +48,7 @@ function composed!(D, u, p, t)
 end
 
 comp_p = (lorenz=lorenz_p, lotka=lotka_p, c=0.01)
-comp_ic = CArray(lorenz=lorenz_ic, lotka=lotka_ic)
+comp_ic = ComponentArray(lorenz=lorenz_ic, lotka=lotka_ic)
 comp_prob = ODEProblem(composed!, comp_ic, tspan, comp_p)
 
 

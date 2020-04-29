@@ -1,26 +1,26 @@
 ## Similar
-Base.similar(x::CArray) = CArray(similar(getdata(x)), getaxes(x)...)
-Base.similar(x::CArray, ::Type{T}) where T = CArray(similar(getdata(x), T), getaxes(x)...)
-function Base.similar(::Type{CA}) where CA<:CArray{Axes,T,N,A} where {Axes,T,N,A}
+Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
+Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getdata(x), T), getaxes(x)...)
+function Base.similar(::Type{CA}) where CA<:ComponentArray{Axes,T,N,A} where {Axes,T,N,A}
     axs = getaxes(CA)
-    return CArray(similar(A, length.(axs)...), axs...)
+    return ComponentArray(similar(A, length.(axs)...), axs...)
 end
 
-Base.zeros(x::CArray) = (similar(x) .= 0)
-Base.ones(x::CArray) = (similar(x) .= 1)
+Base.zeros(x::ComponentArray) = (similar(x) .= 0)
+Base.ones(x::ComponentArray) = (similar(x) .= 1)
 
 
 ## Copy
-Base.copy(x::CArray) = CArray(copy(getdata(x)), getaxes(x), )
+Base.copy(x::ComponentArray) = ComponentArray(copy(getdata(x)), getaxes(x), )
 
-Base.copyto!(dest::AbstractArray, src::CArray) = copyto!(dest, getdata(src))
-Base.copyto!(dest::CArray, src::AbstractArray) = copyto!(getdata(dest), src)
-Base.copyto!(dest::CArray, src::CArray) = copyto!(getdata(dest), getdata(src))
+Base.copyto!(dest::AbstractArray, src::ComponentArray) = copyto!(dest, getdata(src))
+Base.copyto!(dest::ComponentArray, src::AbstractArray) = copyto!(getdata(dest), src)
+Base.copyto!(dest::ComponentArray, src::ComponentArray) = copyto!(getdata(dest), getdata(src))
 
-Base.deepcopy(x::CArray) = CArray(deepcopy(getdata(x)), getaxes(x))
+Base.deepcopy(x::ComponentArray) = ComponentArray(deepcopy(getdata(x)), getaxes(x))
 
-Base.convert(::Type{CA}, A::AbstractArray) where CA<:CArray = CArray(A, getaxes(CA))
-Base.convert(::Type{CA}, x::CArray) where CA<:CArray = CArray(getdata(x), getaxes(CA))
+Base.convert(::Type{CA}, A::AbstractArray) where CA<:ComponentArray = ComponentArray(A, getaxes(CA))
+Base.convert(::Type{CA}, x::ComponentArray) where CA<:ComponentArray = ComponentArray(getdata(x), getaxes(CA))
 
 ## Conversion to NamedTuple (note, does not preserve numeric types of original NamedTuple)
 function _namedtuple(x::CVector)

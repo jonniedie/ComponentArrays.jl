@@ -14,7 +14,7 @@ include("math.jl")
 include("show.jl")
 
 export Axis, NAxis
-export CArray, CVector, CMatrix
+export ComponentArray, CArray, CVector, CMatrix
 export getaxes, getdata
 export fastindices
 

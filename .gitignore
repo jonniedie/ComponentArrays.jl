@@ -6,3 +6,6 @@ research/
 /dev/
 /docs/build/
 /docs/site/
+/docs/make_local.jl
+/examples/wip
+/examples/.ipynb_checkpoints

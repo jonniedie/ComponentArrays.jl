@@ -13,7 +13,7 @@ const BroadDefArrStyle{N} = BC.DefaultArrayStyle{N}
 
 CAStyle{Axes,T,N}(x::Val{i}) where {Axes,T,N,i} = CAStyle{Axes,T,N}()
 
-Base.BroadcastStyle(::Type{<:CArray{Axes,T,N,A}}) where A<:AbstractArray{T,N} where {Axes,T,N} = CAStyle{Axes,T,N}()
+Base.BroadcastStyle(::Type{<:ComponentArray{Axes,T,N,A}}) where A<:AbstractArray{T,N} where {Axes,T,N} = CAStyle{Axes,T,N}()
 Base.BroadcastStyle(::Type{<:CVector{Axes,T,A}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{Axes,T}()
 Base.BroadcastStyle(::Type{<:CMatrix{Axes,T,A}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{Axes,T}()
 
@@ -37,14 +37,14 @@ end
 
 
 function Base.similar(bc::BroadCAStyle{Axes,T,N}, ::Type{<:TT}) where {Axes,T,N,TT}
-    return CArray{Axes}(similar(Array{TT}, axes(bc)))
+    return ComponentArray{Axes}(similar(Array{TT}, axes(bc)))
 end
 function Base.similar(bc::BroadCAStyle{Axes,T,N}) where {Axes,T,N}
-    return CArray{Axes}(similar(Array{T}, axes(bc)))
+    return ComponentArray{Axes}(similar(Array{T}, axes(bc)))
 end
 
 # Not sure why this saves so much time. The only thing it skips is unaliasing and extruding
-@inline function Base.copyto!(dest::CArray, bc::BC.Broadcasted{Nothing})
+@inline function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
     axes(dest) == axes(bc) || BC.throwdm(axes(dest), axes(bc))
     # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
     if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!

@@ -34,7 +34,7 @@ function lorenz_jac!(D, u, p, t)
 end
 
 lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
-lorenz_ic = CArray(x=0.0, y=0.0, z=0.0)
+lorenz_ic = ComponentArray(x=0.0, y=0.0, z=0.0)
 lorenz_fun = ODEFunction(lorenz!, jac=lorenz_jac!)
 lorenz_prob = ODEProblem(lorenz_fun, lorenz_ic, tspan, lorenz_p)
 
@@ -61,7 +61,7 @@ function lotka_jac!(D, u, p, t)
 end
 
 lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
-lotka_ic = CArray(x=1.0, y=1.0)
+lotka_ic = ComponentArray(x=1.0, y=1.0)
 lotka_fun = ODEFunction(lotka!, jac=lotka_jac!)
 lotka_prob = ODEProblem(lotka_fun, lotka_ic, tspan, lotka_p)
 
@@ -88,14 +88,14 @@ function composed_jac!(D, u, p, t)
 end
 
 comp_p = (lorenz=lorenz_p, lotka=lotka_p, c=0.01)
-comp_ic = CArray(lorenz=lorenz_ic, lotka=lotka_ic)
+comp_ic = ComponentArray(lorenz=lorenz_ic, lotka=lotka_ic)
 comp_fun = ODEFunction(composed!, jac=composed_jac!)
 comp_prob = ODEProblem(comp_fun, comp_ic, tspan, comp_p)
 
 
 ## Solve problem
 # We can solve the composed system...
-comp_sol = solve(comp_prob, alg_hints=[:stiff])
+comp_sol = solve(comp_prob, Rodas5())
 
 # ...or we can unit test one of the component systems
-lotka_sol = solve(lotka_prob, alg_hints=[:stiff])
+lotka_sol = solve(lotka_prob, Rodas5())

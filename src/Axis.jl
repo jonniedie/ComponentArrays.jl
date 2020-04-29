@@ -1,7 +1,7 @@
 """
     ax = Axis(nt::NamedTuple)
 
-Axes for named component access of CArrays. These are a little confusing and poorly
+Axes for named component access of ComponentArrays. These are a little confusing and poorly
     thought-out, so maybe don't use them directly.
 
 # Examples
@@ -14,9 +14,9 @@ Axis{(a = 1, b = 2:3, c = (4:10, (a = (1:3, (a = 1, b = 2:3)), b = 4:7)))}()
 
 julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
 
-julia> cvec = CArray(A, ax);
+julia> cvec = ComponentArray(A, ax);
 
-julia> cmat = CArray(A .* A', ax, ax);
+julia> cmat = ComponentArray(A .* A', ax, ax);
 
 julia> cmat[:c,:c] * cvec.c
 7-element Array{Float64,1}:
@@ -43,17 +43,24 @@ const AxisorNAxis = Union{Axis, NAxis}
 const VarAxes = Tuple{Vararg{<:Axis}}
 
 Axis{IdxMap}(x) where {IdxMap} = Axis{IdxMap}()
-Axis(x::Type{Axis{IdxMap}}) where {IdxMap} = Axis{IdxMap}()
+Axis(::Type{Axis{IdxMap}}) where {IdxMap} = Axis{IdxMap}()
 Axis(L, IdxMap) = Axis{IdxMap}()
 Axis(::Number, IdxMap) = NullAxis()
 Axis(::Colon, IdxMap) = Axis{IdxMap}()
-Axis(i, IdxMap, N) = NAxis(N, Axis(i, IdxMap))
+Axis(i, N, IdxMap) = NAxis(N, Axis(i, IdxMap))
 Axis(tup) = Axis(tup...)
 Axis(nt::NamedTuple) = Axis{nt}()
 Axis(;kwargs...) = Axis{(;kwargs...)}()
+Axis(x::Axis) = x
+Axis(x::NAxis{N,IdxMap}) where {N,IdxMap} = Axis{IdxMap}()
 
 idxmap(::Axis{IdxMap}) where IdxMap = IdxMap
 idxmap(::Type{Axis{IdxMap}}) where IdxMap = IdxMap
+idxmap(::NAxis{N,IdxMap}) where {N,IdxMap} = IdxMap
+idxmap(::Type{NAxis{N,IdxMap}}) where {N,IdxMap} = IdxMap
+
+numaxes(::NAxis{N,IdxMap}) where {N,IdxMap} = N
+numaxes(::Type{NAxis{N,IdxMap}}) where {N,IdxMap} = N
 
 lastof(x) = x[end]
 lastof(x::Union{Tuple, NamedTuple}) = lastof(x[end])
