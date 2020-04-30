@@ -18,24 +18,7 @@ Base.BroadcastStyle(::Type{<:CVector{Axes,T,A}}) where A<:AbstractVector{T} wher
 Base.BroadcastStyle(::Type{<:CMatrix{Axes,T,A}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{Axes,T}()
 
 # TODO change fill_flat to take in N1 and N2 to avoid repeating code
-# @generated function Base.BroadcastStyle(::CAStyle{<:Ax1,<:T1,<:N1}, ::CAStyle{<:Ax2,<:T2,<:N2}) where {Ax1,T1,N1,Ax2,T2,N2}
-#     if N1>=N2
-#         N = N1
-#         Ax1 = fill_flat(Ax1,N)
-#     else
-#         N = N2
-#         Ax2 = fill_flat(Ax2,N)
-#     end
-#     Ax = promote_type(Ax1, Ax2)
-#     T = promote_type(T1, T2)
-#     return :(CAStyle{$Ax, $T, $N}())
-# end
-# @generated function Base.BroadcastStyle(::CAStyle{<:Ax1,<:T1,<:N1}, ::BC.DefaultArrayStyle{<:N2}) where {Ax1,T1,N1,N2}
-#     N = max(N1,N2)
-#     ax = fill_flat(Ax1,N)
-#     return :(CAStyle{$ax, T1, $N}())
-# end
-function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
+@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
     if N1>=N2
         N = N1
         ax1 = fill_flat(Ax1,N)
@@ -47,12 +30,12 @@ function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {
     end
     Ax = promote_type(ax1, ax2)
     T = promote_type(T1, T2)
-    return CAStyle{Ax, T, N}()
+    return :(CAStyle{$Ax, $T, $N}())
 end
-function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
+@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
     N = max(N1,N2)
-    ax = fill_flat(Ax1,N)
-    return CAStyle{ax, T1, N}()
+    Ax = fill_flat(Ax1,N)
+    return :(CAStyle{$Ax, T1, $N}())
 end
 
 
