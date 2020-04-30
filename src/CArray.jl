@@ -109,3 +109,5 @@ Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxe
 Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
+
+Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))

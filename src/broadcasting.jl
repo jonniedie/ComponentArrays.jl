@@ -18,21 +18,41 @@ Base.BroadcastStyle(::Type{<:CVector{Axes,T,A}}) where A<:AbstractVector{T} wher
 Base.BroadcastStyle(::Type{<:CMatrix{Axes,T,A}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{Axes,T}()
 
 # TODO change fill_flat to take in N1 and N2 to avoid repeating code
-@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
+# @generated function Base.BroadcastStyle(::CAStyle{<:Ax1,<:T1,<:N1}, ::CAStyle{<:Ax2,<:T2,<:N2}) where {Ax1,T1,N1,Ax2,T2,N2}
+#     if N1>=N2
+#         N = N1
+#         Ax1 = fill_flat(Ax1,N)
+#     else
+#         N = N2
+#         Ax2 = fill_flat(Ax2,N)
+#     end
+#     Ax = promote_type(Ax1, Ax2)
+#     T = promote_type(T1, T2)
+#     return :(CAStyle{$Ax, $T, $N}())
+# end
+# @generated function Base.BroadcastStyle(::CAStyle{<:Ax1,<:T1,<:N1}, ::BC.DefaultArrayStyle{<:N2}) where {Ax1,T1,N1,N2}
+#     N = max(N1,N2)
+#     ax = fill_flat(Ax1,N)
+#     return :(CAStyle{$ax, T1, $N}())
+# end
+function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
     if N1>=N2
         N = N1
-        Ax1 = fill_flat(Ax1,N)
+        ax1 = fill_flat(Ax1,N)
+        ax2 = Ax2
     else
         N = N2
-        Ax2 = fill_flat(Ax2,N)
+        ax1 = Ax1
+        ax2 = fill_flat(Ax2,N)
     end
-    Ax = promote_type(Ax1, Ax2)
-    return :(CAStyle{$Ax, T1, $N}())
+    Ax = promote_type(ax1, ax2)
+    T = promote_type(T1, T2)
+    return CAStyle{Ax, T, N}()
 end
-@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
-    ax = fill_flat(Ax1,N2)
+function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
     N = max(N1,N2)
-    return :(CAStyle{$ax, T1, $N}())
+    ax = fill_flat(Ax1,N)
+    return CAStyle{ax, T1, N}()
 end
 
 
@@ -44,7 +64,7 @@ function Base.similar(bc::BroadCAStyle{Axes,T,N}) where {Axes,T,N}
 end
 
 # Not sure why this saves so much time. The only thing it skips is unaliasing and extruding
-@inline function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
+function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
     axes(dest) == axes(bc) || BC.throwdm(axes(dest), axes(bc))
     # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
     if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!
