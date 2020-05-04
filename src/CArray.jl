@@ -37,7 +37,7 @@ end
 ComponentArray(data::AbstractArray, ::Tuple{}) = data
 ComponentArray(data::AbstractArray, ax::Axis...) = ComponentArray(data, remove_nulls(ax...))
 ComponentArray(data::AbstractArray, ax::NullorFlatAxis...) = data
-ComponentArray(data::AbstractArray, ax::NAxis{N,IdxMap}) where {N,IdxMap} = ComponentArray.(partition(data, N), [Axis{IdxMap}()])
+ComponentArray(data::AbstractArray, ax::NAxis{N,IdxMap}) where {N,IdxMap} = map(x->ComponentArray(x, Axis{IdxMap}()), partition(data, N))
 function ComponentArray(data::AbstractArray, ax::AxisorNAxis...)
     naxs = Iterators.filter(x -> x isa NAxis, ax)
     part_data = partition(data, numaxes.(naxs)...)

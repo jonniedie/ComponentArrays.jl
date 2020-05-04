@@ -41,10 +41,16 @@ toval(x) = Val(x)
 getval(::Val{x}) where x = x
 getval(::Type{Val{x}}) where x = x
 
-partition(A, N) = @views [A[i-N+1:i] for i in N:N:length(A)]
-function partition(A, N...)
-    part_size = prod(N)
-    n_parts = size(A) .÷ N
-    Ap = partition(A, part_size)
-    return reshape(reshape.(Ap, N...), n_parts...)
+function partition(A, N; dim=1)
+    first_inds = ntuple(x->:, dim-1)
+    last_inds = ntuple(x->:, max(ndims(A)-dim, 0))
+    return [view(A, first_inds..., i-N+1:i, last_inds...) for i in N:N:size(A)[dim]]
+end
+function partition(A, N1, N2, N...)
+    N = (N1, N2, N...)
+    part_A = partition(A, N[end], dim=length(N))
+    for i in length(N)-1:-1:1
+        part_A = vcat(partition.(part_A, N[i], dim=i)...)
+    end
+    return reshape(part_A, div.(size(A), N))
 end

@@ -13,7 +13,7 @@ ca = ComponentArray(nt)
 ca_Float32 = ComponentArray{Float32}(nt)
 ca_composed = ComponentArray(a=1, b=ca)
 
-nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0), (a=(a=44, b=4), b=3)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
+nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
 ca2 = ComponentArray(nt2)
 
 cmat = ComponentArray(a .* a', ax, ax)
@@ -23,6 +23,13 @@ _a, _b, _c = fastindices(:a, :b, :c)
 
 
 ## Tests
+@testset "Utilities" begin
+    @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
+    @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
+    @test_skip ComponentArrays.partition(1:12, 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    @test_skip ComponentArrays.partition(reshape(1:100, 10, 10), 5, 2)[1,1] == reshape(1:10, 5, 2)
+end
+
 @testset "Construction" begin
     @test ca == ComponentArray(a=100, b=[4, 1.3], c=(a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45]))
     @test ca_Float32 == ComponentArray(Float32.(a), ax)
@@ -70,6 +77,7 @@ end
     @test cmat[:c, :c] == ComponentArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c))
     @test cmat[:c,:][:a,:][:a,:] == ca
     @test cmat[:a, :c] == cmat[:c, :a]
+    @test cmat2[:b, :b][1,1] == ca2.b[1] .* ca2.b[1]'
 
     @test ca[_a] == ca[:a]
     @test cmat[_c,_b] == cmat[:c,:b]
@@ -85,15 +93,15 @@ end
     temp.c.a .= 1000
 
     tempmat[:b,:b][1,1][:a,:a][:a,:a] = 100000
-    tempmat[:b,:a][3].b = 1000
+    tempmat[:b,:a][2].b = 1000
 
     @test temp.c.a.a == 1000
 
     @test tempmat[:b,:b][1,1][:a,:a][:a,:a] == 100000
-    @test tempmat[:b,:a][3].b == 1000
+    @test tempmat[:b,:a][2].b == 1000
 
     tempmat .= 0
-    @test tempmat[:b,:a][3].b == 0
+    @test tempmat[:b,:a][2].b == 0
 end
 
 @testset "Similar" begin
@@ -138,11 +146,11 @@ end
     @test ca.c' * cmat[:c,:c] * ca.c isa Number
     @test ca * 1 isa CVector
     @test_skip ca' * 1 isa AdjointCVector
-end
 
-@testset "Utilities" begin
-    @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
-    @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
-    @test ComponentArrays.partition(1:12, 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-    @test ComponentArrays.partition(reshape(1:100, 10, 10), 5, 2)[1,1] == reshape(1:10, 5, 2)
+    vca2 = vcat(ca2', ca2')
+    hca2 = hcat(ca2, ca2)
+    @test vca2[1,:] == ca2
+    @test hca2[:,1] == ca2
+    @test vca2' == hca2
+    @test hca2[:a,:] == vca2[:,:a]
 end

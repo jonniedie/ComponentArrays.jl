@@ -18,3 +18,8 @@ Base.:(\)(x::CMatrix, y::AbstractVecOrMat) = getdata(x) \ y
 Base.:(/)(x::AbstractVecOrMat, y::CMatrix) = x / getdata(y)
 
 Base.inv(x::CMatrix) = inv(getdata(x))
+
+
+## Vector to matrix concatenation
+Base.hcat(x1::CVector, x2::CVector) = ComponentArray(hcat(getdata.((x1, x2))...), getaxes(x1)[1], FlatAxis())
+Base.vcat(x1::AdjointCVector, x2::AdjointCVector) = ComponentArray(vcat(getdata(x1), getdata(x2)), FlatAxis(), getaxes(x1)[2])
