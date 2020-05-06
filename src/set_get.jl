@@ -44,8 +44,8 @@ julia> getaxes(ca)
 
 Access ```.data``` field of a ```ComponentArray```, which contains the array that ```ComponentArray``` wraps.
 """
-getdata(x::ComponentArray) = getfield(x, :data)
-getdata(x) = x
+@inline getdata(x::ComponentArray) = getfield(x, :data)
+@inline getdata(x) = x
 
 
 Base.keys(x::CVector) = keys(idxmap(getaxes(x)[1]))
@@ -63,8 +63,8 @@ Base.keys(x::CVector) = keys(idxmap(getaxes(x)[1]))
 @inline Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
 @inline Base.getindex(x::CVector, idx::Colon) = x
 @inline Base.getindex(x::ComponentArray, idx::Colon) = view(getdata(x), :)
-@inline Base.getindex(x::ComponentArray, idx) = getindex(x, Val(idx))
-@inline Base.getindex(x::ComponentArray, idx...) = getindex(x, fastindices(idx)...) #Val.(idx)...)
+@inline Base.getindex(x::ComponentArray, idx) = _getindex(x, Val(idx))
+@inline Base.getindex(x::ComponentArray, idx...) = _getindex(x, fastindices(idx)...) #Val.(idx)...)
 @inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(x, idx...) #ComponentArray(_getindex(x, idx...)...)
 @generated function _getindex(x::ComponentArray, args...)
     axs = getaxes(x)
