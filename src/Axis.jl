@@ -94,8 +94,6 @@ Base.merge(ax1::Ax1, ax2::Ax2) where {Ax1<:Axis, Ax2<:Axis} = merge(Ax1, Ax2)()
 Base.merge(Ax::Type{<:Axis{IdxMap}}, ::Type{<:Axis{IdxMap}}) where {IdxMap} = Ax
 Base.merge(::Type{<:Axis{IdxMap1}}, ::Type{<:Axis{IdxMap2}}) where {IdxMap1,IdxMap2} =
     Axis{merge(IdxMap1, IdxMap2)}
-# Base.merge(::Type{<:Axis{<:L1}}, ::Type{<:Axis{<:L2}}) where {L1,L2} =
-#     error("Incompatible axis lengths $L1 and $L2")
 
 
 ## Conversion and promotion

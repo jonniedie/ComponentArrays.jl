@@ -104,10 +104,12 @@ last_index(x::Tuple) = last_index(x[1])
 
 
 ## Base attributes
-Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
-
 Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
+
+Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
+
+Base.keys(x::CVector) = keys(idxmap(getaxes(x)[1]))

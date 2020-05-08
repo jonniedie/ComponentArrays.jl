@@ -5,8 +5,8 @@ using LinearAlgebra: Adjoint, Transpose
 const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray{<:Int}}
 
 include("utils.jl")
-include("Axis.jl")
-include("CArray.jl")
+include("axis.jl")
+include("componentarray.jl")
 include("set_get.jl")
 include("similar_convert_copy.jl")
 include("broadcasting.jl")
