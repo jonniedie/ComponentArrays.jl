@@ -167,7 +167,8 @@ The main benefit, however, is now our differential equations are unit testable. 
 
 
 ### Control of a sliding block
-In this example, we'll build a model of a block sliding on a surface and use ```ComponentArray```s to easily switch between coulomb and equivalent viscous damping models. The block is controlled by pushing and pulling a spring attached to it and we will use feedback through a PID controller to try to track a reference signal. For simplification, we are using the velocity of the block directly for the derivative term, rather than taking a filtered derivative of the error signal. We are also setting a deadzone with exponential decay to zero
+In this example, we'll build a model of a block sliding on a surface and use ```ComponentArray```s to easily switch between coulomb and equivalent viscous damping models. The block is controlled by pushing and pulling a spring attached to it and we will use feedback through a PID controller to try to track a reference signal. For simplification, we are using the velocity of the block directly for the derivative term, rather than taking a filtered derivative of the error signal. We are also setting a deadzone on the friction force with exponential decay to zero velocity to get rid of simulation chatter during the static friction regime.
+
 ```julia
 using ComponentArrays
 using DifferentialEquations
