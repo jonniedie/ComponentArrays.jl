@@ -167,6 +167,7 @@ The main benefit, however, is now our differential equations are unit testable. 
 
 
 ### Control of a sliding block
+In this example, we'll build a model of a block sliding on a surface and use ```ComponentArray```s to easily switch between coulomb and equivalent viscous damping models. The block is controlled by pushing and pulling a spring attached to it and we will use feedback through a PID controller to try to track a reference signal. For simplification, we are using the velocity of the block directly for the derivative term, rather than taking a filtered derivative of the error signal. We are also setting a deadzone with exponential decay to zero
 ```julia
 using ComponentArrays
 using DifferentialEquations
@@ -180,7 +181,7 @@ const g = 9.80665
 maybe_apply(f::Function, x, p, t) = f(x, p, t)
 maybe_apply(f, x, p, t) = f
 
-# Applies functions of form f(x,p,t) to be applied and passed in as inputs
+# Allows functions of form f(x,p,t) to be applied and passed in as inputs
 function simulator(func; kwargs...)
     simfun(dx, x, p, t) = func(dx, x, p, t; map(f->maybe_apply(f, x, p, t), (;kwargs...))...)
     simfun(x, p, t) = func(x, p, t; map(f->maybe_apply(f, x, p, t), (;kwargs...))...)
@@ -208,7 +209,7 @@ function coulomb_block!(D, vars, p, t; u=0.0)
 
     D.x = v
     a = -μ*g*softsign(v) + k*(u-x)/m
-    D.v = abs(a)<1e-3 && abs(v<1e-3) ? -10v : a #deadzone to help the simulation
+    D.v = abs(a)<1e-3 && abs(v)<1e-3 ? -10v : a
     return x
 end
 
@@ -216,8 +217,8 @@ function PID_controller!(D, vars, p, t; err=0.0, v=0.0)
     @unpack kp, ki, kd = p
     @unpack x = vars
 
-    D.x = ki*err
-    return x + kp*err + kd*v
+    D.x = err
+    return ki*x + kp*err + kd*v
 end
 
 function feedback_sys!(D, components, p, t; ref=0.0)
