@@ -257,7 +257,7 @@ sine_input(;mag=1.0, period=10.0) = (x,p,t) -> mag*sin(t*2π/period)
     
     ref = if reference==sine_input
         reference(period=period, mag=magnitude)
-        else
+    else
         reference(mag=magnitude)
     end
     
