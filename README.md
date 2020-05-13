@@ -60,7 +60,7 @@ true
 
 Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```ComponentArray```s with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
 ```julia
-julia> x = CArray(a=1, b=[2, 1, 4], c=c)
+julia> x = ComponentArray(a=1, b=[2, 1, 4], c=c)
 ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
 
 julia> x2 = x .* x'
