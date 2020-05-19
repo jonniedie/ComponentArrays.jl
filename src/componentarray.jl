@@ -29,45 +29,33 @@ julia> collect(x)
    2.0
 ```
 """
-struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes} <: AbstractArray{T,N}
+struct ComponentArray{Axes,T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     data::A
     axes::Axes
-    ComponentArray(data, ::Axes) where Axes<:Tuple = data
-    ComponentArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} =
-        new{T,N,A,Axes}(data, ax)
+    ComponentArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} = new{Axes,T,N,A}(data, ax)
 end
-ComponentArray(data, ::FlatAxis...) = data
-ComponentArray(data, ax::NotShapedOrPartitionedAxis...) = ComponentArray(data, ax)
-ComponentArray(data, ax::NotPartitionedAxis...) = ComponentArray(maybe_reshape(data, ax...), unshape.(ax)...)
-function ComponentArray(data, ax::AbstractAxis...)
-    part_axs = filter_by_type(PartitionedAxis, ax...)
-    part_data = partition(data, numaxes.(part_axs)...)
-    return [ComponentArray(x, Axis.(ax)) for x in part_data]
+ComponentArray(data::AbstractArray, ::Tuple{}) = data
+ComponentArray(data::AbstractArray, ax::Axis...) = ComponentArray(data, remove_nulls(ax...))
+ComponentArray(data::AbstractArray, ax::NullorFlatAxis...) = data
+ComponentArray(data::AbstractArray, ax::NAxis{N,IdxMap}) where {N,IdxMap} = map(x->ComponentArray(x, Axis{IdxMap}()), partition(data, N))
+function ComponentArray(data::AbstractArray, ax::AxisorNAxis...)
+    naxs = Iterators.filter(x -> x isa NAxis, ax)
+    part_data = partition(data, numaxes.(naxs)...)
+    return [ComponentArray(x, Axis.(ax)...) for x in part_data]
 end
-
-ComponentArray{Axes}(data) where Axes = ComponentArray(data, getaxes(Axes)...)
-
+ComponentArray{Axes}(data) where Axes = ComponentArray(data, map(Axis, (Axes.types...,))...)
+ComponentArray(data::Number, ax::Axis...) = data
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(nt, T)...)
 ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
-const ComponentVector{T,A,Axes} = ComponentArray{T,1,A,Axes}
-const ComponentMatrix{T,A,Axes} = ComponentArray{T,2,A,Axes}
-
 const CArray = ComponentArray
-const CVector = ComponentVector
-const CMatrix = ComponentMatrix
+const CVector{Axes,T,A} = ComponentArray{Axes,T,1,A}
+const CMatrix{Axes,T,A} = ComponentArray{Axes,T,2,A}
 
 
 ## Constructor helpers
-maybe_reshape(data, axs::NotShapedAxis...) = data
-function maybe_reshape(data, axs::AbstractAxis...)
-    shapes = filter_by_type(ShapedAxis, axs...) .|> size
-    shapes = reduce((tup, s) -> (tup..., s...), shapes)
-    return reshape(data, shapes)
-end
-
 function make_carray_args(nt, T=Float64)
     data, idx = make_idx(T[], nt, 0)
     return (data, Axis(idx))
@@ -82,16 +70,13 @@ function make_idx(data, nt::NamedTuple, last_val)
         push!(kvs, k => val)
         lv = val
     end
-    return (data, ViewAxis(last_index(last_val) .+ (1:len), (;kvs...)))
+    return (data, (last_index(last_val) .+ (1:len), (;kvs...)))
 end
-make_idx(data, x, last_val) = (
-    push!(data, x),
-    ViewAxis(last_index(last_val) + 1)
-)
+make_idx(data, x, last_val) = (push!(data, x), last_index(last_val) + 1)
 function make_idx(data, x::AbstractArray{N}, last_val) where N<:Number
     push!(data, x...)
     out = last_index(last_val) .+ (1:length(x))
-    return (data, ViewAxis(out, ShapedAxis(size(x))))
+    return (data, out)
 end
 function make_idx(data, x::A, last_val) where A<:AbstractArray
     len = recursive_length(x)
@@ -100,31 +85,22 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
         for elem in x
             (_,out) = make_idx(data, elem, last_val)
         end
-        return (
-            data,
-            ViewAxis(
-                last_index(last_val) .+ (1:len),
-                PartitionedAxis(
-                    len ÷ length(x),
-                    indexmap(out)
-                )
-            )
-        )
+        return (data, (last_index(last_val) .+ (1:len), len ÷ length(x), out[2]))
     else
         error("Only homogeneous arrays are allowed. This one has eltype $(eltype(x)).")
     end
 end
-make_idx(data, x::ComponentVector, last_val) = (
-    push!(data, x...),
-    ViewAxis(
-        last_index(last_val) .+ (1:length(x)),
-        getaxes(x)[1]
-    )
-)
+make_idx(data, x::CVector, last_val) =
+    (push!(data, x...), (last_index(last_val) .+ (1:length(x)), idxmap(getaxes(x)[1])))
 
+
+recursive_length(x) = length(x)
+recursive_length(a::AbstractVector{N}) where N<:Number = length(a)
+recursive_length(a::AbstractVector) = recursive_length.(a) |> sum
+recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
 
 last_index(x) = last(x)
-last_index(x::ViewAxis) = last_index(viewindex(x))
+last_index(x::Tuple) = last_index(x[1])
 
 
 ## Base attributes
@@ -136,4 +112,4 @@ Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray
 
 Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
 
-Base.keys(x::CVector) = keys(indexmap(getaxes(x)[1]))
+Base.keys(x::CVector) = keys(idxmap(getaxes(x)[1]))

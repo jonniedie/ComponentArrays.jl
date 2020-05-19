@@ -1,30 +1,12 @@
-# Show AbstractAxis types
-Base.show(io::IO, ::MIME"text/plain", ::Axis{IdxMap}) where IdxMap = print(io, "Axis$IdxMap")
-Base.show(io::IO, ::Axis{IdxMap}) where IdxMap = print(io, "$IdxMap")
+# function Base.show(io::IO, ::MIME"text/plain", x::CVector)
+#     print(io, "ComponentArray{$(eltype(x))}$(NamedTuple(x))")
+#     return nothing
+# end
+# function Base.show(io::IO, x::CVector)
+#     print(io, NamedTuple(x))
+#     return nothing
+# end
 
-Base.show(io::IO, ::FlatAxis) = print(io, "FlatAxis()")
-
-Base.show(io::IO, ::NullAxis) = print(io, "NullAxis()")
-
-Base.show(io::IO, ::MIME"text/plain", ::PartitionedAxis{PartSz, IdxMap, Ax}) where {PartSz, IdxMap, Ax} =
-    print(io, "PartitionedAxis($PartSz, $(Ax()))")
-Base.show(io::IO, ::PartitionedAxis{PartSz, IdxMap, Ax}) where {PartSz, IdxMap, Ax} =
-    print(io, "Partition($PartSz, $(Ax()))")
-
-Base.show(io::IO, ::ShapedAxis{Shape, IdxMap}) where {Shape, IdxMap} =
-    print(io, "ShapedAxis($Shape, $IdxMap)")
-
-Base.show(io::IO, ::MIME"text/plain", ::ViewAxis{Inds, IdxMap, Ax}) where {Inds, IdxMap, Ax} = 
-    print(io, "ViewAxis($Inds, $(Ax()))")
-Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:Ax}) where {Inds, IdxMap, Ax} = 
-    print(io, "View($Inds, $(Ax()))")
-Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:NullorFlatAxis}) where {Inds, IdxMap} = 
-    print(io, Inds)
-
-Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(ci.ax))")
-
-
-# Show ComponentArrays
 function Base.show(io::IO, x::CVector)
     K = keys(x)
     key = K[1]
@@ -36,7 +18,7 @@ function Base.show(io::IO, x::CVector)
     print(io, ")")
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {T,A,Axes}
+function Base.show(io::IO, ::MIME"text/plain", x::CVector{Axes,T,A}) where {Axes,T,A}
     print(io, "ComponentArray{" , T, "}")
     show(io, x)
     return nothing

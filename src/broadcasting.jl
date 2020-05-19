@@ -1,24 +1,24 @@
 const BC = Base.Broadcast
 
 # Broadcasting
-struct CAStyle{T,N,Axes} <: BC.AbstractArrayStyle{N} end
+struct CAStyle{Axes,T,N} <: BC.AbstractArrayStyle{N} end
 
-const CVecStyle{T,Axes} = CAStyle{T,1,Axes}
-const CMatStyle{T,Axes} = CAStyle{T,2,Axes}
+const CVecStyle{Axes,T} = CAStyle{Axes,T,1}
+const CMatStyle{Axes,T} = CAStyle{Axes,T,2}
 
-const BroadCAStyle{T,N,Axes} = BC.Broadcasted{CAStyle{T,N,Axes}}
-const BroadCVecStyle{T,Axes} = BC.Broadcasted{CVecStyle{T,Axes}}
-const BroadCMatStyle{T,Axes} = BC.Broadcasted{CMatStyle{T,Axes}}
+const BroadCAStyle{Axes,T,N} = BC.Broadcasted{CAStyle{Axes,T,N}}
+const BroadCVecStyle{Axes,T} = BC.Broadcasted{CVecStyle{Axes,T}}
+const BroadCMatStyle{Axes,T} = BC.Broadcasted{CMatStyle{Axes,T}}
 const BroadDefArrStyle{N} = BC.DefaultArrayStyle{N}
 
-CAStyle{T,N,Axes}(::Val{i}) where {T,N,Axes,i} = CAStyle{T,N,Axes}()
+CAStyle{Axes,T,N}(x::Val{i}) where {Axes,T,N,i} = CAStyle{Axes,T,N}()
 
-Base.BroadcastStyle(CA::Type{<:ComponentArray{T,N,A,Axes}}) where A<:AbstractArray{T,N} where {T,N,Axes} = CAStyle{T,N,Axes}()
-Base.BroadcastStyle(CA::Type{<:CVector{T,A,Axes}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{T,Axes}()
-Base.BroadcastStyle(CA::Type{<:CMatrix{T,A,Axes}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{T,Axes}()
+Base.BroadcastStyle(::Type{<:ComponentArray{Axes,T,N,A}}) where A<:AbstractArray{T,N} where {Axes,T,N} = CAStyle{Axes,T,N}()
+Base.BroadcastStyle(::Type{<:CVector{Axes,T,A}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{Axes,T}()
+Base.BroadcastStyle(::Type{<:CMatrix{Axes,T,A}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{Axes,T}()
 
 # TODO change fill_flat to take in N1 and N2 to avoid repeating code
-@generated function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:Ax1}, ::CAStyle{<:T2,<:N2,<:Ax2}) where {Ax1,T1,N1,Ax2,T2,N2}
+@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::CAStyle{Ax2,T2,N2}) where {Ax1,T1,N1,Ax2,T2,N2}
     if N1>=N2
         N = N1
         ax1 = fill_flat(Ax1,N)
@@ -30,24 +30,23 @@ Base.BroadcastStyle(CA::Type{<:CMatrix{T,A,Axes}}) where A<:AbstractMatrix{T} wh
     end
     Ax = promote_type(ax1, ax2)
     T = promote_type(T1, T2)
-    return :(CAStyle{$T, $N, $Ax}())
+    return :(CAStyle{$Ax, $T, $N}())
 end
-@generated function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:Ax1}, ::BC.DefaultArrayStyle{N2}) where {T1,N1,Ax1,N2}
+@generated function Base.BroadcastStyle(::CAStyle{Ax1,T1,N1}, ::BC.DefaultArrayStyle{N2}) where {Ax1,T1,N1,N2}
     N = max(N1,N2)
     Ax = fill_flat(Ax1,N)
-    return :(CAStyle{T1, $N, $Ax}())
+    return :(CAStyle{$Ax, T1, $N}())
 end
 
 
-function Base.similar(bc::BroadCAStyle{T,N,Axes}, ::Type{<:TT}) where {T,N,Axes,TT}
+function Base.similar(bc::BroadCAStyle{Axes,T,N}, ::Type{<:TT}) where {Axes,T,N,TT}
     return ComponentArray{Axes}(similar(Array{TT}, axes(bc)))
 end
-function Base.similar(bc::BroadCAStyle{T,N,Axes}) where {T,N,Axes}
+function Base.similar(bc::BroadCAStyle{Axes,T,N}) where {Axes,T,N}
     return ComponentArray{Axes}(similar(Array{T}, axes(bc)))
 end
 
-# The preprocessing step in the Base copyto! implementation is slow for ComponentArrays so
-# we are bypassing it and doing the conversion ourselves. 
+# Not sure why this saves so much time. The only thing it skips is unaliasing and extruding
 function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
     axes(dest) == axes(bc) || BC.throwdm(axes(dest), axes(bc))
     # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
@@ -63,9 +62,7 @@ function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
     end
     return dest
 end
-
-# Need this to get around the goofy 0-dimensional array wrapping in the default copyto! I'd
-# love to not have this, but I don't really want to track down why everything is being wrapped
-Base.convert(::Type{BC.Broadcasted{Nothing}}, bc::BroadCAStyle) = getdata(bc)
-
-getdata(bc::BroadCAStyle) = BC.Broadcasted{Nothing}(bc.f, map(getdata, bc.args), bc.axes)
+function Base.convert(::Type{<:BC.Broadcasted{Nothing}}, bc::BC.Broadcasted{Style,Axes,F,Args}) where {Style<:CAStyle,Axes,F,Args}
+    args = map(getdata, bc.args)
+    return BC.Broadcasted{Nothing,Axes,F,typeof(args)}(bc.f, args, bc.axes)
+end
