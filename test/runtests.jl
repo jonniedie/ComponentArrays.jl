@@ -6,8 +6,8 @@ using Test
 ## Test setup
 c = (a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45])
 nt = (a=100, b=[4, 1.3], c=c)
-ax = Axis(a=1, b=2:3, c=(4:10, (a=(1:3, (a=1, b=2:3)), b=4:7)))
-ax_c = (a=(1:3, (a=1, b=2:3)), b=4:7)
+ax = Axis(a=1, b=2:3, c=ViewAxis(4:10, (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)))
+ax_c = (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)
 a = Float64[100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
 ca = ComponentArray(nt)
 ca_Float32 = ComponentArray{Float32}(nt)
@@ -19,6 +19,9 @@ ca2 = ComponentArray(nt2)
 cmat = ComponentArray(a .* a', ax, ax)
 cmat2 = ca2 .* ca2'
 
+sq_mat = collect(reshape(1:9,3,3))
+caa = ComponentArray(a=ca, b=sq_mat)
+
 _a, _b, _c = fastindices(:a, :b, :c)
 
 
@@ -26,8 +29,7 @@ _a, _b, _c = fastindices(:a, :b, :c)
 @testset "Utilities" begin
     @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
     @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
-    @test_skip ComponentArrays.partition(1:12, 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-    @test_skip ComponentArrays.partition(reshape(1:100, 10, 10), 5, 2)[1,1] == reshape(1:10, 5, 2)
+    @test ComponentArrays.partition(1:12, 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
 end
 
 @testset "Construction" begin
@@ -59,7 +61,7 @@ end
     @test ca[1] == a[1]
     @test ca[1:5] == a[1:5]
     @test cmat[:,:] == cmat
-    @test getaxes(cmat[:a,:]) == getaxes(ca)
+    # @test getaxes(cmat[:a,:]) == getaxes(ca)
 
     @test ca.a == 100.0
     @test ca.b == Float64[4, 1.3]
@@ -84,6 +86,10 @@ end
     @test cmat[_c, :a] == cmat[:c, :a]
 
     @test ca2.b[2].a.a == 33
+
+    @test collect(caa.b) == sq_mat
+    @test size(caa.b) == size(sq_mat)
+    @test caa.b[1:2, 3] == sq_mat[1:2, 3]
 end
 
 @testset "Set" begin
@@ -137,7 +143,7 @@ end
 
 @testset "Math" begin
     @test zeros(cmat) * ca == zeros(ca)
-    @test ca * ca' == cmat
+    @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a
     @test cmat * ca == cmat * a
