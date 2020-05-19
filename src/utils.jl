@@ -34,6 +34,8 @@ julia> @btime \$ca2[\$_c, \$_c];
 fastindices(i...) = toval.(i)
 fastindices(i::Tuple) = toval.(i)
 
+
+# Make a Val if input isn't already one
 toval(x::Val) = x
 toval(x) = Val(x)
 
@@ -41,16 +43,30 @@ toval(x) = Val(x)
 getval(::Val{x}) where x = x
 getval(::Type{Val{x}}) where x = x
 
+# Split an array up into partitions where the Ns are partition sizes on each dimension
+partition(A) = A
 function partition(A, N; dim=1)
     first_inds = ntuple(x->:, dim-1)
     last_inds = ntuple(x->:, max(ndims(A)-dim, 0))
     return [view(A, first_inds..., i-N+1:i, last_inds...) for i in N:N:size(A)[dim]]
 end
-function partition(A, N1, N2, N...)
-    N = (N1, N2, N...)
+function partition(A, N1, N2, args...)
+    N = (N1, N2, args...)
     part_A = partition(A, N[end], dim=length(N))
     for i in length(N)-1:-1:1
         part_A = vcat(partition.(part_A, N[i], dim=i)...)
     end
     return reshape(part_A, div.(size(A), N))
 end
+
+# Faster filtering of tuples by type
+filter_by_type(::Type{T}, args...) where T = filter_by_type(T, (), args...)
+filter_by_type(::Type{T}, part::Tuple) where T = part
+filter_by_type(::Type{T}, part::Tuple, ax, args...) where T = filter_by_type(T, part, args...)
+filter_by_type(::Type{T}, part::Tuple, ax::T, args...) where T = filter_by_type(T, (part..., ax), args...)
+
+# Flat length of an arbitrarily nested named tuple
+recursive_length(x) = length(x)
+recursive_length(a::AbstractVector{N}) where N<:Number = length(a)
+recursive_length(a::AbstractVector) = recursive_length.(a) |> sum
+recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum

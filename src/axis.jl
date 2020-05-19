@@ -1,83 +1,147 @@
+abstract type AbstractAxis{IdxMap} end
+
+const VarAxes = Tuple{Vararg{<:AbstractAxis}}
+
+@inline indexmap(::AbstractAxis{IdxMap}) where IdxMap = IdxMap
+@inline indexmap(::Type{<:AbstractAxis{IdxMap}}) where IdxMap = IdxMap
+
+
 """
     ax = Axis(nt::NamedTuple)
 
-Axes for named component access of ComponentArrays. These are a little confusing and poorly
-    thought-out, so maybe don't use them directly.
-
+Gives named component access for `ComponentArray`s.
 # Examples
 
 ```jldoctest
 julia> using ComponentArrays
 
-julia> ax = Axis(a=1, b=2:3, c=(4:10, (a=(1:3, (a=1, b=2:3)), b=4:7)))
-Axis{(a = 1, b = 2:3, c = (4:10, (a = (1:3, (a = 1, b = 2:3)), b = 4:7)))}()
+julia> ax = Axis{(a = 1, b = View(2:7, 2, (a = 1, b = 2)), c = View(8:10, (a = 1, b = 2:3)))}();
 
 julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
 
-julia> cvec = ComponentArray(A, ax);
+julia> ca = ComponentArray(A, ax)
+ComponentArray{Float64}(a = 100.0, b = [(a = 4.0, b = 1.3), (a = 1.0, b = 1.0), (a = 4.4, b = 0.4)], c = (a = 2.0, b = [1.0, 45.0]))
 
-julia> cmat = ComponentArray(A .* A', ax, ax);
+julia> ca.a
+100.0
 
-julia> cmat[:c,:c] * cvec.c
-7-element Array{Float64,1}:
-  2051.52
-  2051.52
-  9026.688000000002
-   820.608
-  4103.04
-  2051.52
- 92318.4
+julia> ca.b
+3-element Array{ComponentArray{Tuple{Axis{(a = 1, b = 2)}},Float64,1,SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}},1}:
+ (a = 4.0, b = 1.3)
+ (a = 1.0, b = 1.0)
+ (a = 4.4, b = 0.4)
+
+julia> ca.c
+ComponentArray{Float64}(a = 2.0, b = [1.0, 45.0])
+
+julia> ca.c.b
+2-element view(::Array{Float64,1}, 9:10) with eltype Float64:
+  1.0
+ 45.0
 ```
 """
-struct Axis{IdxMap} end
+struct Axis{IdxMap} <: AbstractAxis{IdxMap} end
+@inline Axis(IdxMap::NamedTuple) = Axis{IdxMap}()
+Axis(;kwargs...) = Axis((;kwargs...))
 
-struct NAxis{N, IdxMap} end
-NAxis(N::Integer, nt::NamedTuple) = NAxis{N,nt}()
-NAxis(N::Integer, ax::Axis{IdxMap}) where IdxMap = N > 0 ? NAxis{N,IdxMap}() : error("N must be greater than 0, this one is $N")
 
-const NullAxis = Axis{Nothing}
-const FlatAxis = Axis{NamedTuple()}
+# Revise.jl seems to be having an issue with calling NamedTuple() inside the type def
+const unnamedtuple = NamedTuple()
+const FlatAxis = Axis{unnamedtuple}
+
+struct NullAxis <: AbstractAxis{nothing} end
+
 const NullorFlatAxis = Union{NullAxis, FlatAxis}
-const AxisorNAxis = Union{Axis, NAxis}
 
-const VarAxes = Tuple{Vararg{<:Axis}}
 
-Axis{IdxMap}(x) where {IdxMap} = Axis{IdxMap}()
-Axis(::Type{Axis{IdxMap}}) where {IdxMap} = Axis{IdxMap}()
-Axis(L, IdxMap) = Axis{IdxMap}()
-Axis(::Number, IdxMap) = NullAxis()
-Axis(::Colon, IdxMap) = Axis{IdxMap}()
-Axis(i, N, IdxMap) = NAxis(N, Axis(i, IdxMap))
-Axis(tup) = Axis(tup...)
-Axis(nt::NamedTuple) = Axis{nt}()
-Axis(;kwargs...) = Axis{(;kwargs...)}()
-Axis(x::Axis) = x
-Axis(x::NAxis{N,IdxMap}) where {N,IdxMap} = Axis{IdxMap}()
 
-idxmap(::Axis{IdxMap}) where IdxMap = IdxMap
-idxmap(::Type{Axis{IdxMap}}) where IdxMap = IdxMap
-idxmap(::NAxis{N,IdxMap}) where {N,IdxMap} = IdxMap
-idxmap(::Type{NAxis{N,IdxMap}}) where {N,IdxMap} = IdxMap
+"""
+    sa = ShapedAxis(shape, index_map)
 
-numaxes(::NAxis{N,IdxMap}) where {N,IdxMap} = N
-numaxes(::Type{NAxis{N,IdxMap}}) where {N,IdxMap} = N
+Preserves higher-dimensional array components in `ComponentArray`s (matrix components, for
+example)
+"""
+struct ShapedAxis{Shape, IdxMap} <: AbstractAxis{IdxMap} end
+@inline ShapedAxis(Shape, IdxMap) = ShapedAxis{Shape, IdxMap}()
+ShapedAxis(Shape) = ShapedAxis(Shape, NamedTuple())
+ShapedAxis(::Tuple{<:Int}) = FlatAxis()
 
-lastof(x) = x[end]
-lastof(x::Union{Tuple, NamedTuple}) = lastof(x[end])
+const Shape = ShapedAxis
+const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
+const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
 
-Base.firstindex(x::Axis) = 1
-Base.lastindex(x::Axis{IdxMap}) where {IdxMap} = lastof(IdxMap)
+unshape(ax) = ax
+unshape(ax::ShapedAxis) = Axis(indexmap(ax))
 
-Base.first(x::Axis) = 1
-Base.last(x::Axis{IdxMap}) where {IdxMap} = lastof(IdxMap)
+Base.size(::ShapedAxis{Shape, IdxMap}) where {Shape, IdxMap} = Shape
+
+
+
+"""
+    pa = PartitionedAxis(partition_size, index_map)
+
+Axis for creating arrays of `ComponentArray`s
+"""
+struct PartitionedAxis{PartSz, IdxMap, Ax<:AbstractAxis{IdxMap}} <: AbstractAxis{IdxMap}
+    ax::Ax
+    
+    function PartitionedAxis(PartSz, ax::AbstractAxis{IdxMap}) where IdxMap
+        return new{PartSz,IdxMap,typeof(ax)}(ax)
+    end
+end
+PartitionedAxis{PartSz,IdxMap,Ax}() where {PartSz,IdxMap,Ax} = PartitionedAxis(PartSz, Ax())
+PartitionedAxis(PartSz, IdxMap) = PartitionedAxis(PartSz, Axis(IdxMap))
+
+const Partition = PartitionedAxis
+const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape, IdxMap}} where {Shape, IdxMap}
+
+
+
+"""
+    va = ViewAxis(parent_index, index_map)
+
+Axis for creating arrays of `ComponentArray`s
+"""
+struct ViewAxis{Inds, IdxMap, Ax<:AbstractAxis{IdxMap}} <: AbstractAxis{IdxMap}
+    ax::Ax
+    function ViewAxis(Inds, ax::AbstractAxis{IdxMap}) where IdxMap
+        return new{Inds,IdxMap,typeof(ax)}(ax)
+    end
+    ViewAxis(Inds, ::NullorFlatAxis) = Inds
+end
+# ViewAxis{Inds,IdxMap,Ax}() where {Inds,IdxMap,Ax} = PartitionedAxis(Inds, Ax())
+ViewAxis{Inds,IdxMap,Ax}() where {Inds,IdxMap,Ax} = ViewAxis(Inds, Ax())
+ViewAxis(Inds, IdxMap) = ViewAxis(Inds, Axis(IdxMap))
+ViewAxis(Inds) = Inds
+
+const View = ViewAxis
+const NullOrFlatView{Inds,IdxMap} = ViewAxis{Inds,IdxMap,<:NullorFlatAxis}
+
+viewindex(::ViewAxis{Inds,IdxMap}) where {Inds,IdxMap} = Inds
+viewindex(::Type{<:ViewAxis{Inds,IdxMap}}) where {Inds,IdxMap} = Inds
+
+
+
+Axis(ax::AbstractAxis) = ax
+Axis(ax::PartitionedAxis) = ax.ax
+Axis(ax::ViewAxis) = ax.ax
+Axis(::Number) = NullAxis()
+Axis(::NamedTuple{()}) = FlatAxis()
+Axis(x) = FlatAxis()
+
+
+const VarAxes = Tuple{Vararg{<:AbstractAxis}}
+
+numaxes(::PartitionedAxis{N,IdxMap}) where {N,IdxMap} = N
+numaxes(::Type{PartitionedAxis{N,IdxMap}}) where {N,IdxMap} = N
 
 remove_nulls() = ()
 remove_nulls(x) = (x,)
-remove_nulls(x::NullAxis) = ()
+remove_nulls(::NullAxis) = ()
 remove_nulls(x1, x2, args...) = (x1, remove_nulls(x2, args...)...)
-remove_nulls(x1::NullAxis, x2, args...) = (remove_nulls(x2, args...)...,)
+remove_nulls(::NullAxis, x2, args...) = (remove_nulls(x2, args...)...,)
 
-fill_flat(::Type{Axes}, N) where Axes<:VarAxes = fill_flat(getaxes(Axes), N) |> typeof
+fill_flat(Ax::Type{<:VarAxes}, N) = fill_flat(getaxes(Ax), N) |> typeof
 function fill_flat(Ax::VarAxes, N)
     axs = getaxes(Ax)
     n = length(axs)
@@ -87,24 +151,4 @@ function fill_flat(Ax::VarAxes, N)
     return axs
 end
 
-Base.propertynames(ax::Axis{IdxMap}) where IdxMap = propertynames(IdxMap)
-
-# Not sure merging is actually a good idea
-Base.merge(ax1::Ax1, ax2::Ax2) where {Ax1<:Axis, Ax2<:Axis} = merge(Ax1, Ax2)()
-Base.merge(Ax::Type{<:Axis{IdxMap}}, ::Type{<:Axis{IdxMap}}) where {IdxMap} = Ax
-Base.merge(::Type{<:Axis{IdxMap1}}, ::Type{<:Axis{IdxMap2}}) where {IdxMap1,IdxMap2} =
-    Axis{merge(IdxMap1, IdxMap2)}
-
-
-## Conversion and promotion
-Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:Axis,Ax2<:Axis} = promote_type(Ax1,Ax2)()
-
-Base.promote_rule(Ax1::Type{<:Axis}, Ax2::Type{<:Axis}) = promote_type(Ax1, Ax2)
-
-Base.promote_type(Ax1::Type{<:VarAxes}, Ax2::Type{<:VarAxes}) = typeof(promote.(getaxes(Ax1), getaxes(Ax2))[1])
-function Base.promote_type(Ax1::Type{<:Axis{I1}}, Ax2::Type{<:Axis{I2}}) where {I1,I2}
-    return merge(Ax1, Ax2)
-end
-Base.promote_type(::Type{<:NullAxis}, Ax::Type{Axis{I1}}) where {I1} = Ax
-Base.promote_type(Ax::Type{Axis{I1}}, ::Type{<:NullAxis}) where {I1} = Ax
-Base.promote_type(::Type{<:NullAxis}, ::Type{<:NullAxis}) = NullAxis
+Base.propertynames(::AbstractAxis{IdxMap}) where IdxMap = propertynames(IdxMap)
