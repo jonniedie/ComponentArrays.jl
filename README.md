@@ -27,6 +27,27 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
 flat vectors is fair game.
 
+## New Features in v0.3
+- Matrix and higher-dimensional array components!
+```julia
+julia> x = ComponentArray(a=rand(), b=rand(3), c=rand(3,3));
+
+julia> x.c
+3×3 reshape(view(::Array{Float64,1}, 5:13), 3, 3) with eltype Float64:
+ 0.508171  0.740476   0.730907
+ 0.112437  0.0329141  0.943972
+ 0.661702  0.760624   0.777929
+```
+
+- Somewhat better Axis types!
+```julia
+julia> ax = Axis(a=1, b=ViewAxis(2:5, (a=1:2, b=3:4)))
+Axis(a = 1, b = View(2:5, (a = 1:2, b = 3:4)))
+
+julia> x = ComponentArray(zeros(5), ax)
+ComponentArray{Float64}(a = 0.0, b = (a = [0.0, 0.0], b = [0.0, 0.0]))
+```
+
 ## General use
 The easiest way to construct 1-dimensional ```ComponentArray```s is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
 ```julia
