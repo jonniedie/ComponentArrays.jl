@@ -9,6 +9,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 julia = "1"
+Requires = "1.0.1"
 
 [extras]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
