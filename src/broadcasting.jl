@@ -1,48 +1,66 @@
 const BC = Base.Broadcast
 
 # Broadcasting
-struct CAStyle{T,N,Axes} <: BC.AbstractArrayStyle{N} end
+struct CAStyle{T,N,A,Axes} <: BC.AbstractArrayStyle{N} end
 
-const CVecStyle{T,Axes} = CAStyle{T,1,Axes}
-const CMatStyle{T,Axes} = CAStyle{T,2,Axes}
+const CVecStyle{T,A,Axes} = CAStyle{T,1,A,Axes}
+const CMatStyle{T,A,Axes} = CAStyle{T,2,A,Axes}
 
-const BroadCAStyle{T,N,Axes} = BC.Broadcasted{CAStyle{T,N,Axes}}
-const BroadCVecStyle{T,Axes} = BC.Broadcasted{CVecStyle{T,Axes}}
-const BroadCMatStyle{T,Axes} = BC.Broadcasted{CMatStyle{T,Axes}}
+const BroadCAStyle{T,N,A,Axes} = BC.Broadcasted{<:CAStyle{T,N,A,Axes}}
+const BroadCVecStyle{T,A,Axes} = BC.Broadcasted{<:CVecStyle{T,A,Axes}}
+const BroadCMatStyle{T,A,Axes} = BC.Broadcasted{<:CMatStyle{T,A,Axes}}
 const BroadDefArrStyle{N} = BC.DefaultArrayStyle{N}
 
-CAStyle{T,N,Axes}(::Val{i}) where {T,N,Axes,i} = CAStyle{T,N,Axes}()
+CAStyle{T,N,A,Axes}(::Val{i}) where {T,N,A,Axes,i} = CAStyle{T,N,A,Axes}()
 
-Base.BroadcastStyle(CA::Type{<:ComponentArray{T,N,A,Axes}}) where A<:AbstractArray{T,N} where {T,N,Axes} = CAStyle{T,N,Axes}()
-Base.BroadcastStyle(CA::Type{<:CVector{T,A,Axes}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{T,Axes}()
-Base.BroadcastStyle(CA::Type{<:CMatrix{T,A,Axes}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{T,Axes}()
+Base.BroadcastStyle(::Type{<:ComponentArray{<:T,<:N,<:A,<:Axes}}) where A<:AbstractArray{T,N} where {T,N,Axes} = CAStyle{T,N,A,Axes}()
+Base.BroadcastStyle(::Type{<:CVector{<:T,<:A,<:Axes}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{T,A,Axes}()
+Base.BroadcastStyle(::Type{<:CMatrix{<:T,<:A,<:Axes}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{T,A,Axes}()
 
 # TODO change fill_flat to take in N1 and N2 to avoid repeating code
-@generated function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:Ax1}, ::CAStyle{<:T2,<:N2,<:Ax2}) where {Ax1,T1,N1,Ax2,T2,N2}
-    if N1>=N2
-        N = N1
+function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:A1,<:Ax1}, ::CAStyle{<:T2,<:N2,<:A2,<:Ax2}) where {Ax1,T1,N1,A1,Ax2,T2,N2,A2}
+    if N1<N2
+        N = N2
         ax1 = fill_flat(Ax1,N)
         ax2 = Ax2
-    else
-        N = N2
+        A = A2
+    elseif N1>N2
+        N = N1
         ax1 = Ax1
         ax2 = fill_flat(Ax2,N)
+        A = A1
+    else
+        N = N1
+        ax1, ax2 = Ax1, Ax2
+        A = promote_type(A1, A2)
     end
-    Ax = promote_type(ax1, ax2)
-    T = promote_type(T1, T2)
-    return :(CAStyle{$T, $N, $Ax}())
+    Ax = promote_type.(typeof.(getaxes(ax1)), typeof.(getaxes(ax2))) .|> (x->x()) |> typeof
+    # T = promote_type(T1, T2)
+    # A = promote_type(A1, A2)
+    T = eltype(A)
+    return CAStyle{T, N, A, Ax}() #:(CAStyle{$T, $N, $A, $Ax}())
 end
-@generated function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:Ax1}, ::BC.DefaultArrayStyle{N2}) where {T1,N1,Ax1,N2}
+function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:A1,<:Ax1}, ::BC.DefaultArrayStyle{N2}) where {T1,N1,A1,Ax1,N2}
     N = max(N1,N2)
     Ax = fill_flat(Ax1,N)
-    return :(CAStyle{T1, $N, $Ax}())
+    return CAStyle{T1, N, A1, Ax}() #:(CAStyle{T1, $N, A1, $Ax}())
 end
 
 
-function Base.similar(bc::BroadCAStyle{T,N,Axes}, ::Type{<:TT}) where {T,N,Axes,TT}
+function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}, ::Type{<:TT}) where {T,N,A,Axes,TT}
     return ComponentArray{Axes}(similar(Array{TT}, axes(bc)))
 end
-function Base.similar(bc::BroadCAStyle{T,N,Axes}) where {T,N,Axes}
+function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}, ::Type{<:T}) where {T,N,A,Axes}
+    return similar(bc)
+end
+function Base.similar(bc::BC.Broadcasted{CAStyle{T,N,A,Axes}}) where {T,N,A,Axes}
+    if isconcretetype(A)
+        return ComponentArray{Axes}(similar(A, axes(bc)))
+    else
+        return ComponentArray{Axes}(similar(Array{T}, axes(bc)))
+    end
+end
+function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}) where {T,N,A<:AdjointVector{TT,AA},Axes} where {TT,AA}
     return ComponentArray{Axes}(similar(Array{T}, axes(bc)))
 end
 
@@ -69,3 +87,15 @@ end
 Base.convert(::Type{BC.Broadcasted{Nothing}}, bc::BroadCAStyle) = getdata(bc)
 
 getdata(bc::BroadCAStyle) = BC.Broadcasted{Nothing}(bc.f, map(getdata, bc.args), bc.axes)
+
+
+# Helper for extruding axes
+fill_flat(Ax::Type{<:VarAxes}, N) = fill_flat(getaxes(Ax), N) |> typeof
+function fill_flat(Ax::VarAxes, N)
+    axs = getaxes(Ax)
+    n = length(axs)
+    if N>n
+        axs = (axs..., ntuple(x -> FlatAxis(), N-n)...)
+    end
+    return axs
+end

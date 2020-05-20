@@ -3,9 +3,6 @@ Base.pointer(x::ComponentArray) = pointer(getdata(x))
 
 Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray) where T = Base.unsafe_convert(Ptr{T}, getdata(x))
 
-const AdjointVector{T,A} = Union{Adjoint{T,A}, Transpose{T,A}} where A<:AbstractVector{T}
-const AdjointCVector{T,A,Axes} = CMatrix{T,A,Axes} where A<:AdjointVector
-
 Base.adjoint(x::CVector) = ComponentArray(adjoint(getdata(x)), FlatAxis(), getaxes(x)[1])
 Base.adjoint(x::CMatrix) = ComponentArray(adjoint(getdata(x)), reverse(getaxes(x))...)
 Base.adjoint(x::AdjointCVector) = ComponentArray(adjoint(getdata(x)), (getaxes(x)[2],))

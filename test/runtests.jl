@@ -1,25 +1,30 @@
 using ComponentArrays
 using ForwardDiff
+using StaticArrays
 using Test
 
 
 ## Test setup
 c = (a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45])
 nt = (a=100, b=[4, 1.3], c=c)
+nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
+
 ax = Axis(a=1, b=2:3, c=ViewAxis(4:10, (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)))
 ax_c = (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)
+
 a = Float64[100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
+sq_mat = collect(reshape(1:9,3,3))
+
 ca = ComponentArray(nt)
 ca_Float32 = ComponentArray{Float32}(nt)
+ca_MVector = ComponentArray{MVector{10}}(nt)
 ca_composed = ComponentArray(a=1, b=ca)
 
-nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
 ca2 = ComponentArray(nt2)
 
 cmat = ComponentArray(a .* a', ax, ax)
 cmat2 = ca2 .* ca2'
 
-sq_mat = collect(reshape(1:9,3,3))
 caa = ComponentArray(a=ca, b=sq_mat)
 
 _a, _b, _c = fastindices(:a, :b, :c)
@@ -38,6 +43,11 @@ end
     @test eltype(ComponentArray{ForwardDiff.Dual}(nt)) == ForwardDiff.Dual
     @test ca_composed.b isa ComponentArray
     @test ca_composed.b == ca
+    @test getdata(ca_MVector) isa MArray
+    @test typeof(ComponentArray(undef, (ax,))) == typeof(ca)
+    @test typeof(ComponentArray(undef, (ax, ax))) == typeof(cmat)
+    @test typeof(ComponentArray{Float32}(undef, (ax,))) == typeof(ca_Float32)
+    @test typeof(ComponentArray{MVector{10,Float64}}(undef, (ax,))) == typeof(ca_MVector)
 end
 
 @testset "Attributes" begin
@@ -139,6 +149,7 @@ end
     @test getaxes(false .* ca .* ca') == (ax, ax)
     @test getaxes(false .* ca' .* ca) == (ax, ax)
     @test (vec(temp) .= vec(ca_Float32)) isa ComponentArray
+    @test getdata(ca_MVector .* ca_MVector) isa MArray
 end
 
 @testset "Math" begin

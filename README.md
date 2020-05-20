@@ -27,7 +27,21 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
 flat vectors is fair game.
 
-## New Features in v0.3
+## New Features!
+### v0.3.1
+- `NamedTuple` and keyword argument constructors for different inner array types! And
+show-it-like-you-make-it printing!
+```julia
+julia> using StaticArrays
+
+julia> x = ComponentArray{MVector{7,Float64}}(a=5, b=[1.3, 5], c=(a=2, b=[1., 2., 4]))
+ComponentArray{MArray{Tuple{7},Float64,1,7}}(a = 5.0, b = [1.3, 5.0], c = (a = 2.0, b = [1.0, 2.0, 4.0]))
+
+julia> x == ComponentArray{MArray{Tuple{7},Float64,1,7}}(a = 5.0, b = [1.3, 5.0], c = (a = 2.0, b = [1.0, 2.0, 4.0]))
+true
+```
+
+### v0.3.0
 - Matrix and higher-dimensional array components!
 ```julia
 julia> x = ComponentArray(a=rand(), b=rand(3), c=rand(3,3));
@@ -39,7 +53,7 @@ julia> x.c
  0.661702  0.760624   0.777929
 ```
 
-- Somewhat better Axis types!
+- Somewhat better `Axis` types!
 ```julia
 julia> ax = Axis(a=1, b=ViewAxis(2:5, (a=1:2, b=3:4)))
 Axis(a = 1, b = View(2:5, (a = 1:2, b = 3:4)))

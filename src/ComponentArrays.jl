@@ -17,17 +17,21 @@ include("math.jl")
 include("show.jl")
 
 
-recarrtools_required() = include(joinpath("if_required", "recursivearraytools.jl"))
+# If using for differential equations, the Array(sol) overload in RecursiveArrayTools will
+# concatenate the ComponentVectors while preserving their ComponentArrayness
+required(filename) = include(joinpath("if_required", filename))
 
 function __init__()
-    @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" recarrtools_required()
+    @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
+    @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
 end
 
 
-export Axis, PartitionedAxis, ShapedAxis, ViewAxis
+export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis
 
 export ComponentArray, ComponentVector, ComponentMatrix
 export CArray, CVector, CMatrix
+
 export getdata, getaxes, fastindices
 
 end

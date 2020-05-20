@@ -36,8 +36,13 @@ function Base.show(io::IO, x::CVector)
     print(io, ")")
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {T,A,Axes}
+function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {A<:Vector{T},Axes} where T
     print(io, "ComponentArray{" , T, "}")
+    show(io, x)
+    return nothing
+end
+function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {T,A,Axes}
+    print(io, "ComponentArray{" , A, "}")
     show(io, x)
     return nothing
 end

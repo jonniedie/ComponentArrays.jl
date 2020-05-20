@@ -36,43 +36,53 @@ struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes} <: AbstractArray{T,N}
     ComponentArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} =
         new{T,N,A,Axes}(data, ax)
 end
+
+# Entry from type (used for broadcasting)
+ComponentArray{Axes}(data) where Axes = ComponentArray(data, getaxes(Axes)...)
+ComponentArray(::UndefInitializer, ax::Axes) where Axes<:Tuple =
+    ComponentArray(similar(Array{Float64}, last_index.(ax)), ax...)
+ComponentArray{A}(::UndefInitializer, ax::Axes) where {A<:AbstractArray,Axes<:Tuple} =
+    ComponentArray(similar(A, last_index.(ax)), ax...)
+ComponentArray{T}(::UndefInitializer, ax::Axes) where {T,Axes<:Tuple} =
+    ComponentArray(similar(Array{T}, last_index.(ax)), ax...)
+
+# Entry from data array and AbstractAxis types dispatches to correct shapes and partitions
+# then packs up axes into a tuple for inner constructor
 ComponentArray(data, ::FlatAxis...) = data
 ComponentArray(data, ax::NotShapedOrPartitionedAxis...) = ComponentArray(data, ax)
 ComponentArray(data, ax::NotPartitionedAxis...) = ComponentArray(maybe_reshape(data, ax...), unshape.(ax)...)
 function ComponentArray(data, ax::AbstractAxis...)
     part_axs = filter_by_type(PartitionedAxis, ax...)
-    part_data = partition(data, numaxes.(part_axs)...)
+    part_data = partition(data, size.(part_axs)...)
     return [ComponentArray(x, Axis.(ax)) for x in part_data]
 end
 
-ComponentArray{Axes}(data) where Axes = ComponentArray(data, getaxes(Axes)...)
-
-ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(nt, T)...)
+# Entry from NamedTuple or kwargs
+ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
 ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
+# Some aliases
 const ComponentVector{T,A,Axes} = ComponentArray{T,1,A,Axes}
 const ComponentMatrix{T,A,Axes} = ComponentArray{T,2,A,Axes}
-
 const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
+const AdjointVector{T,A} = Union{Adjoint{T,A}, Transpose{T,A}} where A<:AbstractVector{T}
+const AdjointCVector{T,A,Axes} = CMatrix{T,A,Axes} where A<:AdjointVector
 
 
 ## Constructor helpers
-maybe_reshape(data, axs::NotShapedAxis...) = data
-function maybe_reshape(data, axs::AbstractAxis...)
-    shapes = filter_by_type(ShapedAxis, axs...) .|> size
-    shapes = reduce((tup, s) -> (tup..., s...), shapes)
-    return reshape(data, shapes)
+# For making ComponentArrays from named tuples
+make_carray_args(nt) = make_carray_args(Float64, nt)
+make_carray_args(T::Type, nt) = make_carray_args(Vector{T}, nt)
+function make_carray_args(A::Type{<:AbstractArray}, nt)
+    data, idx = make_idx([], nt, 0)
+    return (A(data), Axis(idx))
 end
 
-function make_carray_args(nt, T=Float64)
-    data, idx = make_idx(T[], nt, 0)
-    return (data, Axis(idx))
-end
-
+# Builds up data vector and returns appropriate AbstractAxis type for each input type
 function make_idx(data, nt::NamedTuple, last_val)
     len = recursive_length(nt)
     kvs = []
@@ -87,6 +97,13 @@ end
 make_idx(data, x, last_val) = (
     push!(data, x),
     ViewAxis(last_index(last_val) + 1)
+)
+make_idx(data, x::ComponentVector, last_val) = (
+    push!(data, x...),
+    ViewAxis(
+        last_index(last_val) .+ (1:length(x)),
+        getaxes(x)[1]
+    )
 )
 function make_idx(data, x::AbstractArray{N}, last_val) where N<:Number
     push!(data, x...)
@@ -114,17 +131,24 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
         error("Only homogeneous arrays are allowed. This one has eltype $(eltype(x)).")
     end
 end
-make_idx(data, x::ComponentVector, last_val) = (
-    push!(data, x...),
-    ViewAxis(
-        last_index(last_val) .+ (1:length(x)),
-        getaxes(x)[1]
-    )
-)
 
+# Reshape ComponentArrays with ShapedAxis axes
+maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data
+function maybe_reshape(data, axs::AbstractAxis...)
+    shapes = filter_by_type(ShapedAxis, axs...) .|> size
+    shapes = reduce((tup, s) -> (tup..., s...), shapes)
+    return reshape(data, shapes)
+end
 
+# Recurse through nested ViewAxis types to find the last index
 last_index(x) = last(x)
 last_index(x::ViewAxis) = last_index(viewindex(x))
+last_index(x::AbstractAxis) = last_index(last(indexmap(x)))
+
+# Reduce singleton dimensions
+remove_nulls() = ()
+remove_nulls(x1, args...) = (x1, remove_nulls(args...)...)
+remove_nulls(::NullAxis, args...) = (remove_nulls(args...)...,)
 
 
 ## Base attributes
