@@ -149,7 +149,7 @@ end
     @test getaxes(false .* ca .* ca') == (ax, ax)
     @test getaxes(false .* ca' .* ca) == (ax, ax)
     @test (vec(temp) .= vec(ca_Float32)) isa ComponentArray
-    @test getdata(ca_MVector .* ca_MVector) isa MArray
+    @test_skip getdata(ca_MVector .* ca_MVector) isa MArray
 end
 
 @testset "Math" begin
