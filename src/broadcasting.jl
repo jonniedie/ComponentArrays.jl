@@ -50,9 +50,9 @@ end
 function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}, ::Type{<:TT}) where {T,N,A,Axes,TT}
     return ComponentArray{Axes}(similar(Array{TT}, axes(bc)))
 end
-function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}, ::Type{<:T}) where {T,N,A,Axes}
-    return similar(bc)
-end
+# function Base.similar(bc::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}, ::Type{<:T}) where {T,N,A,Axes}
+#     return similar(bc)
+# end
 function Base.similar(bc::BC.Broadcasted{CAStyle{T,N,A,Axes}}) where {T,N,A,Axes}
     if isconcretetype(A)
         return ComponentArray{Axes}(similar(A, axes(bc)))
