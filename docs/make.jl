@@ -9,7 +9,9 @@ makedocs(;
         "Home" => "index.md",
         "Quick Start" => "quickstart.md",
         "Examples" => [
+            "examples/coulomb_control.md",
             "examples/ODE_jac.md",
+            "examples/DiffEqFlux.md",
         ],
         "API" => "api.md",
     ],

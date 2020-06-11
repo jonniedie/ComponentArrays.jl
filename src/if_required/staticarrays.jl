@@ -1,4 +1,4 @@
-function Base.similar(::BC.Broadcasted{<:CAStyle{T,N,A,Axes}}) where {T,N,A<:StaticArrays.StaticArray,Axes}
+function Base.similar(::BC.Broadcasted{<:CAStyle{T,N,<:A,Axes}}) where {T,N,A<:StaticArrays.StaticArray,Axes}
     ComponentArray{Axes}(similar(A))
 end
 

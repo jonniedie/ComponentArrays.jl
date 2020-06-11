@@ -161,3 +161,5 @@ Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray
 Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
 
 Base.keys(x::CVector) = keys(indexmap(getaxes(x)[1]))
+
+Base.IndexStyle(::ComponentVector) = IndexLinear()

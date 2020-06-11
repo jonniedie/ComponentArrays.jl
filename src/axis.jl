@@ -92,7 +92,7 @@ Gives named component access for `ComponentArray`s.
 ```jldoctest
 julia> using ComponentArrays
 
-julia> ax = Axis{(a = 1, b = View(2:7, 2, (a = 1, b = 2)), c = View(8:10, (a = 1, b = 2:3)))}();
+julia> ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
 
 julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
 
@@ -103,13 +103,13 @@ julia> ca.a
 100.0
 
 julia> ca.b
-3-element Array{ComponentArray{Tuple{Axis{(a = 1, b = 2)}},Float64,1,SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}},1}:
+3-element Array{ComponentArray{Float64,1,SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true},Tuple{Axis{(a = 1, b = 2)}}},1}:
  (a = 4.0, b = 1.3)
  (a = 1.0, b = 1.0)
  (a = 4.4, b = 0.4)
 
 julia> ca.c
-ComponentArray{Float64}(a = 2.0, b = [1.0, 45.0])
+ComponentArray{SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}}(a = 2.0, b = [1.0, 45.0])
 
 julia> ca.c.b
 2-element view(::Array{Float64,1}, 9:10) with eltype Float64:

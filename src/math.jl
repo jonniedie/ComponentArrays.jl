@@ -16,6 +16,10 @@ Base.:(*)(x::AdjointCVector, y::AbstractArray{<:T,<:N}) where {T,N} = ComponentA
 Base.:(\)(x::CMatrix, y::AbstractVecOrMat) = getdata(x) \ y
 Base.:(/)(x::AbstractVecOrMat, y::CMatrix) = x / getdata(y)
 
+LinearAlgebra.ldiv!(x::ComponentArray, args...) = ldiv!(getdata(x), getdata.(args...)...)
+LinearAlgebra.ldiv!(Y::ComponentArray, A::Factorization, B::ComponentArray) = ldiv!(getdata(Y), A, getdata(B))
+LinearAlgebra.ldiv!(x::ComponentArray, ::Nothing, A) = ldiv!(getdata(x), nothing, A)
+
 Base.inv(x::CMatrix) = inv(getdata(x))
 
 

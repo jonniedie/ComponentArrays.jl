@@ -1,6 +1,6 @@
 module ComponentArrays
 
-using LinearAlgebra: Adjoint, Transpose
+using LinearAlgebra
 using Requires
 
 const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray{<:Int}}
@@ -24,6 +24,7 @@ required(filename) = include(joinpath("if_required", filename))
 function __init__()
     @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
     @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
+    @require Zygote="e88e6eb3-aa80-5325-afca-941959d7151f" required("zygote.jl")
 end
 
 
@@ -33,5 +34,7 @@ export ComponentArray, ComponentVector, ComponentMatrix
 export CArray, CVector, CMatrix
 
 export getdata, getaxes, fastindices
+
+# include("../research/FunctionAxes/ComponentArrays.jl")
 
 end

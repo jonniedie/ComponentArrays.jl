@@ -28,17 +28,21 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
-### v0.3.1
-- `NamedTuple` and keyword argument constructors for different inner array types! And
-show-it-like-you-make-it printing!
+### v0.4.0
+- Zygote rules for DiffEqFlux support! Still experimental though!
 ```julia
-julia> using StaticArrays
+using ComponentArrays, UnPack
+using Flux: glorot_uniform
 
-julia> x = ComponentArray{MVector{7,Float64}}(a=5, b=[1.3, 5], c=(a=2, b=[1., 2., 4]))
-ComponentArray{MArray{Tuple{7},Float64,1,7}}(a = 5.0, b = [1.3, 5.0], c = (a = 2.0, b = [1.0, 2.0, 4.0]))
+dense_layer(in, out) = ComponentArray(W=glorot_uniform(out, in), b=zeros(out))
 
-julia> x == ComponentArray{MArray{Tuple{7},Float64,1,7}}(a = 5.0, b = [1.3, 5.0], c = (a = 2.0, b = [1.0, 2.0, 4.0]))
-true
+layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
+θ = ComponentArray(u=u0, p=layers)
+
+function dudt(u, p, t)
+    @unpack L1, L2 = p
+    return L2.W * tanh.(L1.W * u .+ L1.b) .+ L2.b
+end
 ```
 
 ### v0.3.0
@@ -52,15 +56,7 @@ julia> x.c
  0.112437  0.0329141  0.943972
  0.661702  0.760624   0.777929
 ```
-
-- Somewhat better `Axis` types!
-```julia
-julia> ax = Axis(a=1, b=ViewAxis(2:5, (a=1:2, b=3:4)))
-Axis(a = 1, b = View(2:5, (a = 1:2, b = 3:4)))
-
-julia> x = ComponentArray(zeros(5), ax)
-ComponentArray{Float64}(a = 0.0, b = (a = [0.0, 0.0], b = [0.0, 0.0]))
-```
+...and plenty more!
 
 ## General use
 The easiest way to construct 1-dimensional ```ComponentArray```s is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
