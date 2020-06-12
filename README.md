@@ -44,6 +44,7 @@ function dudt(u, p, t)
     return L2.W * tanh.(L1.W * u .+ L1.b) .+ L2.b
 end
 ```
+Check out [the docs](https://jonniedie.github.io/ComponentArrays.jl/dev/examples/DiffEqFlux/) for a complete example.
 
 ### v0.3.0
 - Matrix and higher-dimensional array components!
