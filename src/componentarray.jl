@@ -1,6 +1,8 @@
 """
     x = ComponentArray(nt::NamedTuple)
-    x = ComponentArray{T}(nt::NamedTuple) where {T}
+    x = ComponentArray(;kwargs...)
+    x = ComponentArray(data::AbstractVector, ax)
+    x = ComponentArray{T}(args...; kwargs...) where T
 
 Array type that can be accessed like an arbitrary nested mutable struct.
 
@@ -63,14 +65,42 @@ ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
-# Some aliases
+
+## Some aliases
+"""
+    x = ComponentVector(nt::NamedTuple)
+    x = ComponentVector(;kwargs...)
+    x = ComponentVector(data::AbstractVector, ax)
+    x = ComponentVector{T}(args...; kwargs...) where T
+
+A `ComponentVector` is an alias for a one-dimensional `ComponentArray`.
+"""
 const ComponentVector{T,A,Axes} = ComponentArray{T,1,A,Axes}
+ComponentVector(nt) = ComponentArray(nt)
+ComponentVector{T}(nt) where {T} = ComponentArray{T}(nt)
+ComponentVector(;kwargs...) = ComponentArray(;kwargs...)
+ComponentVector{T}(;kwargs...) where {T} = ComponentArray{T}(;kwargs...)
+ComponentVector{T}(::UndefInitializer, ax) where {T} = ComponentArray{T}(undef, ax)
+ComponentVector(data::AbstractVector, ax) = ComponentArray(data, ax)
+ComponentVector(data::AbstractArray, ax) = throw(DimensionMismatch("A `ComponentVector` must be initialized with a 1-dimensional array. This array is $(ndims(data))-dimensional."))
+
+"""
+    x = ComponentMatrix(data::AbstractMatrix, ax...)
+    x = ComponentMatrix{T}(data::AbstractMatrix, ax...) where T
+
+A `ComponentMatrix` is an alias for a two-dimensional `ComponentArray`.
+"""
 const ComponentMatrix{T,A,Axes} = ComponentArray{T,2,A,Axes}
+ComponentMatrix{T}(::UndefInitializer, ax...) where {T} = ComponentArray{T}(undef, ax...)
+ComponentMatrix(data::AbstractMatrix, ax...) = ComponentArray(data, ax...)
+ComponentMatrix(data::AbstractArray, ax...) = throw(DimensionMismatch("A `ComponentMatrix` must be initialized with a 2-dimensional array. This array is $(ndims(data))-dimensional."))
+
 const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
+
 const AdjointVector{T,A} = Union{Adjoint{T,A}, Transpose{T,A}} where A<:AbstractVector{T}
-const AdjointCVector{T,A,Axes} = CMatrix{T,A,Axes} where A<:AdjointVector
+const AdjointCVector{T,A,Axes} = ComponentMatrix{T,A,Axes} where A<:AdjointVector
 
 
 ## Constructor helpers
@@ -158,8 +188,8 @@ Base.size(x::ComponentArray) = size(getdata(x))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.propertynames(x::CVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
+Base.propertynames(x::ComponentVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
 
-Base.keys(x::CVector) = keys(indexmap(getaxes(x)[1]))
+Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
 Base.IndexStyle(::ComponentVector) = IndexLinear()

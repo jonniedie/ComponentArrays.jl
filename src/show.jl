@@ -25,7 +25,7 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
-function Base.show(io::IO, x::CVector)
+function Base.show(io::IO, x::ComponentVector)
     K = keys(x)
     key = K[1]
     print(io, "($key = $(x[key])")
@@ -36,17 +36,17 @@ function Base.show(io::IO, x::CVector)
     print(io, ")")
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {A<:Vector{T},Axes} where T
-    print(io, "ComponentArray{" , T, "}")
+function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector{T,A,Axes}) where {A<:Vector{T},Axes} where T
+    print(io, "ComponentVector{" , T, "}")
     show(io, x)
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::CVector{T,A,Axes}) where {T,A,Axes}
-    print(io, "ComponentArray{" , A, "}")
+function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector{T,A,Axes}) where {T,A,Axes}
+    print(io, "ComponentVector{" , A, "}")
     show(io, x)
     return nothing
 end
-function Base.show(io::IO, a::AbstractVector{<:T}) where T<:CVector
+function Base.show(io::IO, a::AbstractVector{<:T}) where T<:ComponentVector
     elem = a[1]
     print(io, "[$elem")
     for idx in 2:length(a)

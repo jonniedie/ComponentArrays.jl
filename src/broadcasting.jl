@@ -40,7 +40,7 @@ function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:A1,<:Ax1}, ::CAStyle{<:T2,<:N
     T = eltype(A)
     return CAStyle{T, N, A, Ax}() #:(CAStyle{$T, $N, $A, $Ax}())
 end
-function Base.BroadcastStyle(::CAStyle{<:T1,<:N1,<:A1,<:Ax1}, ::BC.DefaultArrayStyle{N2}) where {T1,N1,A1,Ax1,N2}
+function Base.BroadcastStyle(::CAStyle{T1,N1,A1,<:Ax1}, ::BC.DefaultArrayStyle{N2}) where {T1,N1,A1,Ax1,N2}
     N = max(N1,N2)
     Ax = fill_flat(Ax1,N)
     return CAStyle{T1, N, A1, Ax}() #:(CAStyle{T1, $N, A1, $Ax}())

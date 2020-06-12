@@ -70,3 +70,4 @@ recursive_length(x) = length(x)
 recursive_length(a::AbstractVector{N}) where N<:Number = length(a)
 recursive_length(a::AbstractVector) = recursive_length.(a) |> sum
 recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
+recursive_length(::Missing) = 1

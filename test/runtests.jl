@@ -48,6 +48,11 @@ end
     @test typeof(ComponentArray(undef, (ax, ax))) == typeof(cmat)
     @test typeof(ComponentArray{Float32}(undef, (ax,))) == typeof(ca_Float32)
     @test typeof(ComponentArray{MVector{10,Float64}}(undef, (ax,))) == typeof(ca_MVector)
+
+    @test ca == ComponentVector(a=100, b=[4, 1.3], c=(a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45]))
+    @test cmat == ComponentMatrix(a .* a', ax, ax)
+    @test_throws DimensionMismatch ComponentVector(sq_mat, ax)
+    @test_throws DimensionMismatch ComponentMatrix(rand(11,11,11), ax, ax)
 end
 
 @testset "Attributes" begin

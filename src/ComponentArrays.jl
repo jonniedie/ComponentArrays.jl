@@ -3,7 +3,7 @@ module ComponentArrays
 using LinearAlgebra
 using Requires
 
-const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray{<:Int}}
+const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray}
 
 
 include("utils.jl")
