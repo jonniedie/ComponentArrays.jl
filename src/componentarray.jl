@@ -135,7 +135,7 @@ make_idx(data, x::ComponentVector, last_val) = (
         getaxes(x)[1]
     )
 )
-function make_idx(data, x::AbstractArray{N}, last_val) where N<:Number
+function make_idx(data, x::AbstractArray{N}, last_val) where N<:Union{Number, Missing}
     push!(data, x...)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
