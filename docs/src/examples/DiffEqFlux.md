@@ -2,7 +2,7 @@
 Let's see how easy it is to make dense neural ODE layers from scratch.
 Flux is used here just for the `glorot_uniform` function and the `ADAM` optimizer.
 
-This example is taken from https://diffeqflux.sciml.ai/dev/Flux/. 
+This example is taken from [the DiffEqFlux documentation](https://diffeqflux.sciml.ai/dev/Flux/). 
 
 ```julia
 using ComponentArrays
@@ -15,29 +15,34 @@ using Flux: glorot_uniform, ADAM
 using Optim: LBFGS
 ```
 
+First, let's set up the problem and create the truth data.
 ```julia
 u0 = Float32[2.; 0.]
 datasize = 30
 tspan = (0.0f0, 1.5f0)
-```
 
-First, let's make a function that creates dense neural layer components. It is similar to `Flux.Dense`, except it doesn't handle the activation function. We'll do that separately.
-```julia
-dense_layer(in, out) = ComponentArray(W=glorot_uniform(out, in), b=zeros(out))
-```
-
-Now we create the truth data.
-```julia
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u.^3)'true_A)'
 end
+
 t = range(tspan[1], tspan[2], length = datasize)
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob, Tsit5(), saveat = t))
 ```
 
-We can define a neural ODE function.
+Next we'll make a function that creates dense neural layer components. It is similar to `Flux.Dense`, except it doesn't handle the activation function. We'll do that separately.
+```julia
+dense_layer(in, out) = ComponentArray{Float32}(W=glorot_uniform(out, in), b=zeros(out))
+```
+
+Our parameter vector will be a `ComponentArray` that holds the ODE initial conditions and the dense neural layers.
+```julia
+layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
+θ = ComponentArray(u=u0, p=layers)
+```
+
+We now have convenient struct-like access to the weights and biases of the layers for our neural ODE function while giving our optimizer something that acts like a flat array.
 ```julia
 function dudt(u, p, t)
     @unpack L1, L2 = p
@@ -46,14 +51,6 @@ end
 
 prob = ODEProblem(dudt, u0, tspan)
 ```
-
-Our parameter vector will be a `ComponentArray` that holds the ODE initial conditions and the dense neural layers. This enables it to pass through the solver as a flat array while giving us the convenience of struct-like access to the components.
-```julia
-layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
-θ = ComponentArray(u=u0, p=layers)
-```
-
-Now let's define prediction and loss functions as well as a callback function to observe training
 ```julia
 predict_n_ode(θ) = Array(solve(prob, Tsit5(), u0=θ.u, p=θ.p, saveat=t))
 
@@ -63,7 +60,10 @@ function loss_n_ode(θ)
     return loss, pred
 end
 loss_n_ode(θ)
+```
 
+Let's set up a training observation callback and train!
+```julia
 cb = function (θ, loss, pred; doplot=false)
     display(loss)
     # plot current prediction against data
@@ -72,10 +72,6 @@ cb = function (θ, loss, pred; doplot=false)
     display(plot(pl))
     return false
 end
-```
-
-And now let's train!
-```julia
 cb(θ, loss_n_ode(θ)...)
 
 data = Iterators.repeated((), 1000)
