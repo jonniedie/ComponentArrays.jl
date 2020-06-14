@@ -76,7 +76,7 @@ function Base.copyto!(dest::ComponentArray, bc::BC.Broadcasted{Nothing})
             return dest
         end
     end
-    @simd for i in eachindex(dest)
+    @simd for i in eachindex(bc)
         @inbounds dest[i] = bc[i]
     end
     return dest

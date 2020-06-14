@@ -105,7 +105,7 @@ const AdjointCVector{T,A,Axes} = ComponentMatrix{T,A,Axes} where A<:AdjointVecto
 
 ## Constructor helpers
 # For making ComponentArrays from named tuples
-make_carray_args(nt) = make_carray_args(Float64, nt)
+make_carray_args(nt) = make_carray_args(Vector, nt) .|> (x->vcat(x...), identity)
 make_carray_args(T::Type, nt) = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     data, idx = make_idx([], nt, 0)
@@ -188,8 +188,8 @@ Base.size(x::ComponentArray) = size(getdata(x))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.propertynames(x::ComponentVector{Axes,T,A}) where {Axes,T,A} = propertynames(getaxes(x)[1])
+Base.propertynames(x::ComponentVector) = propertynames(getaxes(x)[1])
 
 Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
-Base.IndexStyle(::ComponentVector) = IndexLinear()
+Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)

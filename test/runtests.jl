@@ -53,6 +53,10 @@ end
     @test cmat == ComponentMatrix(a .* a', ax, ax)
     @test_throws DimensionMismatch ComponentVector(sq_mat, ax)
     @test_throws DimensionMismatch ComponentMatrix(rand(11,11,11), ax, ax)
+
+    # Issue #24
+    @test ComponentVector(a=1, b=2f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
+    @test ComponentVector(a=1, b=2+im) == ComponentVector{Complex{Int64}}(a = 1 + 0im, b = 2 + 1im)
 end
 
 @testset "Attributes" begin
@@ -91,10 +95,10 @@ end
 
     @test cmat[:a, :a] == 10000.0
     @test cmat[:a, :b] == [400, 130]
-    @test cmat[:c, :c] == ComponentArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c))
+    @test all(cmat[:c, :c] .== ComponentArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c)))
     @test cmat[:c,:][:a,:][:a,:] == ca
     @test cmat[:a, :c] == cmat[:c, :a]
-    @test cmat2[:b, :b][1,1] == ca2.b[1] .* ca2.b[1]'
+    @test all(cmat2[:b, :b][1,1] .== ca2.b[1] .* ca2.b[1]')
 
     @test ca[_a] == ca[:a]
     @test cmat[_c,_b] == cmat[:c,:b]
@@ -171,8 +175,13 @@ end
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)
-    @test vca2[1,:] == ca2
-    @test hca2[:,1] == ca2
-    @test vca2' == hca2
+    @test all(vca2[1,:] .== ca2)
+    @test all(hca2[:,1] .== ca2)
+    @test all(vca2' .== hca2)
     @test hca2[:a,:] == vca2[:,:a]
+end
+
+@testset "Issues" begin
+    # Issue #25
+    @test sum(abs2, cmat) == sum(abs2, getdata(cmat))
 end

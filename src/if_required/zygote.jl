@@ -12,4 +12,6 @@ end
 
 Zygote.@adjoint getdata(x::ComponentArray) = getdata(x), Δ->ComponentArray(Δ, getaxes(x))
 
+Zygote.@adjoint getaxes(x::ComponentArray) = getaxes(x), Δ->ComponentArray(getdata(x), Δ)
+
 Zygote.refresh()
