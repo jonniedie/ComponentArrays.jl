@@ -5,11 +5,11 @@ The easiest way to construct 1-dimensional ```ComponentArray```s is as if they w
 ```julia
 julia> c = (a=2, b=[1, 2]);
   
-julia> x = ComponentArray(a=1, b=[2, 1, 4], c=c)
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+julia> x = ComponentArray(a=1.0, b=[2, 1, 4], c=c)
+ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
   
 julia> x.c.a = 400; x
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
+ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
   
 julia> x[5]
 400.0
@@ -24,7 +24,7 @@ julia> collect(x)
    1.0
    2.0
 
-julia> typeof(similar(x, Int32)) === typeof(ComponentArray{Int32}(a=1, b=[2, 1, 4], c=c))
+julia> typeof(similar(x, Int32)) === typeof(ComponentVector{Int32}(a=1, b=[2, 1, 4], c=c))
 true
 ```
 
