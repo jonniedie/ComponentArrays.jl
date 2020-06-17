@@ -1,6 +1,7 @@
 using ComponentArrays
 using ForwardDiff
 using StaticArrays
+using OffsetArrays
 using Test
 
 
@@ -34,7 +35,7 @@ _a, _b, _c = fastindices(:a, :b, :c)
 @testset "Utilities" begin
     @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
     @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
-    @test ComponentArrays.partition(1:12, 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    @test ComponentArrays.partition(collect(1:12), 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
 end
 
 @testset "Construction" begin
@@ -80,7 +81,7 @@ end
     @test ca[1] == a[1]
     @test ca[1:5] == a[1:5]
     @test cmat[:,:] == cmat
-    # @test getaxes(cmat[:a,:]) == getaxes(ca)
+    @test getaxes(cmat[:a,:]) == getaxes(ca)
 
     @test ca.a == 100.0
     @test ca.b == Float64[4, 1.3]
@@ -109,6 +110,15 @@ end
     @test collect(caa.b) == sq_mat
     @test size(caa.b) == size(sq_mat)
     @test caa.b[1:2, 3] == sq_mat[1:2, 3]
+
+    #OffsetArray stuff
+    part_ax = PartitionedAxis(2, Axis(a=1, b=2))
+    oaca = ComponentArray(OffsetArray(collect(1:5), -1), Axis(a=0, b=ViewAxis(1:4, part_ax)))
+    temp_ca = ComponentArray(collect(1:5), Axis(a=1, b=ViewAxis(2:5, part_ax)))
+    @test oaca.a == temp_ca.a
+    @test oaca.b[1].a == temp_ca.b[1].a
+    @test oaca[0] == temp_ca[1]
+    @test oaca[4] == temp_ca[5]
 end
 
 @testset "Set" begin

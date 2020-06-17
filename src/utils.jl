@@ -45,18 +45,20 @@ getval(::Type{Val{x}}) where x = x
 
 # Split an array up into partitions where the Ns are partition sizes on each dimension
 partition(A) = A
-function partition(A, N; dim=1)
-    first_inds = ntuple(x->:, dim-1)
-    last_inds = ntuple(x->:, max(ndims(A)-dim, 0))
-    return [view(A, first_inds..., i-N+1:i, last_inds...) for i in N:N:size(A)[dim]]
+partition(a, N...) = partition(a, N)
+# Faster method for vectors and matrices
+partition(v::V, N) where V<:AbstractVector = V[view(v, i:i+N-1) for i in firstindex(v):N:lastindex(v)]
+function partition(m::M, N1, N2) where M<:AbstractMatrix
+    ax = axes(m)
+    firsts = firstindex.(ax)
+    lasts = lastindex.(ax)
+    return M[view(m, i:i+N1-1, j:j+N2-1) for i in firsts[1]:N1:lasts[1], j in firsts[2]:N2:lasts[2]]
 end
-function partition(A, N1, N2, args...)
-    N = (N1, N2, args...)
-    part_A = partition(A, N[end], dim=length(N))
-    for i in length(N)-1:-1:1
-        part_A = vcat(partition.(part_A, N[i], dim=i)...)
-    end
-    return reshape(part_A, div.(size(A), N))
+# Slower fallback for higher dimensions
+function partition(a::A, N::Tuple) where A<:AbstractArray
+    ax = axes(a)
+    offs = firstindex.(ax)
+    return [view(a, (:).((I.I .- 1) .* N .+ offs, ((I.I .- 1) .* N .+ N .- 1 .+ offs))...) for I in CartesianIndices(div.(size(a), N))]
 end
 
 # Faster filtering of tuples by type
