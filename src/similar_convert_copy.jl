@@ -15,8 +15,14 @@ Base.ones(x::ComponentArray) = (similar(x) .= 1)
 Base.copy(x::ComponentArray) = ComponentArray(copy(getdata(x)), getaxes(x), )
 
 Base.copyto!(dest::AbstractArray, src::ComponentArray) = copyto!(dest, getdata(src))
-Base.copyto!(dest::ComponentArray, src::AbstractArray) = copyto!(getdata(dest), src)
-Base.copyto!(dest::ComponentArray, src::ComponentArray) = copyto!(getdata(dest), getdata(src))
+function Base.copyto!(dest::ComponentArray, src::AbstractArray)
+    copyto!(getdata(dest), src)
+    return dest
+end
+function Base.copyto!(dest::ComponentArray, src::ComponentArray)
+    copyto!(getdata(dest), getdata(src))
+    return dest
+end
 
 Base.deepcopy(x::ComponentArray) = ComponentArray(deepcopy(getdata(x)), getaxes(x))
 

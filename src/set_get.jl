@@ -34,6 +34,8 @@ julia> getaxes(ca)
 @inline getaxes(x::VarAxes) = getaxes(typeof(x))
 @inline getaxes(Ax::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
 
+getaxes(x) = ()
+
 """
     getdata(x::ComponentArray)
 

@@ -34,7 +34,6 @@ julia> collect(x)
 struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes} <: AbstractArray{T,N}
     data::A
     axes::Axes
-    ComponentArray(data, ::Axes) where Axes<:Tuple = data
     ComponentArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} =
         new{T,N,A,Axes}(data, ax)
 end
@@ -129,14 +128,14 @@ make_idx(data, x, last_val) = (
     ViewAxis(last_index(last_val) + 1)
 )
 make_idx(data, x::ComponentVector, last_val) = (
-    push!(data, x...),
+    pushcat!(data, x),
     ViewAxis(
         last_index(last_val) .+ (1:length(x)),
         getaxes(x)[1]
     )
 )
-function make_idx(data, x::AbstractArray{N}, last_val) where N<:Union{Number, Missing}
-    push!(data, x...)
+function make_idx(data, x::AbstractArray{N}, last_val) where N<:Union{Number, Missing, Nothing}
+    pushcat!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
@@ -162,6 +161,8 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
     end
 end
 
+pushcat!(a, b) = reduce((x1,x2) -> push!(x1,x2), b; init=a)
+
 # Reshape ComponentArrays with ShapedAxis axes
 maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data
 function maybe_reshape(data, axs::AbstractAxis...)
@@ -183,6 +184,8 @@ remove_nulls(::NullAxis, args...) = (remove_nulls(args...)...,)
 
 ## Base attributes
 Base.parent(x::ComponentArray) = getfield(x, :data)
+
+Base.axes(x::ComponentArray) = axes(getdata(x))
 
 Base.size(x::ComponentArray) = size(getdata(x))
 

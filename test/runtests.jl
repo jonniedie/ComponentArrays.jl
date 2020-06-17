@@ -158,7 +158,7 @@ end
     @test getaxes(false .* ca .* ca') == (ax, ax)
     @test getaxes(false .* ca' .* ca) == (ax, ax)
     @test (vec(temp) .= vec(ca_Float32)) isa ComponentArray
-    @test_skip getdata(ca_MVector .* ca_MVector) isa MArray
+    @test getdata(ca_MVector .* ca_MVector) isa MArray
 end
 
 @testset "Math" begin
@@ -170,8 +170,9 @@ end
     @test cmat'' == cmat
     @test ca'' == ca
     @test ca.c' * cmat[:c,:c] * ca.c isa Number
-    @test ca * 1 isa CVector
-    @test_skip ca' * 1 isa AdjointCVector
+    @test ca * 1 isa ComponentVector
+    @test ca' * 1 isa ComponentArray
+    @test size(ca' * 1) == size(ca')
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)

@@ -11,7 +11,7 @@ Base.transpose(x::CVector) = ComponentArray(transpose(getdata(x)), FlatAxis(), g
 Base.transpose(x::CMatrix) = ComponentArray(transpose(getdata(x)), reverse(getaxes(x))...)
 Base.transpose(x::AdjointCVector) = ComponentArray(transpose(getdata(x)), (getaxes(x)[2],))
 
-Base.:(*)(x::AdjointCVector, y::AbstractArray{<:T,<:N}) where {T,N} = ComponentArray(getdata(x)*y, getaxes(x)...)
+Base.:(*)(x::AdjointCVector, y::AbstractArray{<:T,<:N}) where {T,N} = getdata(x)*y
 
 Base.:(\)(x::CMatrix, y::AbstractVecOrMat) = getdata(x) \ y
 Base.:(/)(x::AbstractVecOrMat, y::CMatrix) = x / getdata(y)
