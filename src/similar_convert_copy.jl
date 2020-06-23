@@ -26,8 +26,13 @@ end
 
 Base.deepcopy(x::ComponentArray) = ComponentArray(deepcopy(getdata(x)), getaxes(x))
 
-Base.convert(::Type{CA}, A::AbstractArray) where CA<:ComponentArray = ComponentArray(A, getaxes(CA))
-Base.convert(::Type{CA}, x::ComponentArray) where CA<:ComponentArray = ComponentArray(getdata(x), getaxes(CA))
+# Base.convert(::Type{CA}, A::AbstractArray) where CA<:ComponentArray = ComponentArray(A, getaxes(CA))
+# Base.convert(::Type{CA}, x::ComponentArray) where CA<:ComponentArray = ComponentArray(getdata(x), getaxes(CA))
+
+
+# Base.promote_rule(A::Type{<:AbstractArray}, ::Type{<:ComponentArray}) = A
+# Base.convert(::Type{<:AbstractArray}, x::ComponentArray) = getdata(x)
+
 
 # Conversion to from ComponentArray to NamedTuple (note, does not preserve numeric types of
 # original NamedTuple)
@@ -44,8 +49,6 @@ _namedtuple(x) = x
 
 Base.convert(::Type{NamedTuple}, x::CVector) = _namedtuple(x)
 Base.NamedTuple(x::CVector) = _namedtuple(x)
-
-
 
 ## AbstractAxis conversion and promotion
 Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis} = promote_type(Ax1,Ax2)()
