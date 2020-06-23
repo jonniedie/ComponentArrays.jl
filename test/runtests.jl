@@ -1,5 +1,6 @@
 using ComponentArrays
 using ForwardDiff
+using LinearAlgebra
 using StaticArrays
 using OffsetArrays
 using Test
@@ -154,6 +155,8 @@ end
 @testset "Convert" begin
     @test NamedTuple(ca) == nt
     @test NamedTuple(ca.c) == c
+
+    # We don't do this anymore, but I don't want to get rid of it in case we do again later
     # @test convert(typeof(ca), a) == ca
     # @test convert(typeof(ca), ca) == ca
     # @test convert(typeof(cmat), cmat) == cmat
@@ -183,6 +186,33 @@ end
     @test ca * 1 isa ComponentVector
     @test ca' * 1 isa ComponentArray
     @test size(ca' * 1) == size(ca')
+    @test a'*ca isa Number
+    @test a'*cmat isa Adjoint
+    @test a*ca' isa AbstractMatrix
+
+    
+    @test ca * transpose(ca) == collect(cmat)
+    @test ca * transpose(ca) == a * transpose(a)
+    @test transpose(ca) * ca == transpose(a) * a
+    @test cmat * ca == cmat * a
+    @test transpose(transpose(cmat)) == cmat
+    @test transpose(transpose(ca)) == ca
+    @test transpose(ca.c) * cmat[:c,:c] * ca.c isa Number
+    @test transpose(ca) * 1 isa ComponentArray
+    @test size(transpose(ca) * 1) == size(transpose(ca))
+    @test transpose(a)*ca isa Number
+    @test transpose(a)*cmat isa Transpose
+    @test a*transpose(ca) isa AbstractMatrix
+
+    temp = deepcopy(ca)
+    temp .= (cmat+I) \ ca
+    @test temp isa ComponentArray
+    @test (ca' / (cmat'+I))' == (cmat+I) \ ca
+    @test cmat * ((cmat+I) \ ca) isa Array
+    @test inv(cmat+I) isa Array
+
+    tempmat = deepcopy(cmat)
+    #TODO: ldiv! stuff
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)

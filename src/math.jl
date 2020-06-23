@@ -24,6 +24,7 @@ for f in [:(*), :(/), :(\)]
         Base.$f(x::AbstractMatrix, y::ComponentArray) = $f(x, getdata(y))
 
         Base.$f(x::ComponentArray, y::AbstractVector) = $f(getdata(x), y)
+        Base.$f(x::AbstractVector, y::ComponentArray) = $f(x, getdata(y))
     end
 end
 
@@ -39,16 +40,23 @@ for f in [:(*), :(/)]
         # There seems to be a new method in Julia > v.1.4 that specializes on this
         Base.$f(x::Adjoint{T,<:AbstractVector{T}}, y::ComponentVector{T,A,Axes}) where {T<:Number,A,Axes} = $f(x, getdata(y))
         Base.$f(x::Transpose{T,<:AbstractVector{T}}, y::ComponentVector{T,A,Axes}) where {T<:Number,A,Axes} = $f(x, getdata(y))
+
+        Base.$f(x::Adjoint{T,<:AbstractVector{T}}, y::ComponentVector{T,A,Axes}) where {T<:Real,A,Axes} = $f(x, getdata(y))
+        Base.$f(x::Transpose{T,<:AbstractVector{T}}, y::ComponentVector{T,A,Axes}) where {T<:Real,A,Axes} = $f(x, getdata(y))
+
+        Base.$f(x::Adjoint{T,<:AbstractVector{T}}, y::ComponentMatrix{T,A,Axes}) where {T,A,Axes} = $f(x, getdata(y))
+        Base.$f(x::Transpose{T,<:AbstractVector{T}}, y::ComponentMatrix{T,A,Axes}) where {T,A,Axes} = $f(x, getdata(y))
     end
 end
 
-LinearAlgebra.ldiv!(x::ComponentArray, args...) = ldiv!(getdata(x), getdata.(args...)...)
+#TODO: All this stuff
+LinearAlgebra.ldiv!(x::ComponentArray, args...) = ldiv!(getdata(x), getdata.(args)...)
 LinearAlgebra.ldiv!(Y::ComponentArray, A::Factorization, B::ComponentArray) = ldiv!(getdata(Y), A, getdata(B))
 LinearAlgebra.ldiv!(x::ComponentArray, ::Nothing, A) = ldiv!(getdata(x), nothing, A)
 
-Base.inv(x::CMatrix) = inv(getdata(x))
+Base.inv(x::ComponentMatrix) = inv(getdata(x))
 
 
 ## Vector to matrix concatenation
-Base.hcat(x::CVector...) = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
+Base.hcat(x::ComponentVector...) = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
 Base.vcat(x::AdjointCVector...) = ComponentArray(vcat(getdata.(x)...), FlatAxis(), getaxes(x[1])[2])
