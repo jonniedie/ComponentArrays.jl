@@ -1,7 +1,7 @@
 ## Linear Algebra
-Base.pointer(x::ComponentArray) = pointer(getdata(x))
+Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = pointer(getdata(x))
 
-Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray) where T = Base.unsafe_convert(Ptr{T}, getdata(x))
+Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
 
 Base.adjoint(x::CVector) = ComponentArray(adjoint(getdata(x)), FlatAxis(), getaxes(x)[1])
 Base.adjoint(x::CMatrix) = ComponentArray(adjoint(getdata(x)), reverse(getaxes(x))...)
