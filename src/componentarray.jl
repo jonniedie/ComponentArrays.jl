@@ -182,10 +182,48 @@ remove_nulls(x1, args...) = (x1, remove_nulls(args...)...)
 remove_nulls(::NullAxis, args...) = (remove_nulls(args...)...,)
 
 
-## Base attributes
-Base.parent(x::ComponentArray) = getfield(x, :data)
+## Attributes
+"""
+    getdata(x::ComponentArray)
 
-Base.axes(x::ComponentArray) = axes(getdata(x))
+Access ```.data``` field of a ```ComponentArray```, which contains the array that ```ComponentArray``` wraps.
+"""
+@inline getdata(x::ComponentArray) = getfield(x, :data)
+@inline getdata(x) = x
+
+"""
+    getaxes(x::ComponentArray)
+
+Access ```.axes``` field of a ```ComponentArray```. This is different than ```axes(x::ComponentArray)```, which
+    returns the axes of the contained array.
+
+# Examples
+
+```jldoctest
+julia> using ComponentArrays
+
+julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
+Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
+
+julia> A = zeros(6,6);
+
+julia> ca = ComponentArray(A, (ax, ax))
+6×6 ComponentArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0
+
+julia> getaxes(ca)
+(Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
+```
+"""
+@inline getaxes(x::ComponentArray) = getfield(x, :axes)
+@inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
+
+Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
 

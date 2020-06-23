@@ -1,48 +1,8 @@
 ## Field access through these functions to reserve dot-getting for keys
-"""
-    getaxes(x::ComponentArray)
-
-Access ```.axes``` field of a ```ComponentArray```. This is different than ```axes(x::ComponentArray)```, which
-    returns the axes of the contained array.
-
-# Examples
-
-```jldoctest
-julia> using ComponentArrays
-
-julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
-Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
-
-julia> A = zeros(6,6);
-
-julia> ca = ComponentArray(A, (ax, ax))
-6×6 ComponentArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
- 0.0  0.0  0.0  0.0  0.0  0.0
-
-julia> getaxes(ca)
-(Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
-```
-"""
-@inline getaxes(x::ComponentArray) = getfield(x, :axes)
-@inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-
 @inline getaxes(x::VarAxes) = getaxes(typeof(x))
 @inline getaxes(Ax::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
 
 getaxes(x) = ()
-
-"""
-    getdata(x::ComponentArray)
-
-Access ```.data``` field of a ```ComponentArray```, which contains the array that ```ComponentArray``` wraps.
-"""
-@inline getdata(x::ComponentArray) = getfield(x, :data)
-@inline getdata(x) = x
 
 
 # Get AbstractAxis index
