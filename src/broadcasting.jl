@@ -16,6 +16,8 @@ CAStyle{T,N,A,Axes}(::Val{i}) where {T,N,A,Axes,i} = CAStyle{T,N,A,Axes}()
 Base.BroadcastStyle(::Type{<:ComponentArray{T,N,A,Axes}}) where A<:AbstractArray{T,N} where {T,N,Axes} = CAStyle{T,N,A,Axes}()
 Base.BroadcastStyle(::Type{<:CVector{T,A,Axes}}) where A<:AbstractVector{T} where {Axes,T} = CVecStyle{T,A,Axes}()
 Base.BroadcastStyle(::Type{<:CMatrix{T,A,Axes}}) where A<:AbstractMatrix{T} where {Axes,T} = CMatStyle{T,A,Axes}()
+Base.BroadcastStyle(A::Type{<:Adjoint{T, <:ComponentArray}}) where {T} = CAStyle{eltype(A),ndims(A),A,getaxes(A)}()
+Base.BroadcastStyle(A::Type{<:Transpose{T, <:ComponentArray}}) where {T} = CAStyle{eltype(A),ndims(A),A,getaxes(A)}()
 
 
 

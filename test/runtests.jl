@@ -184,7 +184,6 @@ end
     @test ca'' == ca
     @test ca.c' * cmat[:c,:c] * ca.c isa Number
     @test ca * 1 isa ComponentVector
-    @test ca' * 1 isa ComponentArray
     @test size(ca' * 1) == size(ca')
     @test a'*ca isa Number
     @test a'*cmat isa Adjoint
@@ -198,7 +197,6 @@ end
     @test transpose(transpose(cmat)) == cmat
     @test transpose(transpose(ca)) == ca
     @test transpose(ca.c) * cmat[:c,:c] * ca.c isa Number
-    @test transpose(ca) * 1 isa ComponentArray
     @test size(transpose(ca) * 1) == size(transpose(ca))
     @test transpose(a)*ca isa Number
     @test transpose(a)*cmat isa Transpose

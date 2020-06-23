@@ -1,15 +1,7 @@
 ## Linear Algebra
-Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = pointer(getdata(x))
+Base.pointer(x::ComponentArray{T,N,<:DenseArray,Axes}) where {T,N,Axes} = pointer(getdata(x))
 
-Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
-
-Base.adjoint(x::CVector) = ComponentArray(adjoint(getdata(x)), FlatAxis(), getaxes(x)[1])
-Base.adjoint(x::CMatrix) = ComponentArray(adjoint(getdata(x)), reverse(getaxes(x))...)
-Base.adjoint(x::AdjointCVector) = ComponentArray(adjoint(getdata(x)), (getaxes(x)[2],))
-
-Base.transpose(x::CVector) = ComponentArray(transpose(getdata(x)), FlatAxis(), getaxes(x)[1])
-Base.transpose(x::CMatrix) = ComponentArray(transpose(getdata(x)), reverse(getaxes(x))...)
-Base.transpose(x::AdjointCVector) = ComponentArray(transpose(getdata(x)), (getaxes(x)[2],))
+Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,<:DenseArray,Axes}) where {T,N,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
 
 # Avoid slow linear indexing fallback
 for f in [:(*), :(/), :(\)]
@@ -46,6 +38,12 @@ for f in [:(*), :(/)]
 
         Base.$f(x::Adjoint{T,<:AbstractVector{T}}, y::ComponentMatrix{T,A,Axes}) where {T,A,Axes} = $f(x, getdata(y))
         Base.$f(x::Transpose{T,<:AbstractVector{T}}, y::ComponentMatrix{T,A,Axes}) where {T,A,Axes} = $f(x, getdata(y))
+
+        Base.$f(x::Adjoint{T,<:AbstractMatrix{T}}, y::ComponentVector) where {T} = $f(x, getdata(y))
+        Base.$f(x::Transpose{T,<:AbstractMatrix{T}}, y::ComponentVector) where {T} = $f(x, getdata(y))
+
+        Base.$f(x::ComponentArray, y::Adjoint{T,<:AbstractVector{T}}) where T = $f(getdata(x), y)
+        Base.$f(x::ComponentArray, y::Transpose{T,<:AbstractVector{T}}) where T = $f(getdata(x), y)
     end
 end
 
@@ -59,4 +57,4 @@ Base.inv(x::ComponentMatrix) = inv(getdata(x))
 
 ## Vector to matrix concatenation
 Base.hcat(x::ComponentVector...) = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
-Base.vcat(x::AdjointCVector...) = ComponentArray(vcat(getdata.(x)...), FlatAxis(), getaxes(x[1])[2])
+Base.vcat(x::AdjOrTransComponentArray...) = ComponentArray(vcat(map(y->getdata(y.parent)', x)...), getaxes(x[1]))

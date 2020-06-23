@@ -98,8 +98,8 @@ const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
 
-const AdjointVector{T,A} = Union{Adjoint{T,A}, Transpose{T,A}} where A<:AbstractVector{T}
-const AdjointCVector{T,A,Axes} = ComponentMatrix{T,A,Axes} where A<:AdjointVector
+const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
+const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
 
 
 ## Constructor helpers
@@ -221,7 +221,12 @@ julia> getaxes(ca)
 ```
 """
 @inline getaxes(x::ComponentArray) = getfield(x, :axes)
+@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
+@inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
+
 @inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
+@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentArray} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+
 
 Base.parent(x::ComponentArray) = getfield(x, :data)
 
