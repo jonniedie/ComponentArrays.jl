@@ -59,6 +59,17 @@ end
     # Issue #24
     @test ComponentVector(a=1, b=2f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
     @test ComponentVector(a=1, b=2+im) == ComponentVector{Complex{Int64}}(a = 1 + 0im, b = 2 + 1im)
+
+    # Issue #23
+    sz = size(ca)
+    temp = ComponentArray(ca; d=100)
+    temp2 = ComponentVector(temp; d=4)
+    temp3 = ComponentArray(temp2; e=(a=20, b=[2 4; 1 4]))
+    @test sz == size(ca)
+    @test temp.d == 100
+    @test temp2.d == 4
+    @test !haskey(ca, :d)
+    @test all(temp3.e.b .== [2 4; 1 4])
 end
 
 @testset "Attributes" begin

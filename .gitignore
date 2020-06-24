@@ -9,3 +9,4 @@ research/
 /docs/make_local.jl
 /examples/wip
 /examples/.ipynb_checkpoints
+.vscode/settings.json

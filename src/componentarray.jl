@@ -83,6 +83,13 @@ ComponentVector{T}(::UndefInitializer, ax) where {T} = ComponentArray{T}(undef, 
 ComponentVector(data::AbstractVector, ax) = ComponentArray(data, ax)
 ComponentVector(data::AbstractArray, ax) = throw(DimensionMismatch("A `ComponentVector` must be initialized with a 1-dimensional array. This array is $(ndims(data))-dimensional."))
 
+# Add new fields to component Vector
+function ComponentArray(x::ComponentVector; kwargs...)
+    return foldl((x1, kwarg) -> _maybe_add_field(x1, kwarg), (kwargs...,); init=x)
+end
+ComponentVector(x::ComponentVector; kwargs...) = ComponentArray(x; kwargs...)
+
+
 """
     x = ComponentMatrix(data::AbstractMatrix, ax...)
     x = ComponentMatrix{T}(data::AbstractMatrix, ax...) where T
@@ -123,6 +130,10 @@ function make_idx(data, nt::NamedTuple, last_val)
     end
     return (data, ViewAxis(last_index(last_val) .+ (1:len), (;kvs...)))
 end
+function make_idx(data, pair::Pair, last_val)
+    data, ax = make_idx(data, pair.second, last_val)
+    return (data, ViewAxis(last_val:(last_val+len-1), Axis(pair.second)))
+end
 make_idx(data, x, last_val) = (
     push!(data, x),
     ViewAxis(last_index(last_val) + 1)
@@ -159,6 +170,22 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
     else
         error("Only homogeneous arrays are allowed. This one has eltype $(eltype(x)).")
     end
+end
+
+
+#TODO: Make all internal function names start with underscores
+_maybe_add_field(x, pair) = haskey(x, pair.first) ? _update_field(x, pair) : _add_field(x, pair)
+function _add_field(x, pair)
+    data = copy(getdata(x))
+    new_data, new_ax = make_idx(data, pair.second, length(data))
+    new_ax = Axis(NamedTuple{tuple(pair.first)}(tuple(new_ax)))
+    new_ax = merge(getaxes(x)[1], new_ax)
+    return ComponentArray(new_data, new_ax)
+end
+function _update_field(x, pair)
+    x_copy = copy(x)
+    x_copy[pair.first] = pair.second
+    return x_copy
 end
 
 pushcat!(a, b) = reduce((x1,x2) -> push!(x1,x2), b; init=a)
@@ -234,8 +261,10 @@ Base.size(x::ComponentArray) = size(getdata(x))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.propertynames(x::ComponentVector) = propertynames(getaxes(x)[1])
+Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
+
+Base.haskey(x::ComponentVector, s::Symbol) = haskey(indexmap(getaxes(x)[1]), s)
 
 Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)

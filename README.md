@@ -28,47 +28,34 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
-### v0.4.0
-- Zygote rules for DiffEqFlux support! Still experimental though!
+### v0.5.0
+- Constructor for making new `ComponentVector`s with additional fields! Watch out, it's slow!
 ```julia
-using ComponentArrays, UnPack
-using Flux: glorot_uniform
+julia> x = ComponentArray(a=5, b=[1, 2])
+ComponentVector{Int64}(a = 5, b = [1, 2])
 
-dense_layer(in, out) = ComponentArray(W=glorot_uniform(out, in), b=zeros(out))
-
-layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
-θ = ComponentArray(u=u0, p=layers)
-
-function dudt(u, p, t)
-    @unpack L1, L2 = p
-    return L2.W * tanh.(L1.W * u .+ L1.b) .+ L2.b
-end
+julia> moar_x = ComponentArray(x; c=zeros(2,2), d=(a=2, b=10))
+ComponentVector{Int64}(a = 5, b = [1, 2], c = [0 0; 0 0], d = (a = 2, b = 10))
 ```
-Check out [the docs](https://jonniedie.github.io/ComponentArrays.jl/dev/examples/DiffEqFlux/) for a complete example.
+
+### v0.4.0
+- Zygote rules for DiffEqFlux support! Check out [the docs](https://jonniedie.github.io/ComponentArrays.jl/dev/examples/DiffEqFlux/) for an example!
 
 ### v0.3.0
 - Matrix and higher-dimensional array components!
-```julia
-julia> x = ComponentArray(a=rand(), b=rand(3), c=rand(3,3));
 
-julia> x.c
-3×3 reshape(view(::Array{Float64,1}, 5:13), 3, 3) with eltype Float64:
- 0.508171  0.740476   0.730907
- 0.112437  0.0329141  0.943972
- 0.661702  0.760624   0.777929
-```
 ...and plenty more!
 
 ## General use
-The easiest way to construct 1-dimensional ```ComponentArray```s is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
+The easiest way to construct 1-dimensional ```ComponentArray```s (aliased as `ComponentVector`) is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
 ```julia
 julia> c = (a=2, b=[1, 2]);
   
 julia> x = ComponentArray(a=5, b=[(a=20., b=0), (a=33., b=0), (a=44., b=3)], c=c)
-ComponentArray{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 2.0, b = [1.0, 2.0]))
+ComponentVector{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 2.0, b = [1.0, 2.0]))
   
 julia> x.c.a = 400; x
-ComponentArray{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 400.0, b = [1.0, 2.0]))
+ComponentVector{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 400.0, b = [1.0, 2.0]))
   
 julia> x[8]
 400.0
@@ -86,14 +73,14 @@ julia> collect(x)
    1.0
    2.0
 
-julia> typeof(similar(x, Int32)) === typeof(ComponentArray{Int32}(a=5, b=[(a=20., b=0), (a=33., b=0), (a=44., b=3)], c=c))
+julia> typeof(similar(x, Int32)) === typeof(ComponentVector{Int32}(a=5, b=[(a=20., b=0), (a=33., b=0), (a=44., b=3)], c=c))
 true
 ```
 
-Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```ComponentArray```s with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
+Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be two-dimensional ```ComponentArray```s (aliased as `ComponentMatrix`) with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
 ```julia
 julia> x = ComponentArray(a=1, b=[2, 1, 4], c=c)
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
 
 julia> x2 = x .* x'
 7×7 ComponentArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
@@ -115,7 +102,7 @@ julia> x2[:a,:a]
  1.0
  
 julia> x2[:a,:c]
-ComponentArray{Float64}(a = 2.0, b = [1.0, 2.0])
+ComponentVector{Float64}(a = 2.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
 3×3 ComponentArray{Tuple{Axis{NamedTuple()},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:

@@ -3,8 +3,6 @@ abstract type AbstractAxis{IdxMap} end
 @inline indexmap(::AbstractAxis{IdxMap}) where IdxMap = IdxMap
 @inline indexmap(::Type{<:AbstractAxis{IdxMap}}) where IdxMap = IdxMap
 
-Base.propertynames(::AbstractAxis{IdxMap}) where IdxMap = propertynames(IdxMap)
-
 
 struct FlatAxis <: AbstractAxis{NamedTuple()} end
 
@@ -129,8 +127,9 @@ Axis(::Number) = NullAxis()
 Axis(::NamedTuple{()}) = FlatAxis()
 Axis(x) = FlatAxis()
 
-
-
 const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
 const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape, IdxMap}} where {Shape, IdxMap}
 const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
+
+
+Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
