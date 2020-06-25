@@ -65,6 +65,11 @@ unmodeled_dynamics = 229/(s^2 + 30s + 229)
 truth_plant = nominal_plant * unmodeled_dynamics
 truth_sim! = SISO_simulator(truth_plant)
 
+# We'll make a first-order sensor as well so we can add noise to our measurement
+τ = 0.02
+sensor_plant = 1 / (τ*s + 1)
+sensor_sim! = SISO_simulator(sensor_plant)
+
 
 ## Derivative functions
 # Our control law assumes perfect knowledge of the parameters that are attached to the
@@ -72,24 +77,26 @@ truth_sim! = SISO_simulator(truth_plant)
 control(θ, w) = θ'w
 
 # We'll use a simple gradient descent adaptation law
-function adapt!(Dθ, vars, γ, t; e, w)
+function adapt!(Dθ, θ, γ, t; e, w)
     Dθ .= -γ*e*w
     return nothing
 end
+
 
 # Our feedback loop takes in the reference model output `ym` and the input signal `r`,
 # calculates the control signal `u`, feeds that into the plant model, calculates the reference
 # tracking error `e`, and finally updates feeds the reference tracking error and it's corresponding
 # regressor vector to the adaptation law.
 function feedback_sys!(D, vars, p, t; ym, r)
-    @unpack parameter_estimates, plant_model = vars
+    @unpack parameter_estimates, plant_model, sensor = vars
     γ = p.gamma
     regressor = [r, plant_model[1]]
 
     u = control(parameter_estimates, regressor)
     yp = p.plant_fun(D.plant_model, plant_model, (), t; u=u)
-    e = yp - ym
-    regressor[2] = yp
+    ŷ = sensor_sim!(D.sensor, sensor, (), t; u=yp[1])
+    e = ŷ .- ym
+    regressor[2] = ŷ
     adapt!(D.parameter_estimates, parameter_estimates, γ, t; e=e, w=regressor)
     return yp
 end
@@ -112,12 +119,13 @@ tspan = (0.0, 30.0)
 
 # Input signal and noise function
 input_signal = (x,p,t) -> sin(3t)
-noise(D, vars, p, t) = (D.feedback_loop.plant_model[1] = 0.1)
+noise(D, vars, p, t) = (D.feedback_loop.sensor[1] = 0.2)
 
 # Initial conditions
 ref_ic = zeros(1)
 nominal_ic = zeros(1)
 truth_ic = zeros(3)
+sensor_ic = zeros(1)
 θ_est_ic = ComponentArray(θr=0.0, θy=0.0)
 
 # Parameter adaptation gain
@@ -140,6 +148,7 @@ ic = ComponentArray(
     reference_model = ref_ic,
     feedback_loop = (
         parameter_estimates = θ_est_ic,
+        sensor = sensor_ic,
         plant_model = plant_ic,
     ),
 )
@@ -163,7 +172,7 @@ sol = solve(prob)
 # Reference model tracking
 top = plot(
     sol,
-    vars=["reference_model[1]", "feedback_loop.plant_model[1]"],
+    vars=["reference_model[1]", "feedback_loop.sensor"],
     legend=:right,
     title="Reference Model Tracking",
 )
