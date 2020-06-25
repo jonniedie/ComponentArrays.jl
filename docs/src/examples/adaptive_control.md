@@ -43,7 +43,7 @@ function SISO_simulator(P::AbstractStateSpace)
         error("This is not a SISO system")
     end
 
-    # Put into observer canonical form so the first element is also the y value
+    # Put into transposed observer canonical form so the first element is also the y value
     BB = reverse(vec(C))
     CC = reverse(vec(B))'
     DD = D[1,1]
