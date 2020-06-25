@@ -1,7 +1,7 @@
 name = "ComponentArrays"
 uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 authors = ["Jonnie Diegelman <47193959+jonniedie@users.noreply.github.com>"]
-version = "0.6.0"
+version = "0.6.1"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -9,6 +9,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
+ArrayInterface = "2.8.0"
 Requires = "1.0.1"
 julia = "1"
 
