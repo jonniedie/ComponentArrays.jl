@@ -1,5 +1,6 @@
 module ComponentArrays
 
+using ArrayInterface
 using LinearAlgebra
 using Requires
 

@@ -54,6 +54,10 @@ LinearAlgebra.ldiv!(x::ComponentArray, ::Nothing, A) = ldiv!(getdata(x), nothing
 
 Base.inv(x::ComponentMatrix) = inv(getdata(x))
 
+LinearAlgebra.lu(x::ComponentArray, args...; kwargs...) = lu(getdata(x), args...; kwargs...)
+LinearAlgebra.lu!(x::ComponentArray, args...; kwargs...) = lu!(getdata(x), args...; kwargs...)
+ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_instance(getdata(jac_prototype))
+
 
 ## Vector to matrix concatenation
 Base.hcat(x::ComponentVector...) = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
