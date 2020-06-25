@@ -39,6 +39,7 @@ ic = ComponentArray(
     reference_model = zeros(1),
     feedback_loop = (
         parameter_estimates = (θr=0.0, θy=0.0),
+        sensor = zeros(1),
         plant_model = zeros(1),
     ),
 )
