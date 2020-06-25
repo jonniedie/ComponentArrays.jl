@@ -66,7 +66,7 @@ truth_plant = nominal_plant * unmodeled_dynamics
 truth_sim! = SISO_simulator(truth_plant)
 
 # We'll make a first-order sensor as well so we can add noise to our measurement
-τ = 0.02
+τ = 0.005
 sensor_plant = 1 / (τ*s + 1)
 sensor_sim! = SISO_simulator(sensor_plant)
 
@@ -87,27 +87,26 @@ end
 # calculates the control signal `u`, feeds that into the plant model, calculates the reference
 # tracking error `e`, and finally updates feeds the reference tracking error and it's corresponding
 # regressor vector to the adaptation law.
-function feedback_sys!(D, vars, p, t; ym, r)
+function feedback_sys!(D, vars, p, t; ym, r, n)
     @unpack parameter_estimates, plant_model, sensor = vars
     γ = p.gamma
     regressor = [r, plant_model[1]]
 
     u = control(parameter_estimates, regressor)
     yp = p.plant_fun(D.plant_model, plant_model, (), t; u=u)
-    ŷ = sensor_sim!(D.sensor, sensor, (), t; u=yp[1])
+    ŷ = sensor_sim!(D.sensor, sensor, (), t; u=yp[1]) + n
     e = ŷ .- ym
     regressor[2] = ŷ
     adapt!(D.parameter_estimates, parameter_estimates, γ, t; e=e, w=regressor)
     return yp
 end
-
 # Now the full system takes in an input signal `r`, feeds it through the reference model,
 # and feeds the output of the reference model `ym` and the input signal to `feedback_sys`. 
-function system!(D, vars, p, t; r=0.0)
+function system!(D, vars, p, t; r=0.0, n=0.0)
     @unpack reference_model, feedback_loop = vars
 
     ym = ref_sim!(D.reference_model, reference_model, (), t; u=r)
-    yp = feedback_sys!(D.feedback_loop, feedback_loop, p, t; ym=ym, r=r)
+    yp = feedback_sys!(D.feedback_loop, feedback_loop, p, t; ym=ym, r=r, n=n)
     return yp
 end
 
@@ -117,9 +116,8 @@ end
 # Simulation time span
 tspan = (0.0, 30.0)
 
-# Input signal and noise function
+# Input signal
 input_signal = (x,p,t) -> sin(3t)
-noise(D, vars, p, t) = (D.feedback_loop.sensor[1] = 0.2)
 
 # Initial conditions
 ref_ic = zeros(1)
@@ -128,64 +126,72 @@ truth_ic = zeros(3)
 sensor_ic = zeros(1)
 θ_est_ic = ComponentArray(θr=0.0, θy=0.0)
 
-# Parameter adaptation gain
-γ = 1.5
-
-# Choose plant model
-plant_ic = nominal_ic
-plant_fun = nominal_sim!
-# plant_ic = truth_ic
-# plant_fun = truth_sim!
-
-
 
 ## Set up and run Simulation
-# Truth control parameters
-θ_truth = (r=bm/bp, y=(ap-am)/bp)
+function simulate(plant_fun, plant_ic;
+                tspan=tspan,
+                input_signal=input_signal,
+                adapt_gain=1.5,
+                noise_param=nothing,
+                deterministic_noise=0.0)
 
-# Initial conditions
-ic = ComponentArray(
-    reference_model = ref_ic,
-    feedback_loop = (
-        parameter_estimates = θ_est_ic,
-        sensor = sensor_ic,
-        plant_model = plant_ic,
-    ),
-)
+    noise(D, vars, p, t) = (D.feedback_loop.sensor[1] = noise_param)
 
-# Model parameters
-p = (
-    gamma = γ,
-    plant_fun = plant_fun,
-)
+    # Truth control parameters
+    θ_truth = (r=bm/bp, y=(ap-am)/bp)
 
-sim_fun = apply_inputs(system!, r=input_signal)
+    # Initial conditions
+    ic = ComponentArray(
+        reference_model = ref_ic,
+        feedback_loop = (
+            parameter_estimates = θ_est_ic,
+            sensor = sensor_ic,
+            plant_model = plant_ic,
+        ),
+    )
 
-# Solve!
-# prob = ODEProblem(sim_fun, ic, tspan, p)
-prob = SDEProblem(sim_fun, noise, ic, tspan, p)
-sol = solve(prob)
+    # Model parameters
+    p = (
+        gamma = adapt_gain,
+        plant_fun = plant_fun,
+    )
+
+    sim_fun = apply_inputs(system!; r=input_signal, n=deterministic_noise)
+
+    # We can also choose whether we want to include noise in our model by switching between an ODE
+    # and an SDE problem.
+    if noise_param === nothing
+        prob = ODEProblem(sim_fun, ic, tspan, p, max_iters=2000)
+    else
+        prob = SDEProblem(sim_fun, noise, ic, tspan, p, max_iters=2000) # With noise
+    end
 
 
+    ## Solve!
+    sol = solve(prob)
 
-## Plotting
-# Reference model tracking
-top = plot(
-    sol,
-    vars=["reference_model[1]", "feedback_loop.sensor"],
-    legend=:right,
-    title="Reference Model Tracking",
-)
 
-# Parameter estimate tracking
-bottom = plot(sol, vars="feedback_loop.parameter_estimates")
-plot!(
-    bottom,
-    [tspan...], [θ_truth.r θ_truth.y; θ_truth.r θ_truth.y],
-    labels=["θr truth" "θy truth"],
-    legend=:right,
-    title="Parameter Estimate Tracking",
-)
+    ## Plot
+    # Reference model tracking
+    top = plot(
+        sol,
+        vars=["reference_model[1]", "feedback_loop.sensor"],
+        # legend=:right,
+        title="Reference Model Tracking",
+    )
 
-# Combine both plots
-plot(top, bottom, layout=(2,1), size=(800, 800))
+    # Parameter estimate tracking
+    bottom = plot(sol, vars="feedback_loop.parameter_estimates")
+    plot!(
+        bottom,
+        [tspan...], [θ_truth.r θ_truth.y; θ_truth.r θ_truth.y],
+        labels=["θr truth" "θy truth"],
+        legend=:right,
+        title="Parameter Estimate Tracking",
+    )
+
+    # Combine both plots
+    plot(top, bottom, layout=(2,1), size=(800, 800))
+end
+
+simulate(truth_sim!, truth_ic; input_signal=2.0, deterministic_noise=(x,p,t)->0.5sin(16.1t), noise_param=nothing)
