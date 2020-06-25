@@ -28,6 +28,25 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
+### v0.6.0
+- [BangBang.jl](https://github.com/JuliaFolds/BangBang.jl), [Flatten.jl](https://github.com/rafaqz/Flatten.jl), and [Setfield.jl](https://github.com/jw3126/Setfield.jl) support through [ConstructionBase.jl](https://github.com/JuliaObjects/ConstructionBase.jl)!
+- Easier DifferentialEquations plotting!
+    - Automatic legend labeling!
+    - `Symbol` and `String` support for the `vars` plot keyword!
+```julia
+# Initial conditions
+ic = ComponentArray(
+    reference_model = zeros(1),
+    feedback_loop = (
+        parameter_estimates = (θr=0.0, θy=0.0),
+        plant_model = zeros(1),
+    ),
+)
+```
+<img src="assets/adaptive_control.png" alight="middle" />
+
+See the full example [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/adaptive_control_example.jl)
+
 ### v0.5.0
 - Constructor for making new `ComponentVector`s with additional fields! Watch out, it's slow!
 ```julia

@@ -31,11 +31,9 @@ julia> collect(x)
    2.0
 ```
 """
-struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes} <: AbstractArray{T,N}
+struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{AbstractAxis}}} <: AbstractArray{T,N}
     data::A
     axes::Axes
-    ComponentArray(data::A, ax::Axes) where {A<:AbstractArray{T,N},Axes<:Tuple} where {T,N} =
-        new{T,N,A,Axes}(data, ax)
 end
 
 # Entry from type (used for broadcasting)

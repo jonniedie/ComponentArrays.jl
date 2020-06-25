@@ -38,6 +38,7 @@ fastindices(i::Tuple) = toval.(i)
 # Make a Val if input isn't already one
 toval(x::Val) = x
 toval(x) = Val(x)
+toval(x::String) = Val(Symbol(x))
 
 # Get value from Val type
 getval(::Val{x}) where x = x

@@ -13,7 +13,7 @@ using Optim: LBFGS
 struct MeasurementNoise{T}
     sigma::T
 end
-Base.:(+)(array, mn::MeasurementNoise) = array .+ randn(size(array)).*mn.sigma
+Base.:(+)(array, mn::MeasurementNoise) = array .+ randn(size(array)...).*mn.sigma
 
 # Problem setup
 u0 = Float32[2.; 0.]
@@ -103,10 +103,10 @@ cb(θ, loss_n_ode(θ)...)
 
 data = Iterators.repeated((), 1000)
 
-res1 = sciml_train(loss_n_ode, θ, ADAM(0.05); maxiters=100, save_best=true)
+res1 = sciml_train(loss_n_ode, θ, ADAM(0.05); maxiters=100, save_best=true, cb=cb)
 cb(res1.minimizer, loss_n_ode(res1.minimizer)...; doplot=true)
 
-res2 = sciml_train(loss_n_ode, res1.minimizer, LBFGS())
+res2 = sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb=cb)
 cb(res2.minimizer, loss_n_ode(res2.minimizer)...; doplot=true)
 
 # gif(anim, "DiffEqFlux.gif", fps=15)
