@@ -124,7 +124,7 @@ end
     @test caa.b[1:2, 3] == sq_mat[1:2, 3]
 
     @test view(ca, :a) == ca.a
-    @test cmat[:c, :a] == view[cmat, :c, :a]
+    @test cmat[:c, :a] == view(cmat, :c, :a)
 
     #OffsetArray stuff
     part_ax = PartitionedAxis(2, Axis(a=1, b=2))
