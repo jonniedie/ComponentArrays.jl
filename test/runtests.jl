@@ -154,7 +154,7 @@ end
     @test tempmat[:b,:a][2].b == 0
 
     temp = deepcopy(cmat)
-    @test (temp[:c,:c][:a,:a] .= 0) .== 0
+    @test all((temp[:c,:c][:a,:a] .= 0) .== 0)
 end
 
 @testset "Similar" begin
