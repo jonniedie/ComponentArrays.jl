@@ -46,7 +46,7 @@ ic = ComponentArray(
 ```
 <img src="assets/adaptive_control.png" alight="middle" />
 
-See the full example [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/adaptive_control_example.jl)
+See the full example [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/adaptive_control.md)
 
 ### v0.5.0
 - Constructor for making new `ComponentVector`s with additional fields! Watch out, it's slow!

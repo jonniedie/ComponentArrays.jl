@@ -31,7 +31,7 @@ end
 Next, we need a way to create derivative functions from transfer functions. In ControlSystems.jl
 there is a function called `simulator` that does this, but the inputs must be applied from
 the start so we couldn't use it as a component function. Our version allows inputs to be
-passed through the keyword arguments and, as an added convenience, is in observer canonical
+passed through the keyword arguments and, as an added convenience, is in a transposed observer canonical
 form so our first element of `x` is also the output `y` (note that while this is true for
 our problem, it isn't always going to be the case).
 ```julia
@@ -43,7 +43,7 @@ function SISO_simulator(P::AbstractStateSpace)
         error("This is not a SISO system")
     end
 
-    # Put into observer canonical form so the first element is also the y value
+    # Put into transposed observer canonical form so the first element is also the y value
     BB = reverse(vec(C))
     CC = reverse(vec(B))'
     DD = D[1,1]
