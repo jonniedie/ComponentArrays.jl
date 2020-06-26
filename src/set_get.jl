@@ -47,3 +47,5 @@ end
     # the index must be valid after computing `ci`
     return :(Base.@_inline_meta; @inbounds setindex!(getdata(x), v, $inds...))
 end
+
+Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
