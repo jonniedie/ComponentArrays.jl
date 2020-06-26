@@ -123,6 +123,9 @@ end
     @test size(caa.b) == size(sq_mat)
     @test caa.b[1:2, 3] == sq_mat[1:2, 3]
 
+    @test view(ca, :a) == ca.a
+    @test @view cmat[:c, :a] == view[cmat, :c, :a]
+
     #OffsetArray stuff
     part_ax = PartitionedAxis(2, Axis(a=1, b=2))
     oaca = ComponentArray(OffsetArray(collect(1:5), -1), Axis(a=0, b=ViewAxis(1:4, part_ax)))
@@ -149,6 +152,9 @@ end
 
     tempmat .= 0
     @test tempmat[:b,:a][2].b == 0
+
+    temp = deepcopy(cmat)
+    @test (temp[:c,:c][:a,:a] .= 0) .== 0
 end
 
 @testset "Similar" begin
