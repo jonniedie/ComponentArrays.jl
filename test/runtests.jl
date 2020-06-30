@@ -215,22 +215,37 @@ end
     @test typeof(ca_SVector .* ca_SVector) == typeof(ca_SVector)
     @test typeof(ca_SVector .* ca_MVector) == typeof(ca_SVector)
     @test typeof(ca_SVector' .+ ca) == typeof(cmat)
+    @test getdata(ca_SVector' .+ ca_SVector') isa StaticArrays.StaticArray
     @test getdata(ca_SVector .* ca_SVector') isa StaticArrays.StaticArray
+    @test ca_SVector .* ca .+ a .- 1 isa ComponentArray
+
+    # Issue #31 (with Complex as a stand-in for Dual)
+    @test reshape(Complex.(ca, Float32.(a)), size(ca)) isa ComponentArray{Complex{Float64}}
 end
 
 @testset "Math" begin
-    @test zeros(cmat) * ca == zeros(ca)
+    a_t = collect(a')
+
+    @test all(zeros(cmat) * ca .== zeros(ca))
+    @test ones(cmat) * ca isa Vector
     @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a
     @test cmat * ca == cmat * a
+    @test cmat' * ca isa Array
+    @test a' * ca isa Number
     @test cmat'' == cmat
     @test ca'' == ca
     @test ca.c' * cmat[:c,:c] * ca.c isa Number
     @test ca * 1 isa ComponentVector
     @test size(ca' * 1) == size(ca')
-    @test a'*ca isa Number
-    @test a'*cmat isa Adjoint
+    @test a' * ca isa Number
+    @test a_t * ca isa Array
+    @test a' * cmat isa Adjoint
+    @test a_t * cmat isa Array
+    @test cmat * ca isa Vector
+    @test ca + ca + ca isa typeof(ca)
+    @test a + ca + ca isa typeof(ca)
     @test a*ca' isa AbstractMatrix
 
     
@@ -254,7 +269,11 @@ end
     @test inv(cmat+I) isa Array
 
     tempmat = deepcopy(cmat)
-    #TODO: ldiv! stuff
+    
+    @test ldiv!(temp, lu(cmat+I), ca) isa ComponentVector
+    @test ldiv!(getdata(temp), lu(cmat+I), ca) isa Vector
+    @test ldiv!(tempmat, lu(cmat+I), cmat) isa ComponentMatrix
+    @test ldiv!(getdata(tempmat), lu(cmat+I), cmat) isa Matrix
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)
