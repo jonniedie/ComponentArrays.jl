@@ -74,4 +74,4 @@ recursive_length(x) = length(x)
 recursive_length(a::AbstractArray{T,N}) where {T<:Number,N} = length(a)
 recursive_length(a::AbstractArray) = recursive_length.(a) |> sum
 recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
-recursive_length(::Missing) = 1
+recursive_length(::Union{Nothing, Missing}) = 1

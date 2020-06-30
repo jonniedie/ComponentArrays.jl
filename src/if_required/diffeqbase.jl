@@ -6,7 +6,7 @@ function DiffEqBase.getsyms(sol::ComponentSol)
     if DiffEqBase.has_syms(sol.prob.f)
         return sol.prob.f.syms
     else
-        return plot_labels(sol.u[1])
+        return labels(sol.u[1])
     end
 end
 

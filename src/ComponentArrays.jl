@@ -37,7 +37,7 @@ export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis
 export ComponentArray, ComponentVector, ComponentMatrix
 export CArray, CVector, CMatrix
 
-export getdata, getaxes, fastindices
+export getdata, getaxes, fastindices, labels, label2index
 
 
 end

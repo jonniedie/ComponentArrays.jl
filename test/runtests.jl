@@ -9,7 +9,7 @@ using Test
 ## Test setup
 c = (a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45])
 nt = (a=100, b=[4, 1.3], c=c)
-nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0)], c=(a=(a=2, b=[1,2]), b=[1., 2.]))
+nt2 = (a=5, b=[(a=(a=20,b=1), b=0), (a=(a=33,b=1), b=0)], c=(a=(a=2, b=[1,2]), b=[1. 2.; 5 6]))
 
 ax = Axis(a=1, b=2:3, c=ViewAxis(4:10, (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)))
 ax_c = (a=ViewAxis(1:3, (a=1, b=2:3)), b=4:7)
@@ -37,7 +37,10 @@ _a, _b, _c = fastindices(:a, :b, :c)
 @testset "Utilities" begin
     @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
     @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
+    @test fastindices(("a", Val(:b))) == (Val(:a), Val(:b))
+
     @test ComponentArrays.partition(collect(1:12), 3) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    @test size(ComponentArrays.partition(zeros(2,2,2), 1, 2, 2)[2,1,1]) == (1, 2, 2)
 end
 
 @testset "Construction" begin
@@ -71,6 +74,14 @@ end
     @test temp2.d == 4
     @test !haskey(ca, :d)
     @test all(temp3.e.b .== [2 4; 1 4])
+
+    # Issue #18
+    temp_miss = ComponentArray(a=missing, b=[2, 1, 4, 5], c=[1, 2, 3])
+    @test eltype(temp_miss) == Union{Int64, Missing}
+    @test temp_miss.a === missing
+    temp_noth = ComponentArray(a=nothing, b=[2, 1, 4, 5], c=[1, 2, 3])
+    @test eltype(temp_noth) == Union{Int64, Nothing}
+    @test temp_noth.a === nothing
 end
 
 @testset "Attributes" begin
@@ -103,12 +114,12 @@ end
     @test ca.c == ComponentArray(c)
     @test ca2.b[1].a.a == 20.0
 
-    @test ca[:a] == ca.a
-    @test ca[:b] == ca.b
-    @test ca[:c] == ca.c
+    @test ca[:a] == ca["a"] == ca.a
+    @test ca[:b] == ca["b"] == ca.b
+    @test ca[:c] == ca["c"] == ca.c
 
-    @test cmat[:a, :a] == 10000.0
-    @test cmat[:a, :b] == [400, 130]
+    @test cmat[:a, :a] == cmat["a", "a"] == 10000.0
+    @test cmat[:a, :b] == cmat["a", "b"] == [400, 130]
     @test all(cmat[:c, :c] .== ComponentArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c)))
     @test cmat[:c,:][:a,:][:a,:] == ca
     @test cmat[:a, :c] == cmat[:c, :a]
@@ -126,6 +137,9 @@ end
 
     @test view(ca, :a) == ca.a
     @test cmat[:c, :a] == view(cmat, :c, :a)
+
+    @test ca[CartesianIndex(1)] == ca[1]
+    @test cmat[CartesianIndex(1, 2)] == cmat[1, 2]
 
     #OffsetArray stuff
     part_ax = PartitionedAxis(2, Axis(a=1, b=2))
@@ -148,8 +162,15 @@ end
 
     @test temp.c.a.a == 1000
 
-    @test tempmat[:b,:b][1,1][:a,:a][:a,:a] == 100000
+    @test tempmat["b","b"][1,1]["a",:a][:a,:a] == 100000
     @test tempmat[:b,:a][2].b == 1000
+    
+    temp2 = deepcopy(ca)
+    temp3 = deepcopy(ca_MVector)
+    @test (temp2 .= ca .* 1) isa ComponentArray
+    @test (temp2 .= temp2 .* a .+ 1) isa typeof(temp2)
+    @test (temp2 .= ca .* ca_SVector) isa typeof(temp2)
+    @test (temp3 .= ca .* ca_SVector) isa typeof(temp3)
 
     tempmat .= 0
     @test tempmat[:b,:a][2].b == 0
@@ -241,6 +262,27 @@ end
     @test all(hca2[:,1] .== ca2)
     @test all(vca2' .== hca2)
     @test hca2[:a,:] == vca2[:,:a]
+end
+
+@testset "Plot Utilities" begin
+    lab = labels(ca2)
+    @test lab == [
+        "a",
+        "b[1].a.a",
+        "b[1].a.b",
+        "b[1].b",
+        "b[2].a.a",
+        "b[2].a.b",
+        "b[2].b",
+        "c.a.a",
+        "c.a.b[1]",
+        "c.a.b[2]",
+        "c.b[1,1]",
+        "c.b[2,1]",
+        "c.b[1,2]",
+        "c.b[2,2]",
+    ]
+    @test label2index(ca2, "c.b") == collect(11:14)
 end
 
 @testset "Issues" begin

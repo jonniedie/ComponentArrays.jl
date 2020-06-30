@@ -59,14 +59,7 @@ Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis}
 
 Base.promote_rule(Ax1::Type{<:AbstractAxis}, Ax2::Type{<:AbstractAxis}) = promote_type(Ax1, Ax2)
 
-# Base.promote_type(Ax1::VarAxes, Ax2::VarAxes) = promote_type(typeof(Ax1), typeof(Ax2))
-# Base.promote_type(Ax1::Type{VarAxes}, Ax2::Type{VarAxes}) = promote_type.(typeof.(getaxes(Ax1)), typeof.(getaxes(Ax2))) .|> (x->x()) |> typeof
-# Base.promote_type(::Type{<:NullorFlatAxis}, Ax::Type{<:AbstractAxis{I1}}) where {I1} = Ax
-# Base.promote_type(Ax::Type{<:AbstractAxis{I1}}, ::Type{<:NullorFlatAxis}) where {I1} = Ax
-# Base.promote_type(::Type{<:NullorFlatAxis}, ::Type{<:NullorFlatAxis}) = FlatAxis
-# Base.promote_type(::Type{NullAxis}, ::Type{NullAxis}) = NullAxis
-
-
+# We may not need this anymore
 Base.promote_type(Ax1::VarAxes, Ax2::VarAxes) = promote_type.(typeof.(getaxes(Ax1)), typeof.(getaxes(Ax2)))
 Base.promote_type(Ax1::Type{VarAxes}, Ax2::Type{VarAxes}) = promote_type(getaxes(Ax1), getaxes(Ax2))
 Base.promote_type(::Type{<:NullorFlatAxis}, Ax::Type{<:AbstractAxis{I1}}) where {I1} = Ax
