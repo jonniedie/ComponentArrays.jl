@@ -20,6 +20,7 @@ sq_mat = collect(reshape(1:9,3,3))
 ca = ComponentArray(nt)
 ca_Float32 = ComponentArray{Float32}(nt)
 ca_MVector = ComponentArray{MVector{10}}(nt)
+ca_SVector = ComponentArray{SVector{10}}(nt)
 ca_composed = ComponentArray(a=1, b=ca)
 
 ca2 = ComponentArray(nt2)
@@ -166,11 +167,9 @@ end
 @testset "Convert" begin
     @test NamedTuple(ca) == nt
     @test NamedTuple(ca.c) == c
-
-    # We don't do this anymore, but I don't want to get rid of it in case we do again later
-    # @test convert(typeof(ca), a) == ca
-    # @test convert(typeof(ca), ca) == ca
-    # @test convert(typeof(cmat), cmat) == cmat
+    @test convert(typeof(ca), a) == ca
+    @test convert(typeof(ca), ca) == ca
+    @test convert(typeof(cmat), cmat) == cmat
 end
 
 @testset "Broadcasting" begin
@@ -183,6 +182,13 @@ end
     @test getaxes(false .* ca' .* ca) == (ax, ax)
     @test (vec(temp) .= vec(ca_Float32)) isa ComponentArray
     @test getdata(ca_MVector .* ca_MVector) isa MArray
+    
+    @test typeof(ca .* ca_MVector) == typeof(ca)
+    @test typeof(ca_SVector .* ca) == typeof(ca)
+    @test typeof(ca_SVector .* ca_SVector) == typeof(ca_SVector)
+    @test typeof(ca_SVector .* ca_MVector) == typeof(ca_SVector)
+    @test typeof(ca_SVector' .+ ca) == typeof(cmat)
+    @test getdata(ca_SVector .* ca_SVector') isa StaticArrays.StaticArray
 end
 
 @testset "Math" begin
