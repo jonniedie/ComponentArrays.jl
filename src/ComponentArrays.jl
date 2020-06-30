@@ -39,6 +39,5 @@ export CArray, CVector, CMatrix
 
 export getdata, getaxes, fastindices
 
-# include("../research/FunctionAxes/ComponentArrays.jl")
 
 end

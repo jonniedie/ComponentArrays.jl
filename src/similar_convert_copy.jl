@@ -2,6 +2,10 @@
 # Similar
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
 Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getdata(x), T), getaxes(x)...)
+Base.similar(x::ComponentArray, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
+    ComponentArray(similar(getdata(x), T, ax...), getaxes(x)...)
+Base.similar(x::ComponentVector, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
+    ComponentArray(similar(getdata(x), T, ax...), fill_flat(getaxes(x), length(ax)))
 function Base.similar(::Type{CA}) where CA<:ComponentArray{T,N,A,Axes} where {T,N,A,Axes}
     axs = getaxes(CA)
     return ComponentArray(similar(A, length.(axs)...), axs...)

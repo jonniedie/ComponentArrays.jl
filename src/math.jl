@@ -23,8 +23,8 @@ end
 # Adjoint/transpose special cases
 for f in [:(*), :(/)]
     @eval begin
-        Base.$f(x::Adjoint, y::ComponentArray) = $f(x, getdata(y))
-        Base.$f(x::Transpose, y::ComponentArray) = $f(x, getdata(y))
+        Base.$f(x::Adjoint, y::ComponentArray) = $f(getdata(x), getdata(y))
+        Base.$f(x::Transpose, y::ComponentArray) = $f(getdata(x), getdata(y))
 
         Base.$f(x::Adjoint{T,<:AbstractVector{T}}, y::ComponentVector) where T = $f(x, getdata(y))
         Base.$f(x::Transpose{T,<:AbstractVector{T}}, y::ComponentVector) where T = $f(x, getdata(y))
@@ -44,6 +44,9 @@ for f in [:(*), :(/)]
 
         Base.$f(x::ComponentArray, y::Adjoint{T,<:AbstractVector{T}}) where T = $f(getdata(x), y)
         Base.$f(x::ComponentArray, y::Transpose{T,<:AbstractVector{T}}) where T = $f(getdata(x), y)
+
+        Base.$f(x::ComponentArray, y::Adjoint{T,<:ComponentVector}) where T = $f(getdata(x), getdata(y))
+        Base.$f(x::ComponentArray, y::Transpose{T,<:ComponentVector}) where T = $f(getdata(x), getdata(y))
     end
 end
 
