@@ -227,12 +227,12 @@ end
     a_t = collect(a')
 
     @test all(zeros(cmat) * ca .== zeros(ca))
-    @test ones(cmat) * ca isa Vector
+    @test ones(cmat) * ca isa AbstractVector
     @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a
     @test cmat * ca == cmat * a
-    @test cmat' * ca isa Array
+    @test cmat' * ca isa AbstractArray
     @test a' * ca isa Number
     @test cmat'' == cmat
     @test ca'' == ca
@@ -240,14 +240,13 @@ end
     @test ca * 1 isa ComponentVector
     @test size(ca' * 1) == size(ca')
     @test a' * ca isa Number
-    @test a_t * ca isa Array
+    @test a_t * ca isa AbstractArray
     @test a' * cmat isa Adjoint
-    @test a_t * cmat isa Array
-    @test cmat * ca isa Vector
+    @test a_t * cmat isa AbstractArray
+    @test cmat * ca isa AbstractVector
     @test ca + ca + ca isa typeof(ca)
     @test a + ca + ca isa typeof(ca)
     @test a*ca' isa AbstractMatrix
-
     
     @test ca * transpose(ca) == collect(cmat)
     @test ca * transpose(ca) == a * transpose(a)
@@ -265,15 +264,15 @@ end
     temp .= (cmat+I) \ ca
     @test temp isa ComponentArray
     @test (ca' / (cmat'+I))' == (cmat+I) \ ca
-    @test cmat * ((cmat+I) \ ca) isa Array
-    @test inv(cmat+I) isa Array
+    @test cmat * ((cmat+I) \ ca) isa AbstractArray
+    @test inv(cmat+I) isa AbstractArray
 
     tempmat = deepcopy(cmat)
     
     @test ldiv!(temp, lu(cmat+I), ca) isa ComponentVector
-    @test ldiv!(getdata(temp), lu(cmat+I), ca) isa Vector
+    @test ldiv!(getdata(temp), lu(cmat+I), ca) isa AbstractVector
     @test ldiv!(tempmat, lu(cmat+I), cmat) isa ComponentMatrix
-    @test ldiv!(getdata(tempmat), lu(cmat+I), cmat) isa Matrix
+    @test ldiv!(getdata(tempmat), lu(cmat+I), cmat) isa AbstractMatrix
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)
@@ -281,6 +280,11 @@ end
     @test all(hca2[:,1] .== ca2)
     @test all(vca2' .== hca2)
     @test hca2[:a,:] == vca2[:,:a]
+
+    # Issue #33
+    smat = @SMatrix [1 2; 3 4]
+    b = ComponentArray(a = 1, b = 2)
+    @test smat*b isa StaticArray
 end
 
 @testset "Plot Utilities" begin
@@ -304,7 +308,7 @@ end
     @test label2index(ca2, "c.b") == collect(11:14)
 end
 
-@testset "Issues" begin
+@testset "Uncategorized Issues" begin
     # Issue #25
     @test sum(abs2, cmat) == sum(abs2, getdata(cmat))
 end

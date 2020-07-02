@@ -88,9 +88,6 @@ getdata(x::Adjoint) = getdata(x.parent)'
 getdata(x::Transpose) = transpose(getdata(x.parent))
 
 
-# function Base.similar(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}, args...) where {InnerStyle, Axes, N}
-#     return ComponentArray{Axes}(similar(BC.Broadcasted{InnerStyle}(bc.f, map(getdata, bc.args), bc.axes), args...))
-# end
 function Base.similar(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}, args...) where {InnerStyle, Axes, N}
     return ComponentArray{Axes}(similar(BC.Broadcasted{InnerStyle}(bc.f, bc.args, bc.axes), args...))
 end
