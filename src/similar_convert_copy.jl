@@ -57,12 +57,25 @@ Base.NamedTuple(x::CVector) = _namedtuple(x)
 ## AbstractAxis conversion and promotion
 Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis} = promote_type(Ax1,Ax2)()
 
-Base.promote_rule(Ax1::Type{<:AbstractAxis}, Ax2::Type{<:AbstractAxis}) = promote_type(Ax1, Ax2)
+Base.promote(ax::AbstractAxis, ::NullAxis) = ax
+Base.promote(ax::AbstractAxis, ::FlatAxis) = ax
+Base.promote(::NullAxis, ax::AbstractAxis) = ax
+Base.promote(::FlatAxis, ax::AbstractAxis) = ax
+Base.promote(::FlatAxis, ::NullAxis) = FlatAxis()
+Base.promote(::NullAxis, ::FlatAxis) = FlatAxis()
+Base.promote(::FlatAxis, ::FlatAxis) = FlatAxis()
+Base.promote(::NullAxis, ::NullAxis) = NullAxis()
+Base.promote(ax::Ax, ::Ax) where {Ax<:AbstractAxis} = ax
+Base.promote(::AbstractAxis, ::AbstractAxis) = FlatAxis()
 
-# We may not need this anymore
-Base.promote_type(Ax1::VarAxes, Ax2::VarAxes) = promote_type.(typeof.(getaxes(Ax1)), typeof.(getaxes(Ax2)))
-Base.promote_type(Ax1::Type{VarAxes}, Ax2::Type{VarAxes}) = promote_type(getaxes(Ax1), getaxes(Ax2))
-Base.promote_type(::Type{<:NullorFlatAxis}, Ax::Type{<:AbstractAxis{I1}}) where {I1} = Ax
-Base.promote_type(Ax::Type{<:AbstractAxis{I1}}, ::Type{<:NullorFlatAxis}) where {I1} = Ax
-Base.promote_type(::Type{<:NullorFlatAxis}, ::Type{<:NullorFlatAxis}) = FlatAxis
-Base.promote_type(::Type{NullAxis}, ::Type{NullAxis}) = NullAxis
+# Base.promote_rule(Ax1::Type{<:AbstractAxis}, Ax2::Type{<:AbstractAxis}) = promote_type(Ax1, Ax2)
+
+# # We may not need this anymore
+# Base.promote_type(Ax1::VarAxes, Ax2::VarAxes) = promote_type.(typeof.(getaxes(Ax1)), typeof.(getaxes(Ax2)))
+# Base.promote_type(Ax1::Type{<:VarAxes}, Ax2::Type{<:VarAxes}) = promote_type(getaxes(Ax1), getaxes(Ax2))
+# Base.promote_type(::Type{<:NullorFlatAxis}, Ax::Type{<:AbstractAxis{<:I1}}) where {I1} = Ax
+# Base.promote_type(Ax::Type{<:AbstractAxis{<:I1}}, ::Type{<:NullorFlatAxis}) where {I1} = Ax
+# Base.promote_type(::Type{<:NullorFlatAxis}, ::Type{<:NullorFlatAxis}) = FlatAxis
+# Base.promote_type(::Type{<:NullAxis}, ::Type{<:NullAxis}) = NullAxis
+# Base.promote_type(::Type{<:AbstractAxis}, ::Type{<:AbstractAxis}) = FlatAxis
+# Base.promote_type(Ax1::TypeAx, Ax2::TypeAx) where {TypeAx<:Type{<:AbstractAxis}} = Ax1===Ax2 ? Ax1 : FlatAxis

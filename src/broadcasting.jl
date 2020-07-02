@@ -15,7 +15,7 @@ function fill_flat(Ax1, Ax2, N1, N2)
         N = N1
         ax1, ax2 = Ax1, Ax2
     end
-    Ax = map(ax-> ax[1], promote.(getaxes(ax1), getaxes(ax2))) |> typeof
+    Ax = promote.(getaxes(ax1), getaxes(ax2)) |> typeof
     return Ax, N
 end
 fill_flat(Ax::Type{<:VarAxes}, N) = fill_flat(getaxes(Ax), N) |> typeof
