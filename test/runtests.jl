@@ -149,6 +149,7 @@ end
     @test oaca.b[1].a == temp_ca.b[1].a
     @test oaca[0] == temp_ca[1]
     @test oaca[4] == temp_ca[5]
+    @test axes(oaca) == axes(getdata(oaca))
 end
 
 @testset "Set" begin

@@ -260,6 +260,8 @@ Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
 
+Base.axes(x::ComponentArray) = axes(getdata(x))
+
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
 Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
