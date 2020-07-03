@@ -1,7 +1,11 @@
 ## Linear Algebra
-Base.pointer(x::ComponentArray{T,N,<:DenseArray,Axes}) where {T,N,Axes} = pointer(getdata(x))
+Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = pointer(getdata(x))
 
-Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,<:DenseArray,Axes}) where {T,N,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
+Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
+
+Base.strides(x::ComponentArray) = strides(getdata(x))
+Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
+Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
 
 
 #TODO: All this stuff

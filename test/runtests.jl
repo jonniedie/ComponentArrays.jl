@@ -227,12 +227,16 @@ end
     x2 = ComponentArray(a=[1.1,2.1], b=0.1)
     x3 = ComponentArray(a=[1.1,2.1], c=[0.1])
     xmat = x1 .* x2'
+    x1mat = x1 .* x1'
     @test x1 + x2 isa Vector
     @test x1 + x3 isa Vector
     @test x2 + x3 isa Vector
     @test x1 .* x2 isa Vector
+    @test xmat + x1mat isa ComponentArray
     @test xmat isa ComponentArray
     @test getaxes(xmat) == (getaxes(x1)[1], getaxes(x2)[1])
+    @test getaxes(x1mat + xmat) == (getaxes(x1)[1], FlatAxis())
+    @test getaxes(x1mat + xmat') == (FlatAxis(), getaxes(x1)[1])
 end
 
 @testset "Math" begin

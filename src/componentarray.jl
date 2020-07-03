@@ -31,7 +31,7 @@ julia> collect(x)
    2.0
 ```
 """
-struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{AbstractAxis}}} <: AbstractArray{T,N}
+struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{AbstractAxis}}} <: DenseArray{T,N}
     data::A
     axes::Axes
 end
@@ -215,6 +215,8 @@ Access ```.data``` field of a ```ComponentArray```, which contains the array tha
 """
 @inline getdata(x::ComponentArray) = getfield(x, :data)
 @inline getdata(x) = x
+@inline getdata(x::Adjoint) = getdata(x.parent)'
+@inline getdata(x::Transpose) = transpose(getdata(x.parent))
 
 """
     getaxes(x::ComponentArray)
@@ -250,7 +252,8 @@ julia> getaxes(ca)
 @inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
 @inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentArray} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
 
 Base.parent(x::ComponentArray) = getfield(x, :data)

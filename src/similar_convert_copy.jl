@@ -16,7 +16,7 @@ Base.ones(x::ComponentArray) = (similar(x) .= 1)
 
 
 # Copy
-Base.copy(x::ComponentArray) = ComponentArray(copy(getdata(x)), getaxes(x), )
+Base.copy(x::ComponentArray) = ComponentArray(copy(getdata(x)), getaxes(x))
 
 Base.copyto!(dest::AbstractArray, src::ComponentArray) = copyto!(dest, getdata(src))
 function Base.copyto!(dest::ComponentArray, src::AbstractArray)
@@ -30,17 +30,14 @@ end
 
 Base.deepcopy(x::ComponentArray) = ComponentArray(deepcopy(getdata(x)), getaxes(x))
 
+
 Base.convert(::Type{CA}, A::AbstractArray) where CA<:ComponentArray = ComponentArray(A, getaxes(CA))
 Base.convert(::Type{CA}, x::ComponentArray) where CA<:ComponentArray = ComponentArray(getdata(x), getaxes(CA))
 
 
-# Base.promote_rule(A::Type{<:AbstractArray}, ::Type{<:ComponentArray}) = A
-# Base.convert(::Type{<:AbstractArray}, x::ComponentArray) = getdata(x)
-
-
 # Conversion to from ComponentArray to NamedTuple (note, does not preserve numeric types of
 # original NamedTuple)
-function _namedtuple(x::CVector)
+function _namedtuple(x::ComponentVector)
     data = []
     for key in propertynames(x)
         val = getproperty(x, key) |> _namedtuple
@@ -51,12 +48,15 @@ end
 _namedtuple(v::AbstractVector) = _namedtuple.(v)
 _namedtuple(x) = x
 
-Base.convert(::Type{NamedTuple}, x::CVector) = _namedtuple(x)
-Base.NamedTuple(x::CVector) = _namedtuple(x)
+Base.convert(::Type{NamedTuple}, x::ComponentVector) = _namedtuple(x)
+Base.NamedTuple(x::ComponentVector) = _namedtuple(x)
+
 
 ## AbstractAxis conversion and promotion
-Base.convert(::Type{<:Ax1}, ax::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis} = promote_type(Ax1,Ax2)()
+# Base.convert(TypeAx::Type{<:Ax1}, ::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis} = promote_type(TypeAx,Ax2)()
+# Base.convert(::Type{Ax1}, ax::Ax2) where {Ax1<:AbstractAxis,Ax2<:AbstractAxis} = Ax1()
 
+# Could not figure out promote_rule for these.
 Base.promote(ax::AbstractAxis, ::NullAxis) = ax
 Base.promote(ax::AbstractAxis, ::FlatAxis) = ax
 Base.promote(::NullAxis, ax::AbstractAxis) = ax
@@ -66,16 +66,7 @@ Base.promote(::NullAxis, ::FlatAxis) = FlatAxis()
 Base.promote(::FlatAxis, ::FlatAxis) = FlatAxis()
 Base.promote(::NullAxis, ::NullAxis) = NullAxis()
 Base.promote(ax::Ax, ::Ax) where {Ax<:AbstractAxis} = ax
-Base.promote(::AbstractAxis, ::AbstractAxis) = FlatAxis()
-
-# Base.promote_rule(Ax1::Type{<:AbstractAxis}, Ax2::Type{<:AbstractAxis}) = promote_type(Ax1, Ax2)
-
-# # We may not need this anymore
-# Base.promote_type(Ax1::VarAxes, Ax2::VarAxes) = promote_type.(typeof.(getaxes(Ax1)), typeof.(getaxes(Ax2)))
-# Base.promote_type(Ax1::Type{<:VarAxes}, Ax2::Type{<:VarAxes}) = promote_type(getaxes(Ax1), getaxes(Ax2))
-# Base.promote_type(::Type{<:NullorFlatAxis}, Ax::Type{<:AbstractAxis{<:I1}}) where {I1} = Ax
-# Base.promote_type(Ax::Type{<:AbstractAxis{<:I1}}, ::Type{<:NullorFlatAxis}) where {I1} = Ax
-# Base.promote_type(::Type{<:NullorFlatAxis}, ::Type{<:NullorFlatAxis}) = FlatAxis
-# Base.promote_type(::Type{<:NullAxis}, ::Type{<:NullAxis}) = NullAxis
-# Base.promote_type(::Type{<:AbstractAxis}, ::Type{<:AbstractAxis}) = FlatAxis
-# Base.promote_type(Ax1::TypeAx, Ax2::TypeAx) where {TypeAx<:Type{<:AbstractAxis}} = Ax1===Ax2 ? Ax1 : FlatAxis
+function Base.promote(ax1::AbstractAxis, ax2::AbstractAxis)
+    @warn "Tried to promote dissimilar axes of types $(typeof(ax1)) and $(typeof(ax2)). Falling back to FlatAxis."
+    return FlatAxis()
+end
