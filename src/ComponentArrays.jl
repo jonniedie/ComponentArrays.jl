@@ -4,7 +4,7 @@ using ArrayInterface
 using LinearAlgebra
 using Requires
 
-const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray}
+const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray, Colon}
 
 
 include("utils.jl")
