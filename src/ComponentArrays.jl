@@ -32,12 +32,10 @@ function __init__()
 end
 
 
-export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis
+export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
 
 export ComponentArray, ComponentVector, ComponentMatrix
-export CArray, CVector, CMatrix
 
 export getdata, getaxes, fastindices, labels, label2index
-
 
 end
