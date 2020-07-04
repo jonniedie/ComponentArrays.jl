@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Quick Start · ComponentArrays.jl</title><link rel="canonical" href="https://jonniedie.github.io/ComponentArrays.jl/stable/quickstart/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ComponentArrays.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Quick Start</a><ul class="internal"><li><a class="tocitem" href="#General-use-1"><span>General use</span></a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../examples/DiffEqFlux/">Neural ODEs with DiffEqFlux</a></li><li><a class="tocitem" href="../examples/adaptive_control/">Model Reference Adaptive Control</a></li><li><a class="tocitem" href="../examples/ODE_jac/">ODE with Jacobian</a></li></ul></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Quick Start</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Quick Start</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/quickstart.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Quick-Start-1"><a class="docs-heading-anchor" href="#Quick-Start-1">Quick Start</a><a class="docs-heading-anchor-permalink" href="#Quick-Start-1" title="Permalink"></a></h1><h2 id="General-use-1"><a class="docs-heading-anchor" href="#General-use-1">General use</a><a class="docs-heading-anchor-permalink" href="#General-use-1" title="Permalink"></a></h2><p>The easiest way to construct 1-dimensional <code>ComponentArray</code>s is as if they were <code>NamedTuple</code>s. In fact, a good way to think about them is as arbitrarily nested, mutable <code>NamedTuple</code>s that can be passed through a solver.</p><pre><code class="language-julia">julia&gt; c = (a=2, b=[1, 2]);
+  
+julia&gt; x = ComponentArray(a=1.0, b=[2, 1, 4], c=c)
+ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+  
+julia&gt; x.c.a = 400; x
+ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
+  
+julia&gt; x[5]
+400.0
+  
+julia&gt; collect(x)
+7-element Array{Float64,1}:
+   1.0
+   2.0
+   1.0
+   4.0
+ 400.0
+   1.0
+   2.0
+
+julia&gt; typeof(similar(x, Int32)) === typeof(ComponentVector{Int32}(a=1, b=[2, 1, 4], c=c))
+true</code></pre><p>Higher dimensional <code>ComponentArray</code>s can be created too, but it&#39;s a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional <code>ComponentArray</code>s automatically, so Jacobian cache arrays that are created internally with <code>false .* x .* x&#39;</code> will be <code>ComponentArray</code>s with proper axes. Check out the <a href="https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl">ODE with Jacobian</a> example in the examples folder to see how this looks in practice.</p><pre><code class="language-julia">julia&gt; x2 = x .* x&#39;
+7×7 ComponentArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+ 1.0  2.0  1.0   4.0  2.0  1.0  2.0
+ 2.0  4.0  2.0   8.0  4.0  2.0  4.0
+ 1.0  2.0  1.0   4.0  2.0  1.0  2.0
+ 4.0  8.0  4.0  16.0  8.0  4.0  8.0
+ 2.0  4.0  2.0   8.0  4.0  2.0  4.0
+ 1.0  2.0  1.0   4.0  2.0  1.0  2.0
+ 2.0  4.0  2.0   8.0  4.0  2.0  4.0
+ 
+julia&gt; x2[:c,:c]
+3×3 ComponentArray{Tuple{Axis{(a = 1, b = 2:3)},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
+ 4.0  2.0  4.0
+ 2.0  1.0  2.0
+ 4.0  2.0  4.0
+ 
+julia&gt; x2[:a,:a]
+ 1.0
+ 
+julia&gt; x2[:a,:c]
+ComponentArray{Float64}(a = 2.0, b = [1.0, 2.0])
+
+julia&gt; x2[:b,:c]
+3×3 ComponentArray{Tuple{Axis{NamedTuple()},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
+ 4.0  2.0  4.0
+ 2.0  1.0  2.0
+ 8.0  4.0  8.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../examples/DiffEqFlux/">Neural ODEs with DiffEqFlux »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 4 July 2020 00:54">Saturday 4 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
