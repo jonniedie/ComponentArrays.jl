@@ -28,7 +28,6 @@ flat vectors is fair game.
 
 ## New Features!
 ### v0.6.0
-- [BangBang.jl](https://github.com/JuliaFolds/BangBang.jl), [Flatten.jl](https://github.com/rafaqz/Flatten.jl), and [Setfield.jl](https://github.com/jw3126/Setfield.jl) support through [ConstructionBase.jl](https://github.com/JuliaObjects/ConstructionBase.jl)!
 - Easier DifferentialEquations plotting!
     - Automatic legend labeling!
     - `Symbol` and `String` support for the `vars` plot keyword!
