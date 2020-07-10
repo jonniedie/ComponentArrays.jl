@@ -270,4 +270,9 @@ Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
 Base.haskey(x::ComponentVector, s::Symbol) = haskey(indexmap(getaxes(x)[1]), s)
 
+function Base.permutedims(x::ComponentArray, dims)
+    axs = getaxes(x)
+    return ComponentArray(permutedims(getdata(x), dims), map(i->axs[i], dims)...)
+end
+
 Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)

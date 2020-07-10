@@ -8,20 +8,6 @@ Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
 Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
 
 
-#TODO: All this stuff
-LinearAlgebra.ldiv!(Y::Union{AbstractMatrix, AbstractVector}, A::Factorization, b::Union{ComponentMatrix, ComponentVector}) =
-    ldiv!(Y, A, getdata(b))
-LinearAlgebra.ldiv!(Y::Union{ComponentMatrix, ComponentVector}, A::Factorization, b::Union{ComponentMatrix, ComponentVector}) =
-    ldiv!(Y, A, getdata(b))
-function LinearAlgebra.ldiv!(Y::Union{ComponentMatrix, ComponentVector}, A::Factorization, b::Union{AbstractMatrix, AbstractVector})
-    ldiv!(getdata(Y), A, b)
-    return Y
-end
-
-Base.inv(x::ComponentMatrix) = inv(getdata(x))
-
-LinearAlgebra.lu(x::ComponentArray, args...; kwargs...) = lu(getdata(x), args...; kwargs...)
-LinearAlgebra.lu!(x::ComponentArray, args...; kwargs...) = lu!(getdata(x), args...; kwargs...)
 ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_instance(getdata(jac_prototype))
 
 

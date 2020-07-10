@@ -2,6 +2,7 @@
 # Similar
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
 Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getdata(x), T), getaxes(x)...)
+Base.similar(x::ComponentArray, ::Type{T}, ax::Tuple{Vararg{Int64,N}}) where {T,N} = similar(x, T, ax...)
 Base.similar(x::ComponentArray, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
     ComponentArray(similar(getdata(x), T, ax...), getaxes(x)...)
 Base.similar(x::ComponentVector, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
