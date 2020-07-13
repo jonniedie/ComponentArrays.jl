@@ -293,10 +293,18 @@ end
 
     vca2 = vcat(ca2', ca2')
     hca2 = hcat(ca2, ca2)
+    temp = ComponentVector(q=100, r=rand(3,3,3))
+    vtempca = [temp; ca]
     @test all(vca2[1,:] .== ca2)
     @test all(hca2[:,1] .== ca2)
     @test all(vca2' .== hca2)
     @test hca2[:a,:] == vca2[:,:a]
+    @test vtempca isa ComponentVector
+    @test vtempca.r == temp.r
+    @test vtempca.c == ca.c
+    @test length(vtempca) == length(temp) + length(ca)
+    @test [ca; ca; ca] isa Vector
+    @test vcat(ca, 100) isa Vector
 
     # Issue #33
     smat = @SMatrix [1 2; 3 4]

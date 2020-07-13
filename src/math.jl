@@ -4,6 +4,7 @@ Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = poi
 Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
 
 Base.strides(x::ComponentArray) = strides(getdata(x))
+
 Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
 Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
 
@@ -12,9 +13,20 @@ ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_in
 
 
 ## Vector to matrix concatenation
-Base.hcat(x::ComponentVector...) = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
-Base.vcat(x::AdjOrTransComponentArray...) = ComponentArray(vcat(map(y->getdata(y.parent)', x)...), getaxes(x[1]))
+Base.hcat(x::CV...) where {CV<:ComponentVector} = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
 
+Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
+Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
+function Base.vcat(x::ComponentVector, y::ComponentVector)
+    if reduce((accum, key) -> accum || (key in keys(x)), keys(y); init=false)
+        return vcat(getdata(x), getdata(y))
+    else
+        return ComponentArray(x; NamedTuple(y)...)
+    end
+end
+Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} =ComponentArray(vcat(map(y->getdata(y.parent)', x)...), getaxes(x[1]))
+Base.vcat(x::ComponentVector...) = reduce((x1, x2) -> vcat(x1, x2), x)
+Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
 
 # While there are some cases where these were faster, it is going to be almost impossible to
 # to keep up with method ambiguity errors due to other array types overloading *, /, and \.
