@@ -243,8 +243,7 @@ end
 @testset "Math" begin
     a_t = collect(a')
 
-    @test all(zeros(cmat) * ca .== zeros(ca))
-    @test ones(cmat) * ca isa AbstractVector
+    @test all(zero(cmat) * ca .== zero(ca))
     @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a

@@ -7,13 +7,19 @@ Base.similar(x::ComponentArray, ::Type{T}, ax::Union{Integer, Base.OneTo}...) wh
     ComponentArray(similar(getdata(x), T, ax...), getaxes(x)...)
 Base.similar(x::ComponentVector, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
     ComponentArray(similar(getdata(x), T, ax...), fill_flat(getaxes(x), length(ax)))
-function Base.similar(::Type{CA}) where CA<:ComponentArray{T,N,A,Axes} where {T,N,A,Axes}
-    axs = getaxes(CA)
-    return ComponentArray(similar(A, length.(axs)...), axs...)
-end
+## TODO: write length method for AbstractAxis so we can do this?
+    # function Base.similar(::Type{CA}) where CA<:ComponentArray{T,N,A,Axes} where {T,N,A,Axes}
+#     axs = getaxes(CA)
+#     return ComponentArray(similar(A, length.(axs)...), axs...)
+# end
 
-Base.zeros(x::ComponentArray) = (similar(x) .= 0)
-Base.ones(x::ComponentArray) = (similar(x) .= 1)
+
+Base.zero(x::ComponentArray) = (similar(x) .= 0)
+
+## FIXME: waiting on similar(::Type{<:ComponentArray})
+# Base.zeros(CA::Type{<:ComponentArray}) = (similar(CA) .= 0)
+
+# Base.ones(CA::Type{<:ComponentArray}) = (similar(CA) .= 1)
 
 
 # Copy
