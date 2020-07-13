@@ -25,18 +25,19 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
-# function Base.show(io::IO, x::ComponentVector)
-#     K = keys(x)
-#     key = K[1]
-#     print(io, "($key = $(x[key])")
-#     for idx in 2:length(K)
-#         key = K[idx]
-#         print(io, ", $key = $(x[key])")
-#     end
-#     print(io, ")")
-#     return nothing
-# end
-Base.show(io::IO, x::ComponentVector) = print(io, NamedTuple(x))
+function Base.show(io::IO, x::ComponentVector)
+    print(io, "(")
+    for (i,key) in enumerate(keys(x))
+        if i==1
+            print(io, "$key = ")
+        else
+            print(io, ", $key = ")
+        end
+        show(io, x[key])
+    end
+    print(io, ")")
+    return nothing
+end
 function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector{T,A,Axes}) where {A<:Vector{T},Axes} where T
     print(io, "ComponentVector{" , T, "}")
     show(io, x)
