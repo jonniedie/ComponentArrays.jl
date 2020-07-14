@@ -57,3 +57,23 @@ function Base.show(io::IO, a::AbstractVector{<:T}) where T<:ComponentVector
     print(io, "]")
     return nothing
 end
+
+
+function Base.show(io::IO, ::MIME"text/plain", x::ComponentMatrix{T,A,Axes}) where {A<:Matrix{T},Axes} where T
+    if !haskey(io, :compact) && length(axes(x, 2)) > 1
+        io = IOContext(io, :compact => true)
+    end
+    axs = indexmap.(getaxes(x))
+    println(io, "ComponentMatrix{" , T, "} with axes $(axs[1]) × $(axs[2])")
+    Base.print_matrix(io, getdata(x))
+    return nothing
+end
+function Base.show(io::IO, ::MIME"text/plain", x::ComponentMatrix{T,A,Axes}) where {T,A,Axes}
+    if !haskey(io, :compact) && length(axes(x, 2)) > 1
+        io = IOContext(io, :compact => true)
+    end
+    axs = indexmap.(getaxes(x))
+    println(io, "ComponentMatrix{" , A, "} with axes $(axs[1]) × $(axs[2])")
+    Base.print_matrix(io, getdata(x))
+    return nothing
+end
