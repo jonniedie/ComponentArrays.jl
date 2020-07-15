@@ -14,7 +14,7 @@ Base.similar(x::ComponentVector, ::Type{T}, ax::Union{Integer, Base.OneTo}...) w
 # end
 
 
-Base.zero(x::ComponentArray) = (similar(x) .= 0)
+Base.zero(x::ComponentArray) = zero.(x)
 
 ## FIXME: waiting on similar(::Type{<:ComponentArray})
 # Base.zeros(CA::Type{<:ComponentArray}) = (similar(CA) .= 0)
