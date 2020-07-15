@@ -4,6 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using OffsetArrays
 using Test
+using Unitful
 
 
 ## Test setup
@@ -243,7 +244,6 @@ end
 @testset "Math" begin
     a_t = collect(a')
 
-    @test all(zero(cmat) * ca .== zero(ca))
     @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a
@@ -335,4 +335,13 @@ end
 @testset "Uncategorized Issues" begin
     # Issue #25
     @test sum(abs2, cmat) == sum(abs2, getdata(cmat))
+
+    # Issue #40
+    r0 = [1131.340, -2282.343, 6672.423]u"km"
+    v0 = [-5.64305, 4.30333, 2.42879]u"km/s"
+    rv0 = ComponentArray(r=r0, v=v0)
+    zrv0 = zero(rv0)
+    @test all(zero(cmat) * ca .== zero(ca))
+    @test typeof(zrv0) === typeof(rv0)
+    @test typeof(zrv0.r[1]) == typeof(rv0[1])
 end
