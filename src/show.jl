@@ -25,6 +25,7 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
+Base.show(io::IO, ::Type{<:ComponentArray}) = print(io, "ComponentArray") # do not pollute the stacktrace with verbose type printing
 function Base.show(io::IO, x::ComponentVector)
     print(io, "(")
     for (i,key) in enumerate(keys(x))
