@@ -25,7 +25,10 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
-Base.show(io::IO, ::Type{<:ComponentArray}) = print(io, "ComponentArray") # do not pollute the stacktrace with verbose type printing
+Base.show(io::IO, ::MIME"text/plain", ::Type{ComponentArray{T,N,A,Ax}}) where {T,N,A,Ax} = print(io, "ComponentArray{$T,$N,$A,$Ax}") # make `typeof(u)` show the full type
+Base.show(io::IO, ::Type{<:ComponentArray{T, N}}) where {T, N} = print(io, "ComponentArray{$T, $N}") # do not pollute the stacktrace with verbose type printing
+Base.show(io::IO, ::Type{<:ComponentArray{T, 1}}) where T = print(io, "ComponentVector{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T, 2}}) where T = print(io, "ComponentMatrix{$T}")
 function Base.show(io::IO, x::ComponentVector)
     print(io, "(")
     for (i,key) in enumerate(keys(x))
