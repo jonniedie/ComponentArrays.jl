@@ -29,7 +29,7 @@ flat vectors is fair game.
 ## New Features!
 ### v0.7.0
 - Much faster (and lazier) arrays of subcomponents
-```julia-repl
+```julia
 julia> ca = ComponentArray(a=5, b=(a=zeros(4,4), b=0), c=(a=[(a=1, b=2), (a=3, b=1), (a=1, b=2), (a=3, b=1)], b=[1., 2., 4]));
 
 julia> @btime sum(x.a + x.b for x in $ca.c.a);
