@@ -36,6 +36,7 @@ function _labels(x::ComponentVector)
     vcat((".$(key)" .* _labels(x[key]) for key in keys(x))...)
 end
 _labels(x::AbstractArray{<:ComponentArray}) = vcat(("[$i]" .* _labels(x[i]) for i in eachindex(x))...)
+_labels(x::LazyArray) = vcat(("[$i]" .* _labels(x[i]) for i in eachindex(x))...)
 _labels(x::AbstractArray) = vcat(("[" * join(i.I, ",") * "]" for i in CartesianIndices(x))...)
 _labels(x) = ""
 

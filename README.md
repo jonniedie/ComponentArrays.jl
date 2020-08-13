@@ -27,24 +27,23 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
+### v0.7.0
+- Much faster (and lazier) arrays of subcomponents
+```julia-repl
+julia> ca = ComponentArray(a=5, b=(a=zeros(4,4), b=0), c=(a=[(a=1, b=2), (a=3, b=1), (a=1, b=2), (a=3, b=1)], b=[1., 2., 4]));
+
+julia> @btime sum(x.a + x.b for x in $ca.c.a);
+  127.160 ns (2 allocations: 480 bytes)
+
+julia> @btime sum(x.a + x.b for x in $ca.c.a);
+  36.895 ns (0 allocations: 0 bytes)
+```
+
 ### v0.6.0
 - Easier DifferentialEquations plotting!
     - Automatic legend labeling!
     - `Symbol` and `String` support for the `vars` plot keyword!
-```julia
-# Initial conditions
-ic = ComponentArray(
-    reference_model = zeros(1),
-    feedback_loop = (
-        parameter_estimates = (θr=0.0, θy=0.0),
-        sensor = zeros(1),
-        plant_model = zeros(1),
-    ),
-)
-```
-<img src="assets/adaptive_control.png" alight="middle" />
-
-See the full example [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/adaptive_control.md)
+    - See it in an action [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/adaptive_control.md)!
 
 ### v0.5.0
 - Constructor for making new `ComponentVector`s with additional fields! Watch out, it's slow!

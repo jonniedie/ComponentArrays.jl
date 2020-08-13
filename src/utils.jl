@@ -48,18 +48,18 @@ getval(::Type{Val{x}}) where x = x
 partition(A) = A
 partition(a, N...) = partition(a, N)
 # Faster method for vectors and matrices
-partition(v, N) = [view(v, i:i+N-1) for i in firstindex(v):N:lastindex(v)]
+partition(v, N) = (view(v, i:i+N-1) for i in firstindex(v):N:lastindex(v))
 function partition(m, N1, N2)
     ax = axes(m)
     firsts = firstindex.(ax)
     lasts = lastindex.(ax)
-    return [view(m, i:i+N1-1, j:j+N2-1) for i in firsts[1]:N1:lasts[1], j in firsts[2]:N2:lasts[2]]
+    return (view(m, i:i+N1-1, j:j+N2-1) for i in firsts[1]:N1:lasts[1], j in firsts[2]:N2:lasts[2])
 end
 # Slower fallback for higher dimensions
 function partition(a::A, N::Tuple) where A<:AbstractArray
     ax = axes(a)
     offs = firstindex.(ax)
-    return [view(a, (:).((I.I .- 1) .* N .+ offs, ((I.I .- 1) .* N .+ N .- 1 .+ offs))...) for I in CartesianIndices(div.(size(a), N))]
+    return (view(a, (:).((I.I .- 1) .* N .+ offs, ((I.I .- 1) .* N .+ N .- 1 .+ offs))...) for I in CartesianIndices(div.(size(a), N)))
 end
 # partition(a::A, N::Tuple) where A<:AbstractVector = reshape(view(a, :), N)
 
@@ -75,3 +75,25 @@ recursive_length(a::AbstractArray{T,N}) where {T<:Number,N} = length(a)
 recursive_length(a::AbstractArray) = recursive_length.(a) |> sum
 recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
 recursive_length(::Union{Nothing, Missing}) = 1
+
+"""
+    LazyArray(gen::Base.Generator)
+
+Wrapper around Base.Generator that also indexes like an array. This is needed to make ComponentArrays
+that hold arrays of ComponentArrays
+"""
+struct LazyArray{T,N,G} <: AbstractArray{T,N}
+    gen::G
+    LazyArray(gen) = new{eltype(gen), ndims(gen), typeof(gen)}(gen)
+end
+Base.getindex(a::LazyArray, i) = first(Iterators.drop(a, i-1))
+Base.getindex(a::LazyArray, i...) = getindex(collect(a), i...)
+Base.iterate(a::LazyArray, state...) = iterate(a.gen, state...)
+Base.collect(a::LazyArray) = collect(a.gen)
+Base.length(a::LazyArray) = length(a.gen)
+Base.size(a::LazyArray) = size(a.gen)
+Base.show(io::IO, a::LazyArray) = show(io, collect(a))
+function Base.show(io::IO, ::MIME"text/plain", a::LazyArray)
+    println(io, "LazyArray of $(typeof(a[1]))")
+    println.(Ref(io), collect(a))
+end

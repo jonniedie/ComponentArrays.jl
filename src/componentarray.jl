@@ -53,7 +53,7 @@ ComponentArray(data, ax::NotPartitionedAxis...) = ComponentArray(maybe_reshape(d
 function ComponentArray(data, ax::AbstractAxis...)
     part_axs = filter_by_type(PartitionedAxis, ax...)
     part_data = partition(data, size.(part_axs)...)
-    return [ComponentArray(x, Axis.(ax)) for x in part_data]
+    return LazyArray(ComponentArray(x, Axis.(ax)) for x in part_data)
 end
 
 # Entry from NamedTuple or kwargs
