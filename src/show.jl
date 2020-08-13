@@ -1,6 +1,6 @@
 # Show AbstractAxis types
 Base.show(io::IO, ::MIME"text/plain", ::Axis{IdxMap}) where IdxMap = print(io, "Axis$IdxMap")
-Base.show(io::IO, ::Axis{IdxMap}) where IdxMap = print(io, "Axis($IdxMap)")
+Base.show(io::IO, ::Axis{IdxMap}) where IdxMap = print(io, "Axis$IdxMap")
 
 Base.show(io::IO, ::FlatAxis) = print(io, "FlatAxis()")
 
@@ -26,9 +26,13 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 # Show ComponentArrays
 Base.show(io::IO, ::MIME"text/plain", ::Type{ComponentArray{T,N,A,Ax}}) where {T,N,A,Ax} = print(io, "ComponentArray{$T,$N,$A,$Ax}") # make `typeof(u)` show the full type
-Base.show(io::IO, ::Type{<:ComponentArray{T, N}}) where {T, N} = print(io, "ComponentArray{$T, $N}") # do not pollute the stacktrace with verbose type printing
-Base.show(io::IO, ::Type{<:ComponentArray{T, 1}}) where T = print(io, "ComponentVector{$T}")
-Base.show(io::IO, ::Type{<:ComponentArray{T, 2}}) where T = print(io, "ComponentMatrix{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,N,<:Array}}) where {T,N} = print(io, "ComponentArray{$T,$N}") # do not pollute the stacktrace with verbose type printing
+Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:Array}}) where T = print(io, "ComponentVector{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:Array}}) where T = print(io, "ComponentMatrix{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,N,A}}) where {T,N,A} = print(io, "ComponentArray{$T,$N,$(A.name)...}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,1,A}}) where {T,A} = print(io, "ComponentVector{$T,$(A.name)...}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,2,A}}) where {T,A} = print(io, "ComponentMatrix{$T,$(A.name)...}")
+
 function Base.show(io::IO, x::ComponentVector)
     print(io, "(")
     for (i,key) in enumerate(keys(x))
@@ -42,16 +46,13 @@ function Base.show(io::IO, x::ComponentVector)
     print(io, ")")
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector{T,A,Axes}) where {A<:Vector{T},Axes} where T
-    print(io, "ComponentVector{" , T, "}")
+
+function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector)
+    show(io, typeof(x))
     show(io, x)
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector{T,A,Axes}) where {T,A,Axes}
-    print(io, "ComponentVector{" , A, "}")
-    show(io, x)
-    return nothing
-end
+
 function Base.show(io::IO, a::AbstractVector{<:T}) where T<:ComponentVector
     elem = a[1]
     print(io, "[$elem")
@@ -62,22 +63,13 @@ function Base.show(io::IO, a::AbstractVector{<:T}) where T<:ComponentVector
     return nothing
 end
 
-
-function Base.show(io::IO, ::MIME"text/plain", x::ComponentMatrix{T,A,Axes}) where {A<:Matrix{T},Axes} where T
-    if !haskey(io, :compact) && length(axes(x, 2)) > 1
-        io = IOContext(io, :compact => true)
-    end
-    axs = indexmap.(getaxes(x))
-    println(io, "ComponentMatrix{" , T, "} with axes $(axs[1]) × $(axs[2])")
-    Base.print_matrix(io, getdata(x))
-    return nothing
-end
 function Base.show(io::IO, ::MIME"text/plain", x::ComponentMatrix{T,A,Axes}) where {T,A,Axes}
     if !haskey(io, :compact) && length(axes(x, 2)) > 1
         io = IOContext(io, :compact => true)
     end
-    axs = indexmap.(getaxes(x))
-    println(io, "ComponentMatrix{" , A, "} with axes $(axs[1]) × $(axs[2])")
+    axs = getaxes(x)
+    sz = size(x)
+    println(io, "$(sz[1])×$(sz[2]) $(typeof(x)) with axes $(axs[1]) × $(axs[2])")
     Base.print_matrix(io, getdata(x))
     return nothing
 end

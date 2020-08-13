@@ -27,41 +27,7 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
-### v0.7.0
-- Much faster (and lazier) arrays of subcomponents
-```julia-repl
-julia> ca = ComponentArray(a=5, b=(a=zeros(4,4), b=0), c=(a=[(a=1, b=2), (a=3, b=1), (a=1, b=2), (a=3, b=1)], b=[1., 2., 4]));
-
-julia> @btime sum(x.a + x.b for x in $ca.c.a);
-  127.160 ns (2 allocations: 480 bytes)
-
-julia> @btime sum(x.a + x.b for x in $ca.c.a);
-  36.895 ns (0 allocations: 0 bytes)
-```
-
-### v0.6.0
-- Easier DifferentialEquations plotting!
-    - Automatic legend labeling!
-    - `Symbol` and `String` support for the `vars` plot keyword!
-    - See it in an action [here](https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/adaptive_control.md)!
-
-### v0.5.0
-- Constructor for making new `ComponentVector`s with additional fields! Watch out, it's slow!
-```julia
-julia> x = ComponentArray(a=5, b=[1, 2])
-ComponentVector{Int64}(a = 5, b = [1, 2])
-
-julia> moar_x = ComponentArray(x; c=zeros(2,2), d=(a=2, b=10))
-ComponentVector{Int64}(a = 5, b = [1, 2], c = [0 0; 0 0], d = (a = 2, b = 10))
-```
-
-### v0.4.0
-- Zygote rules for DiffEqFlux support! Check out [the docs](https://jonniedie.github.io/ComponentArrays.jl/dev/examples/DiffEqFlux/) for an example!
-
-### v0.3.0
-- Matrix and higher-dimensional array components!
-
-...and plenty more!
+See the [NEWS page](https://github.com/jonniedie/ComponentArrays.jl/blob/master/NEWS.md) for new features!
 
 ## General use
 The easiest way to construct 1-dimensional ```ComponentArray```s (aliased as `ComponentVector`) is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
@@ -96,11 +62,11 @@ true
 
 Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be two-dimensional ```ComponentArray```s (aliased as `ComponentMatrix`) with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
 ```julia
-julia> x = ComponentArray(a=1, b=[2, 1, 4], c=c)
+julia> x = ComponentArray(a=1, b=[2, 1, 4.0], c=c)
 ComponentVector{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
 
 julia> x2 = x .* x'
-7×7 ComponentArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+7×7 ComponentMatrix{Float64} with axes Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3))) × Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3)))
  1.0  2.0  1.0   4.0  2.0  1.0  2.0
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
  1.0  2.0  1.0   4.0  2.0  1.0  2.0
@@ -110,7 +76,7 @@ julia> x2 = x .* x'
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
  
 julia> x2[:c,:c]
-3×3 ComponentArray{Tuple{Axis{(a = 1, b = 2:3)},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
+3×3 ComponentMatrix{Float64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
  4.0  2.0  4.0
  2.0  1.0  2.0
  4.0  2.0  4.0
@@ -119,10 +85,10 @@ julia> x2[:a,:a]
  1.0
  
 julia> x2[:a,:c]
-ComponentVector{Float64}(a = 2.0, b = [1.0, 2.0])
+ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
-3×3 ComponentArray{Tuple{Axis{NamedTuple()},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
+3×3 ComponentMatrix{Float64,SubArray...} with axes FlatAxis() × Axis(a = 1, b = 2:3)
  4.0  2.0  4.0
  2.0  1.0  2.0
  8.0  4.0  8.0
