@@ -2,9 +2,9 @@
 
 [[ArrayInterface]]
 deps = ["LinearAlgebra", "Requires", "SparseArrays"]
-git-tree-sha1 = "851de9a8acd7b8863aa2ec2af0a44f375502c878"
+git-tree-sha1 = "066d1e7a9eb4873660791db7f0d8c7902600b81c"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "2.9.0"
+version = "2.11.0"
 
 [[Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"

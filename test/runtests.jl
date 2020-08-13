@@ -239,6 +239,9 @@ end
     @test getaxes(xmat) == (getaxes(x1)[1], getaxes(x2)[1])
     @test getaxes(x1mat + xmat) == (getaxes(x1)[1], FlatAxis())
     @test getaxes(x1mat + xmat') == (FlatAxis(), getaxes(x1)[1])
+
+    x1 .+= x2
+    @test getdata(x1) == 2getdata(x2)
 end
 
 @testset "Math" begin

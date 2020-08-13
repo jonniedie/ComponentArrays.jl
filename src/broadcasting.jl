@@ -74,7 +74,7 @@ end
 
 # From https://github.com/JuliaArrays/OffsetArrays.jl/blob/master/src/OffsetArrays.jl
 Base.dataids(A::ComponentArray) = Base.dataids(parent(A))
-Broadcast.broadcast_unalias(dest::ComponentArray, src::ComponentArray) = parent(dest) === parent(src) ? src : Broadcast.unalias(dest, src)
+Broadcast.broadcast_unalias(dest::ComponentArray, src) = getdata(dest) === getdata(src) ? src : Broadcast.unalias(dest, src)
 
 
 
