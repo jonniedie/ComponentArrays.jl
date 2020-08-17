@@ -1,6 +1,7 @@
 module ComponentArrays
 
 using ArrayInterface
+# using ChainRulesCore
 using LinearAlgebra
 using Requires
 
@@ -8,6 +9,7 @@ const FlatIdx = Union{UnitRange, Int, CartesianIndex, AbstractArray, Colon}
 
 
 include("utils.jl")
+include("lazyarray.jl")
 include("axis.jl")
 include("componentindex.jl")
 include("componentarray.jl")
@@ -17,7 +19,7 @@ include("broadcasting.jl")
 include("math.jl")
 include("show.jl")
 include("plot_utils.jl")
-
+# include(joinpath("if_required", "chainrulescore.jl"))
 
 # If using for differential equations, the Array(sol) overload in RecursiveArrayTools will
 # concatenate the ComponentVectors while preserving their ComponentArrayness
@@ -31,6 +33,7 @@ function __init__()
     @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
     @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
     @require Zygote="e88e6eb3-aa80-5325-afca-941959d7151f" required("zygote.jl")
+    # @require ChainRulesCore="d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4" required("chainrulescore.jl")
 end
 
 
