@@ -13,7 +13,7 @@ ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_in
 
 
 ## Vector to matrix concatenation
-Base.hcat(x::CV...) where {CV<:ComponentVector} = ComponentArray(hcat(getdata.(x)...), getaxes(x[1])[1], FlatAxis())
+Base.hcat(x::CV...) where {CV<:ComponentVector} = ComponentArray(reduce(hcat, getdata.(x)), getaxes(x[1])[1], FlatAxis())
 
 Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
 Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
@@ -24,7 +24,7 @@ function Base.vcat(x::ComponentVector, y::ComponentVector)
         return ComponentArray(x; NamedTuple(y)...)
     end
 end
-Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} =ComponentArray(vcat(map(y->getdata(y.parent)', x)...), getaxes(x[1]))
+Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
 Base.vcat(x::ComponentVector...) = reduce((x1, x2) -> vcat(x1, x2), x)
 Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
 
