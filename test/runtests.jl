@@ -142,6 +142,8 @@ end
     @test ca[CartesianIndex(1)] == ca[1]
     @test cmat[CartesianIndex(1, 2)] == cmat[1, 2]
 
+    @test getproperty(ca, Val(:a)) == ca.a
+
     #OffsetArray stuff
     part_ax = PartitionedAxis(2, Axis(a=1, b=2))
     oaca = ComponentArray(OffsetArray(collect(1:5), -1), Axis(a=0, b=ViewAxis(1:4, part_ax)))
@@ -173,6 +175,15 @@ end
     @test (temp2 .= temp2 .* a .+ 1) isa typeof(temp2)
     @test (temp2 .= ca .* ca_SVector) isa typeof(temp2)
     @test (temp3 .= ca .* ca_SVector) isa typeof(temp3)
+
+    temp2.b = ca.b .+ 1
+    @test temp2.b == ca.b .+ 1
+
+    setproperty!(temp2, :a, 20)
+    @test temp2.a == 20
+
+    setproperty!(temp2, Val(:b), zeros(2))
+    @test temp2.b == zeros(2)
 
     tempmat .= 0
     @test tempmat[:b,:a][2].b == 0

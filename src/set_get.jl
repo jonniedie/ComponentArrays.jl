@@ -29,7 +29,10 @@ Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx...) = setindex
 
 # Property access for CVectors goes through _get/_setindex
 @inline Base.getproperty(x::ComponentVector, s::Symbol) = _getindex(x, Val(s))
+@inline Base.getproperty(x::ComponentVector, s::Val) = _getindex(x, s)
+
 @inline Base.setproperty!(x::ComponentVector, s::Symbol, v) = _setindex!(x, v, Val(s))
+@inline Base.setproperty!(x::ComponentVector, s::Val, v) = _setindex!(x, v, s)
 
 
 # Generated get and set index methods to do all of the heavy lifting in the type domain
