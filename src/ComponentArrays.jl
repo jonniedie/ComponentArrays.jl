@@ -41,6 +41,6 @@ export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
 
 export ComponentArray, ComponentVector, ComponentMatrix
 
-export getdata, getaxes, fastindices, labels, label2index
+export getdata, getaxes, fastindices, labels, label2index, valkeys
 
 end

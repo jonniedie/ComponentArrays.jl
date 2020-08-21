@@ -94,6 +94,9 @@ end
     @test propertynames(ca.c) == (:a, :b)
 
     @test parent(ca) == a
+
+    @test keys(ca) == (:a, :b, :c)
+    @test valkeys(ca) == Val.((:a, :b, :c))
 end
 
 @testset "Get" begin

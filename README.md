@@ -27,6 +27,28 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 flat vectors is fair game.
 
 ## New Features!
+### v0.8.0
+- Generated `valkeys` function for fast iteration over `ComponentVector` subcomponents!
+```julia
+  julia> using ComponentArrays, BenchmarkTools
+  
+  julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
+  ComponentVector{Int64}(a = 1, b = [1, 2, 3], c = (a = 4))
+  
+  julia> valkeys(ca)
+  (Val{:a}(), Val{:b}(), Val{:c}())
+
+  julia> [ca[k] for k in valkeys(ca)]
+  3-element Array{Any,1}:
+   1
+    [1, 2, 3]
+    ComponentVector{Int64,SubArray...}(a = 4)
+  
+  julia> @btime sum(prod($ca[k]) for k in valkeys($ca))
+    11.511 ns (0 allocations: 0 bytes)
+  11
+```
+
 ### v0.7.0
 - Much faster (and lazier) arrays of subcomponents!
 ```julia

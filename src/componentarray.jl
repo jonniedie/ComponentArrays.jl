@@ -269,6 +269,36 @@ Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
+"""
+    valkeys(x::ComponentVector)
+
+Returns `Val`-wrapped keys of `ComponentVector` for fast iteration over component keys.
+
+# Examples
+
+```julia-repl
+julia> using ComponentArrays, BenchmarkTools
+
+julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
+ComponentVector{Int64}(a = 1, b = [1, 2, 3], c = (a = 4))
+
+julia> [ca[k] for k in valkeys(ca)]
+3-element Array{Any,1}:
+ 1
+  [1, 2, 3]
+  ComponentVector{Int64,SubArray...}(a = 4)
+
+julia> @btime sum(prod(\$ca[k]) for k in valkeys(\$ca))
+  11.511 ns (0 allocations: 0 bytes)
+11
+```
+"""
+@generated function valkeys(ca::ComponentVector)
+    idxmap = ComponentArrays.indexmap(getaxes(ca)[1])
+    k = Val.(keys(idxmap))
+    return :($k)
+end
+
 Base.haskey(x::ComponentVector, s::Symbol) = haskey(indexmap(getaxes(x)[1]), s)
 
 function Base.permutedims(x::ComponentArray, dims)
