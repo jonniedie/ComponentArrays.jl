@@ -47,11 +47,11 @@ function _namedtuple(x::ComponentVector)
     idxmap = indexmap(getaxes(x)[1])
     for key in valkeys(x)
         idx = idxmap[getval(key)]
-        if idx isa AliasAxis
-            val = idx.f
-        else
+        # if idx isa AliasAxis
+        #     val = idx.f
+        # else
             val = getproperty(x, key) |> _namedtuple
-        end
+        # end
         push!(data, getval(key) => val)
     end
     return (; data...)
