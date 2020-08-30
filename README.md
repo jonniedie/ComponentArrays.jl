@@ -30,8 +30,6 @@ flat vectors is fair game.
 ### v0.8.0
 - Generated `valkeys` function for fast iteration over `ComponentVector` subcomponents!
 ```julia
-  julia> using ComponentArrays, BenchmarkTools
-  
   julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
   ComponentVector{Int64}(a = 1, b = [1, 2, 3], c = (a = 4))
   
@@ -54,9 +52,11 @@ flat vectors is fair game.
 ```julia
 julia> ca = ComponentArray(a=5, b=(a=zeros(4,4), b=0), c=(a=[(a=1, b=2), (a=3, b=1), (a=1, b=2), (a=3, b=1)], b=[1., 2., 4]));
 
+# Old method
 julia> @btime sum(x.a + x.b for x in $ca.c.a);
   127.160 ns (2 allocations: 480 bytes)
 
+# New method
 julia> @btime sum(x.a + x.b for x in $ca.c.a);
   36.895 ns (0 allocations: 0 bytes)
 ```
