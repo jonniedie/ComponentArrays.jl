@@ -1,3 +1,5 @@
 AVOA = RecursiveArrayTools.AbstractVectorOfArray
 
-Base.Array(VA::AVOA{T,N,A}) where {T,N,A<:AbstractVector{<:ComponentVector}} = hcat(VA.u...)
+function Base.Array(VA::AVOA{T,N,A}) where {T,N,A<:AbstractVector{<:ComponentVector}}
+    return ComponentArray(reduce(hcat, VA.u)', FlatAxis(), getaxes(VA.u[1])[1])
+end
