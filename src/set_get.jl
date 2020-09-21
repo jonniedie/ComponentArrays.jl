@@ -12,10 +12,9 @@ getaxes(x) = ()
     ComponentIndex(getproperty(IdxMap, s))
 
 # Get ComponentArray index
-
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = Base.maybeview(getdata(x), idx.I...)
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::FlatIdx...) = Base.maybeview(getdata(x), idx...)
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = @view getdata(x)[:]
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = getdata(x)[idx]
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = getdata(x)[idx...]
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[:]
 @inline Base.getindex(x::ComponentArray, ::Colon...) = x
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
 @inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(x, idx...)
