@@ -10,3 +10,5 @@ research/
 /examples/wip
 /examples/.ipynb_checkpoints
 .vscode/settings.json
+/issue_debug
+Manifest.toml
