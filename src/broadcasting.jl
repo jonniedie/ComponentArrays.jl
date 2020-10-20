@@ -71,10 +71,7 @@ end
 # of respecting Union eltypes than the default method in Base.
 function Base.Broadcast.broadcasted(f, x::ComponentArray)
     data = getdata(x)
-    new_data = similar(data)
-    @inbounds for i in eachindex(data)
-       new_data[i] = f(data[i])
-    end
+    new_data = map(f, x)
     return ComponentArray(new_data, getaxes(x))
 end
 
