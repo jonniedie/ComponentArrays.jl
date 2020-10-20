@@ -217,7 +217,7 @@ end
 
 @testset "Broadcasting" begin
     temp = deepcopy(ca)
-    @test Float32.(ca) == ComponentArray{Float32}(nt)
+    @test eltype(Float32.(ca)) == Float32
     @test ca .* ca' == cmat
     @test 1 .* (ca .+ ca) == ComponentArray(a .+ a)
     @test typeof(ca .+ cmat) == typeof(cmat)

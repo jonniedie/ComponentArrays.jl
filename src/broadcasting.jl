@@ -66,14 +66,8 @@ function Base.similar(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}, T::Typ
 end
 
 
-# For single broadcasted function calls like Float32.(ca) or zero.(ca), this makes things
-# way faster by skipping the default broadcasting machinery. Also, this does a better job
-# of respecting Union eltypes than the default method in Base.
-function Base.Broadcast.broadcasted(f, x::ComponentArray)
-    data = getdata(x)
-    new_data = map(f, x)
-    return ComponentArray(new_data, getaxes(x))
-end
+Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, x), getaxes(x))
+
 
 # function Base.copy(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}) where {InnerStyle, Axes,  N}
 #     return ComponentArray{Axes}(Base.copy(BC.broadcasted(bc.f, map(getdata, bc.args)...)))
