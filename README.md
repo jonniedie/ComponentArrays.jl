@@ -26,41 +26,6 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
 flat vectors is fair game.
 
-## New Features!
-### v0.8.0
-- Generated `valkeys` function for fast iteration over `ComponentVector` subcomponents!
-```julia
-  julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
-  ComponentVector{Int64}(a = 1, b = [1, 2, 3], c = (a = 4))
-  
-  julia> valkeys(ca)
-  (Val{:a}(), Val{:b}(), Val{:c}())
-
-  julia> [ca[k] for k in valkeys(ca)]
-  3-element Array{Any,1}:
-   1
-    [1, 2, 3]
-    ComponentVector{Int64,SubArray...}(a = 4)
-  
-  julia> @btime sum(prod($ca[k]) for k in valkeys($ca))
-    11.511 ns (0 allocations: 0 bytes)
-  11
-```
-
-### v0.7.0
-- Much faster (and lazier) arrays of subcomponents!
-```julia
-julia> ca = ComponentArray(a=5, b=(a=zeros(4,4), b=0), c=(a=[(a=1, b=2), (a=3, b=1), (a=1, b=2), (a=3, b=1)], b=[1., 2., 4]));
-
-# Old method
-julia> @btime sum(x.a + x.b for x in $ca.c.a);
-  127.160 ns (2 allocations: 480 bytes)
-
-# New method
-julia> @btime sum(x.a + x.b for x in $ca.c.a);
-  36.895 ns (0 allocations: 0 bytes)
-```
-See the [NEWS page](https://github.com/jonniedie/ComponentArrays.jl/blob/master/NEWS.md) for more new features!
 
 ## General use
 The easiest way to construct 1-dimensional ```ComponentArray```s (aliased as `ComponentVector`) is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
