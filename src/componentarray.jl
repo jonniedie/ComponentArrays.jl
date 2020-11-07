@@ -63,6 +63,9 @@ ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
+ComponentArray(x::ComponentArray) = x
+ComponentArray{T}(x::ComponentArray) where {T} = T.(x)
+(CA::Type{<:ComponentArray{T,N,A,Ax}})(x::ComponentArray) where {T,N,A,Ax} = ComponentArray(T.(getdata(x)), getaxes(x))
 
 ## Some aliases
 """
@@ -88,6 +91,8 @@ function ComponentArray(x::ComponentVector; kwargs...)
 end
 ComponentVector(x::ComponentVector; kwargs...) = ComponentArray(x; kwargs...)
 
+ComponentVector{T}(x::ComponentVector) where {T} = T.(x)
+
 
 """
     x = ComponentMatrix(data::AbstractMatrix, ax...)
@@ -99,6 +104,9 @@ const ComponentMatrix{T,A,Axes} = ComponentArray{T,2,A,Axes}
 ComponentMatrix{T}(::UndefInitializer, ax...) where {T} = ComponentArray{T}(undef, ax...)
 ComponentMatrix(data::AbstractMatrix, ax...) = ComponentArray(data, ax...)
 ComponentMatrix(data::AbstractArray, ax...) = throw(DimensionMismatch("A `ComponentMatrix` must be initialized with a 2-dimensional array. This array is $(ndims(data))-dimensional."))
+
+ComponentMatrix(x::ComponentMatrix) = x
+ComponentMatrix{T}(x::ComponentMatrix) where {T} = T.(x)
 
 const CArray = ComponentArray
 const CVector = ComponentVector
