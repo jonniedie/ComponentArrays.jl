@@ -213,6 +213,8 @@ end
     @test convert(typeof(ca), a) == ca
     @test convert(typeof(ca), ca) == ca
     @test convert(typeof(cmat), cmat) == cmat
+
+    @test convert(Array, ca) == getdata(ca)
 end
 
 @testset "Broadcasting" begin
