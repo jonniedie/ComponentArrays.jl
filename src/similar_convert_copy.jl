@@ -38,6 +38,7 @@ Base.deepcopy(x::ComponentArray) = ComponentArray(deepcopy(getdata(x)), getaxes(
 
 Base.convert(::Type{CA}, A::AbstractArray) where CA<:ComponentArray = ComponentArray(A, getaxes(CA))
 Base.convert(::Type{CA}, x::ComponentArray) where CA<:ComponentArray = ComponentArray(getdata(x), getaxes(CA))
+Base.convert(::Type{<:Array}, x::ComponentArray) = convert(Array, getdata(x))
 
 
 # Conversion to from ComponentArray to NamedTuple (note, does not preserve numeric types of
