@@ -193,6 +193,10 @@ end
 
     temp = deepcopy(cmat)
     @test all((temp[:c,:c][:a,:a] .= 0) .== 0)
+
+    A = ComponentArray(zeros(Int,4,4), Axis(x=1:4), Axis(x=1:4))
+    A[1,:] .= 1
+    @test A[1,:] == ones(Int,4)
 end
 
 @testset "Similar" begin

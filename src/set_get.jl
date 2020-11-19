@@ -51,4 +51,5 @@ end
     return :(Base.@_inline_meta; @inbounds setindex!(getdata(x), v, $inds...))
 end
 
-Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = getindex(x, idx...)
+Base.@propagate_inbounds Base.view(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = view(getdata(x), idx...)
+Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = _getindex(x, toval.(idx)...)
