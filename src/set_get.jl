@@ -13,7 +13,13 @@ getaxes(x) = ()
 
 # Get ComponentArray index
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = getdata(x)[idx]
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = getdata(x)[idx...]
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
+Base.@propagate_inbounds function Base.getindex(x::ComponentArray, idx::FlatOrColonIdx...)
+    ci = getindex.(getaxes(x), idx)
+    axs = map(i -> i.ax, ci)
+    axs = remove_nulls(axs...)
+    return ComponentArray(getdata(x)[idx...], axs...)
+end
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[:]
 @inline Base.getindex(x::ComponentArray, ::Colon...) = x
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)

@@ -156,6 +156,15 @@ end
     @test oaca[0] == temp_ca[1]
     @test oaca[4] == temp_ca[5]
     @test axes(oaca) == axes(getdata(oaca))
+
+    # Issue #56
+    A = ComponentArray(rand(4, 10), Axis(a=1:2, b=3:4), FlatAxis())
+    A_vec = A[:,1]
+    A_mat = A[:,1:2]
+    @test A_vec isa ComponentVector
+    @test A_mat isa ComponentMatrix
+    @test getdata(A_vec) isa Vector
+    @test getdata(A_mat) isa Matrix
 end
 
 @testset "Set" begin
