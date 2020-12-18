@@ -165,6 +165,10 @@ end
     @test A_mat isa ComponentMatrix
     @test getdata(A_vec) isa Vector
     @test getdata(A_mat) isa Matrix
+
+    @test Base.to_indices(ca, (:a, :b)) == (:a, :b)
+    @test Base.to_indices(ca, (1, 2)) == (1, 2)
+    @test Base.to_index(ca, :a) == :a
 end
 
 @testset "Set" begin

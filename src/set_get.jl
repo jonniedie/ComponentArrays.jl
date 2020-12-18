@@ -5,6 +5,12 @@
 getaxes(x) = ()
 
 
+# Since we aren't really using the standard approach to indexing, this will forward things to
+# the correct methods
+Base.to_indices(x::ComponentArray, i::Tuple) = i
+Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Union{Integer, CartesianIndex}, N}}) where N = i
+Base.to_index(x::ComponentArray, i) = i
+
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx::FlatIdx) = ComponentIndex(idx)
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
@@ -15,8 +21,7 @@ getaxes(x) = ()
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = getdata(x)[idx]
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
 Base.@propagate_inbounds function Base.getindex(x::ComponentArray, idx::FlatOrColonIdx...)
-    ci = getindex.(getaxes(x), idx)
-    axs = map(i -> i.ax, ci)
+    axs = map((ax, i) -> getindex(ax, i).ax, getaxes(x), idx)
     axs = remove_nulls(axs...)
     return ComponentArray(getdata(x)[idx...], axs...)
 end
