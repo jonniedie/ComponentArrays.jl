@@ -118,7 +118,10 @@ const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} whe
 
 ## Constructor helpers
 # For making ComponentArrays from named tuples
-make_carray_args(nt) = make_carray_args(Vector, nt) .|> (x->vcat(x...), identity)
+function make_carray_args(nt)
+    data, ax = make_carray_args(Vector, nt)
+    return (reduce(vcat, data), ax)
+end
 make_carray_args(T::Type, nt) = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     data, idx = make_idx([], nt, 0)
