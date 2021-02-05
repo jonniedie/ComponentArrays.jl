@@ -9,6 +9,7 @@ getaxes(x) = ()
 # the correct methods
 Base.to_indices(x::ComponentArray, i::Tuple) = i
 Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Union{Integer, CartesianIndex}, N}}) where N = i
+Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Int64}}) where N = i
 Base.to_index(x::ComponentArray, i) = i
 
 # Get AbstractAxis index
