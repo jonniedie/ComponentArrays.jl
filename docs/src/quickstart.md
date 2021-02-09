@@ -31,30 +31,30 @@ true
 Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be ```ComponentArray```s with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
 ```julia
 julia> x2 = x .* x'
-7×7 ComponentArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 4.0  8.0  4.0  16.0  8.0  4.0  8.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
+7×7 ComponentMatrix{Float64} with axes Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3))) × Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3)))
+   1.0    2.0    1.0     4.0     400.0    1.0    2.0
+   2.0    4.0    2.0     8.0     800.0    2.0    4.0
+   1.0    2.0    1.0     4.0     400.0    1.0    2.0
+   4.0    8.0    4.0    16.0    1600.0    4.0    8.0
+ 400.0  800.0  400.0  1600.0  160000.0  400.0  800.0
+   1.0    2.0    1.0     4.0     400.0    1.0    2.0
+   2.0    4.0    2.0     8.0     800.0    2.0    4.0
  
 julia> x2[:c,:c]
-3×3 ComponentArray{Tuple{Axis{(a = 1, b = 2:3)},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
- 4.0  2.0  4.0
- 2.0  1.0  2.0
- 4.0  2.0  4.0
+3×3 ComponentMatrix{Float64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
+ 160000.0  400.0  800.0
+    400.0    1.0    2.0
+    800.0    2.0    4.0
  
 julia> x2[:a,:a]
  1.0
  
 julia> x2[:a,:c]
-ComponentArray{Float64}(a = 2.0, b = [1.0, 2.0])
+ComponentVector{Float64,SubArray...}(a = 400.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
-3×3 ComponentArray{Tuple{Axis{NamedTuple()},Axis{(a = 1, b = 2:3)}},Float64,2,SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},UnitRange{Int64}},false}}:
- 4.0  2.0  4.0
- 2.0  1.0  2.0
- 8.0  4.0  8.0
+3×3 ComponentMatrix{Float64,SubArray...} with axes FlatAxis() × Axis(a = 1, b = 2:3)
+  800.0  2.0  4.0
+  400.0  1.0  2.0
+ 1600.0  4.0  8.0
 ```

@@ -5,30 +5,32 @@ Wrap ```ComponentArray``` symbolic indices in ```Val```s for type-stable indexin
 
 # Examples
 ```julia-repl
-julia> using ComponentArrays, BenchmarkTools
+julia> using ComponentArrays
 
 julia> ca = ComponentArray(a=1, b=[2, 1, 4], c=(a=2, b=[1, 2]))
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+ComponentVector{Int64}(a = 1, b = [2, 1, 4], c = (a = 2, b = [1, 2]))
 
 julia> ca2 = ca .* ca'
-7×7 ComponentArray{Tuple{Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 2:3)))},Axis{(a = 1, b = 2:4, c = (5:7, (a = 1, b = 
-2:3)))}},Float64,2,Array{Float64,2}}:
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 4.0  8.0  4.0  16.0  8.0  4.0  8.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
- 1.0  2.0  1.0   4.0  2.0  1.0  2.0
- 2.0  4.0  2.0   8.0  4.0  2.0  4.0
+7×7 ComponentMatrix{Int64} with axes Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3))) × Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3)))
+ 1  2  1   4  2  1  2
+ 2  4  2   8  4  2  4
+ 1  2  1   4  2  1  2
+ 4  8  4  16  8  4  8
+ 2  4  2   8  4  2  4
+ 1  2  1   4  2  1  2
+ 2  4  2   8  4  2  4
 
 julia> _a, _b, _c = fastindices(:a, :b, :c)
 (Val{:a}(), Val{:b}(), Val{:c}())
 
-julia> @btime \$ca2[:c,:c];
-  12.199 μs (2 allocations: 80 bytes)
+julia> ca2[_c, _c]
+3×3 ComponentMatrix{Int64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
+ 4  2  4
+ 2  1  2
+ 4  2  4
 
-julia> @btime \$ca2[\$_c, \$_c];
-  14.728 ns (2 allocations: 80 bytes)
+julia> ca2[_c, _c] == ca2[:c, :c]
+true
 ```
 """
 fastindices(i...) = toval.(i)

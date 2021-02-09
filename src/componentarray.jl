@@ -12,23 +12,23 @@ Array type that can be accessed like an arbitrary nested mutable struct.
 julia> using ComponentArrays
 
 julia> x = ComponentArray(a=1, b=[2, 1, 4], c=(a=2, b=[1, 2]))
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 2.0, b = [1.0, 2.0]))
+ComponentVector{Int64}(a = 1, b = [2, 1, 4], c = (a = 2, b = [1, 2]))
 
 julia> x.c.a = 400; x
-ComponentArray{Float64}(a = 1.0, b = [2.0, 1.0, 4.0], c = (a = 400.0, b = [1.0, 2.0]))
+ComponentVector{Int64}(a = 1, b = [2, 1, 4], c = (a = 400, b = [1, 2]))
 
 julia> x[5]
-400.0
+400
 
 julia> collect(x)
-7-element Array{Float64,1}:
-   1.0
-   2.0
-   1.0
-   4.0
- 400.0
-   1.0
-   2.0
+7-element Array{Int64,1}:
+   1
+   2
+   1
+   4
+ 400
+   1
+   2
 ```
 """
 struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{AbstractAxis}}} <: DenseArray{T,N}
@@ -248,7 +248,7 @@ Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
 julia> A = zeros(6,6);
 
 julia> ca = ComponentArray(A, (ax, ax))
-6×6 ComponentArray{Tuple{Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))},Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}},Float64,2,Array{Float64,2}}:
+6×6 ComponentMatrix{Float64} with axes Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3))) × Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3)))
  0.0  0.0  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0  0.0
@@ -257,7 +257,7 @@ julia> ca = ComponentArray(A, (ax, ax))
  0.0  0.0  0.0  0.0  0.0  0.0
 
 julia> getaxes(ca)
-(Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}(), Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}())
+(Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3))), Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3))))
 ```
 """
 @inline getaxes(x::ComponentArray) = getfield(x, :axes)
@@ -289,7 +289,7 @@ Returns `Val`-wrapped keys of `ComponentVector` for fast iteration over componen
 # Examples
 
 ```julia-repl
-julia> using ComponentArrays, BenchmarkTools
+julia> using ComponentArrays
 
 julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
 ComponentVector{Int64}(a = 1, b = [1, 2, 3], c = (a = 4))
@@ -300,8 +300,7 @@ julia> [ca[k] for k in valkeys(ca)]
   [1, 2, 3]
   ComponentVector{Int64,SubArray...}(a = 4)
 
-julia> @btime sum(prod(\$ca[k]) for k in valkeys(\$ca))
-  11.511 ns (0 allocations: 0 bytes)
+julia> sum(prod(ca[k]) for k in valkeys(ca))
 11
 ```
 """
