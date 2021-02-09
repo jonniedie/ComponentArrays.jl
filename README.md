@@ -11,7 +11,7 @@
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://jonniedie.github.io/ComponentArrays.jl/stable
 
-[github-img]: https://img.shields.io/github/workflow/status/jonniedie/ComponentArrays.jl/CI
+[github-img]: https://github.com/jonniedie/ComponentArrays.jl/workflows/CI/badge.svg
 [github-url]: https://github.com/jonniedie/ComponentArrays.jl/actions/workflows/CI
 
 [travis-img]: https://travis-ci.com/jonniedie/ComponentArrays.jl.svg?branch=master
