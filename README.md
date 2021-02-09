@@ -2,7 +2,7 @@
 
 | **Documentation**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][codecov-img]][codecov-url] |
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][github-img]][github-url] [![][codecov-img]][codecov-url] |
 
 
 [docs-dev-img]: https://img.shields.io/badge/docs-latest-blue.svg
@@ -10,6 +10,9 @@
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://jonniedie.github.io/ComponentArrays.jl/stable
+
+[github-img]: https://img.shields.io/github/workflow/status/jonniedie/ComponentArrays.jl/CI
+[github-url]: https://github.com/jonniedie/ComponentArrays.jl/actions/workflows/CI
 
 [travis-img]: https://travis-ci.com/jonniedie/ComponentArrays.jl.svg?branch=master
 [travis-url]: https://travis-ci.com/jonniedie/ComponentArrays.jl
