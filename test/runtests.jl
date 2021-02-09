@@ -275,6 +275,10 @@ end
 
     x1 .+= x2
     @test getdata(x1) == 2getdata(x2)
+
+    # Issue #60
+    x4 = ComponentArray(rand(3,3), Axis(x=1, y=2, z=3), Axis(x=1, y=2, z=3))
+    @test x4 + I(3) isa ComponentMatrix
 end
 
 @testset "Math" begin

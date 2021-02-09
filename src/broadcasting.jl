@@ -64,6 +64,9 @@ end
 function Base.similar(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}, T::Type) where {InnerStyle, Axes, N}
     return ComponentArray{Axes}(similar(BC.Broadcasted{InnerStyle}(bc.f, bc.args, bc.axes), T))
 end
+function Base.similar(bc::BC.Broadcasted{<:CAStyle{<:BC.Unknown, Axes, N}}, T::Type) where {InnerStyle, Axes, N}
+    return ComponentArray{Axes}(similar(BC.Broadcasted{BC.DefaultArrayStyle{N}}(bc.f, bc.args, bc.axes), T))
+end
 
 
 Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, x), getaxes(x))
