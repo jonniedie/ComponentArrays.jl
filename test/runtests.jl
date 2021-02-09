@@ -83,6 +83,9 @@ end
     temp_noth = ComponentArray(a=nothing, b=[2, 1, 4, 5], c=[1, 2, 3])
     @test eltype(temp_noth) == Union{Int64, Nothing}
     @test temp_noth.a === nothing
+
+    # Issue #61
+    @test ComponentArray(x=1) isa ComponentArray{Int}
 end
 
 @testset "Attributes" begin
