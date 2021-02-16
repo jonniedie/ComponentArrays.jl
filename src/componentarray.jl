@@ -324,7 +324,7 @@ ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes
 ArrayInterface.size(A::ComponentArray) = ArrayInterface.size(parent(A))
 ArrayInterface.strides(A::ComponentArray) = ArrayInterface.strides(parent(A))
 for f in [:device, :stride_rank, :contiguous_axis, :contiguous_batch_size, :dense_dims] 
-    @eval ArrayInterface.$f(::ComponentArray{T,N,A,Axes}) where {T,N,A,Axes} = ArrayInterface.$f(A)
+    @eval ArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.$f(A)
 end
 
 
