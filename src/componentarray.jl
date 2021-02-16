@@ -318,3 +318,6 @@ function Base.permutedims(x::ComponentArray, dims)
 end
 
 Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)
+
+ArrayInterface.device(::Type{<:ComponentArray}) = ArrayInterface.CPUIndex()
+
