@@ -60,6 +60,7 @@ end
     @test cmat == ComponentMatrix(a .* a', ax, ax)
     @test_throws DimensionMismatch ComponentVector(sq_mat, ax)
     @test_throws DimensionMismatch ComponentMatrix(rand(11,11,11), ax, ax)
+    @test_throws ErrorException ComponentArray(v=[(a=1, b=2), (a=3, c=4)])
 
     # Issue #24
     @test ComponentVector(a=1, b=2f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
