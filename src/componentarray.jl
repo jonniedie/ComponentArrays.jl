@@ -156,12 +156,12 @@ make_idx(data, x::ComponentVector, last_val) = (
         getaxes(x)[1]
     )
 )
-function make_idx(data, x::AbstractArray{N}, last_val) where N<:Union{Number, Missing, Nothing}
+function make_idx(data, x::AbstractArray, last_val)
     pushcat!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
-function make_idx(data, x::A, last_val) where A<:AbstractArray
+function make_idx(data, x::A, last_val) where A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}
     len = recursive_length(x)
     if eltype(x) |> isconcretetype
         out = ()
@@ -179,7 +179,7 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray
             )
         )
     else
-        error("Only homogeneous arrays are allowed. This one has eltype $(eltype(x)).")
+        error("Only homogeneous arrays of inner ComponentArrays are allowed.")
     end
 end
 
