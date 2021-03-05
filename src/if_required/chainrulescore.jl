@@ -15,9 +15,9 @@ function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}
     return getproperty(x, s), getproperty_adjoint
 end
 
-# ChainRulesCore.frule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->ComponentArray(Δ, getaxes(x))
 ChainRulesCore.rrule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->ComponentArray(Δ, getaxes(x))
 
 ChainRulesCore.rrule(::typeof(getaxes), x::ComponentArray) = getaxes(x), Δ->ComponentArray(getdata(x), Δ)
 
-ChainRulesCore.rrule(::typeof(ComponentArray), data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
+# This won't work because typeof(ComponentArray) is a UnionAll. Do we even need it, though?
+# ChainRulesCore.rrule(::typeof(ComponntArray), data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
