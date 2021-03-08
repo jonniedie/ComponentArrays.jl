@@ -3,14 +3,20 @@
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
 Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getdata(x), T), getaxes(x)...)
 Base.similar(x::ComponentArray, ::Type{T}, ax::Tuple{Vararg{Int64,N}}) where {T,N} = similar(x, T, ax...)
-Base.similar(x::ComponentArray, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T =
-    similar(getdata(x), T, ax...)
+function Base.similar(x::ComponentArray, ::Type{T}, ax::Union{Integer, Base.OneTo}...) where T
+    A = similar(getdata(x), T, ax...)
+    if size(getdata(x)) == size(A)
+        return ComponentArray(A, getaxes(x))
+    else
+        return A
+    end
+end
+
 ## TODO: write length method for AbstractAxis so we can do this?
     # function Base.similar(::Type{CA}) where CA<:ComponentArray{T,N,A,Axes} where {T,N,A,Axes}
 #     axs = getaxes(CA)
 #     return ComponentArray(similar(A, length.(axs)...), axs...)
 # end
-
 
 Base.zero(x::ComponentArray) = zero.(x)
 

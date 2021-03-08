@@ -69,7 +69,7 @@ function Base.similar(bc::BC.Broadcasted{<:CAStyle{<:BC.Unknown, Axes, N}}, T::T
 end
 
 
-Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, x), getaxes(x))
+Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, getdata(x)), getaxes(x))
 
 
 # function Base.copy(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}) where {InnerStyle, Axes,  N}
