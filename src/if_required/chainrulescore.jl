@@ -20,4 +20,4 @@ ChainRulesCore.rrule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->Com
 ChainRulesCore.rrule(::typeof(getaxes), x::ComponentArray) = getaxes(x), Δ->ComponentArray(getdata(x), Δ)
 
 # This won't work because typeof(ComponentArray) is a UnionAll. Do we even need it, though?
-# ChainRulesCore.rrule(::typeof(ComponntArray), data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
+ChainRulesCore.rrule(::Type{ComponentArray}, data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
