@@ -4,8 +4,8 @@
 #     setproperty!(zero_x, s, Δ)
 #     return getproperty(x, s), zero_x
 # end
-ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Symbol) = ChainRulesCore.rrule(getproperty, x, Val(s))
-function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}) where s
+ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}) where s = ChainRulesCore.rrule(getproperty, x, s)
+function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Symbol)
     function getproperty_adjoint(Δ)
         zero_x = zero(x)
         setproperty!(zero_x, s, Δ)
@@ -19,5 +19,4 @@ ChainRulesCore.rrule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->Com
 
 ChainRulesCore.rrule(::typeof(getaxes), x::ComponentArray) = getaxes(x), Δ->ComponentArray(getdata(x), Δ)
 
-# This won't work because typeof(ComponentArray) is a UnionAll. Do we even need it, though?
 ChainRulesCore.rrule(::Type{ComponentArray}, data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
