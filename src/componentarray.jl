@@ -60,7 +60,7 @@ end
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
 ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
-ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple(d))
+ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
