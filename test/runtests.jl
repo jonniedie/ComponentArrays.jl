@@ -56,6 +56,12 @@ end
     @test typeof(ComponentArray{Float32}(undef, (ax,))) == typeof(ca_Float32)
     @test typeof(ComponentArray{MVector{10,Float64}}(undef, (ax,))) == typeof(ca_MVector)
 
+    # Entry from Dict
+    dict1 = Dict(:a=>rand(5), :b=>rand(5,5))
+    dict2 = Dict(:a=>3, :b=>dict1)
+    @test ComponentArray(dict1) isa ComponentArray
+    @test ComponentArray(dict2).b isa ComponentArray
+
     @test ca == ComponentVector(a=100, b=[4, 1.3], c=(a=(a=1, b=[1.0, 4.4]), b=[0.4, 2, 1, 45]))
     @test cmat == ComponentMatrix(a .* a', ax, ax)
     @test_throws DimensionMismatch ComponentVector(sq_mat, ax)
@@ -276,6 +282,12 @@ end
     @test getaxes(xmat) == (getaxes(x1)[1], getaxes(x2)[1])
     @test getaxes(x1mat + xmat) == (getaxes(x1)[1], FlatAxis())
     @test getaxes(x1mat + xmat') == (FlatAxis(), getaxes(x1)[1])
+
+    @test map(sqrt, ca) isa ComponentArray
+    @test map(+, ca, sqrt.(ca)) isa ComponentArray
+    @test map(+, sqrt.(ca), Float32.(ca), ca) isa ComponentArray
+    @test map(+, ca, getdata(ca)) isa Array
+    @test map(+, ca, ComponentArray(v=getdata(ca))) isa Array
 
     x1 .+= x2
     @test getdata(x1) == 2getdata(x2)

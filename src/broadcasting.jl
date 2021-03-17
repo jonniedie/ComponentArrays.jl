@@ -71,6 +71,11 @@ end
 
 Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, getdata(x)), getaxes(x))
 
+# Need a special case here because `map` doesn't follow same rules as normal broadcasting. To be safe and avoid ambiguities,
+# we'll just handle the case where everything is a ComponentArray. Else it falls back to a plain Array output.
+function Base.map(f, xs::ComponentArray{<:Any, <:Any, <:Any, Axes}...) where Axes
+    return ComponentArray(map(f, getdata.(xs)...), getaxes(Axes))
+end
 
 # function Base.copy(bc::BC.Broadcasted{<:CAStyle{InnerStyle, Axes, N}}) where {InnerStyle, Axes,  N}
 #     return ComponentArray{Axes}(Base.copy(BC.broadcasted(bc.f, map(getdata, bc.args)...)))
