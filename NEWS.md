@@ -1,6 +1,18 @@
 # ComponentArrays.jl NEWS
 Notes on new features (minor releases). For more details on bugfixes and non-feature-adding changes (patch releases), check out the [releases page](https://github.com/jonniedie/ComponentArrays.jl/releases).
 
+### v0.9.0
+- Construct `ComponentArray`s from `Dict`s!
+```julia
+julia> d = Dict(:a=>rand(3), :b=>rand(2,2))
+Dict{Symbol, Array{Float64, N} where N} with 2 entries:
+  :a => [0.996693, 0.148683, 0.203083]
+  :b => [0.68759 0.41585; 0.900591 0.377475]
+
+julia> ComponentArray(d)
+ComponentVector{Float64}(a = [0.9966932920820444, 0.14868304847436709, 0.20308284992079573], b = [0.6875902095731583 0.415850281435181; 0.9005909643364229 0.3774747843717925])
+```
+
 ### v0.8.0
 - Generated `valkeys` function for fast iteration over `ComponentVector` subcomponents!
 ```julia

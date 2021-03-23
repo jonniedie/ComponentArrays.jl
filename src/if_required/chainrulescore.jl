@@ -6,8 +6,8 @@ using ChainRulesCore: NO_FIELDS
 #     setproperty!(zero_x, s, Δ)
 #     return getproperty(x, s), zero_x
 # end
-ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Symbol) = ChainRulesCore.rrule(getproperty, x, Val(s))
-function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}) where s
+ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}) where s = ChainRulesCore.rrule(getproperty, x, s)
+function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Symbol)
     function getproperty_adjoint(Δ)
         zero_x = zero(x)
         setproperty!(zero_x, s, Δ)
@@ -17,12 +17,8 @@ function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}
     return getproperty(x, s), getproperty_adjoint
 end
 
-# ChainRulesCore.frule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->ComponentArray(Δ, getaxes(x))
-ChainRulesCore.rrule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->(NO_FIELDS, ComponentArray(Δ, getaxes(x)))
-
-ChainRulesCore.rrule(::typeof(getaxes), x::ComponentArray) = getaxes(x), Δ->(NO_FIELDS, ComponentArray(getdata(x), Δ))
+ChainRulesCore.rrule(::typeof(getdata), x::ComponentArray) = getdata(x), Δ->ComponentArray(Δ, getaxes(x))
 
 ChainRulesCore.rrule(::Type{ComponentArray}, data, axes) = ComponentArray(data, axes), Δ->(NO_FIELDS, getdata(Δ), getaxes(Δ))
 
-ChainRulesCore.rrule(::Type{Axis}, nt) = Axis(nt), Δ->(NO_FIELDS, ComponentArrays.indexmap(Δ))
-ChainRulesCore.rrule(::Type{Axis}; kwargs...) = Axis(; kwargs...), Δ->(NO_FIELDS, (; ComponentArrays.indexmap(Δ)...))
+ChainRulesCore.rrule(::Type{ComponentArray}, data, axes) = ComponentArray(data, axes), Δ->(getdata(Δ), getaxes(Δ))
