@@ -31,7 +31,7 @@ julia> collect(x)
    2
 ```
 """
-struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{AbstractAxis}}} <: DenseArray{T,N}
+struct ComponentArray{T,N,A<:AbstractArray{T,N},Axes<:Tuple{Vararg{<:AbstractAxis}}} <: DenseArray{T,N}
     data::A
     axes::Axes
 end
