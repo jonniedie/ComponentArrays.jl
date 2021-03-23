@@ -84,5 +84,12 @@ julia> label2index(x, "b[1]")
 
 see also `labels`
 """
-label2index(x::ComponentVector, str::AbstractString) = label2index(labels(x), str)
-label2index(labs, str::AbstractString) = findall(startswith.(labs, str))
+label2index(x::ComponentVector, str) = label2index(labels(x), str)
+function label2index(labs, str)
+    idx = findall(startswith.(labs, str * r"(\.|\[)"))
+    if !isempty(idx)
+        return idx
+    else
+        return [findfirst(l -> l .== str, labs)]
+    end
+end

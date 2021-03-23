@@ -392,6 +392,16 @@ end
         "c.b[2,2]",
     ]
     @test label2index(ca2, "c.b") == collect(11:14)
+
+    # Issue #74
+    lab2 = labels(ComponentArray(a=1, aa=ones(2), ab=[(a=1, aa=ones(2)), (a=1, aa=ones(2))], ac=(a=1, ab=ones(2,2))))
+    @test label2index(lab2, "a") == [1]
+    @test label2index(lab2, "aa") == collect(2:3)
+    @test label2index(lab2, "ab") == collect(4:9)
+    @test label2index(lab2, "ab[1].aa") == collect(5:6)
+    @test label2index(lab2, "ac") == collect(10:14)
+    @test label2index(lab2, "ac.a") == [10]
+    @test label2index(lab2, "ac.ab") == collect(11:14)
 end
 
 @testset "Uncategorized Issues" begin
