@@ -86,7 +86,7 @@ see also `labels`
 """
 label2index(x::ComponentVector, str) = label2index(labels(x), str)
 function label2index(labs, str)
-    idx = findall(startswith.(labs, str * r"(\.|\[)"))
+    idx = findall(startswith.(labs, Regex("\\Q$str\\E(?:(\\.|\\[))"))) #str * r"(\.|\[)"))
     if !isempty(idx)
         return idx
     else
