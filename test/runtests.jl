@@ -157,6 +157,10 @@ end
 
     @test getproperty(ca, Val(:a)) == ca.a
 
+    @test Base.to_indices(ca, (:a, :b)) == (:a, :b)
+    @test Base.to_indices(ca, (1, 2)) == (1, 2)
+    @test Base.to_index(ca, :a) == :a
+
     #OffsetArray stuff
     part_ax = PartitionedAxis(2, Axis(a=1, b=2))
     oaca = ComponentArray(OffsetArray(collect(1:5), -1), Axis(a=0, b=ViewAxis(1:4, part_ax)))
@@ -176,9 +180,11 @@ end
     @test getdata(A_vec) isa Vector
     @test getdata(A_mat) isa Matrix
 
-    @test Base.to_indices(ca, (:a, :b)) == (:a, :b)
-    @test Base.to_indices(ca, (1, 2)) == (1, 2)
-    @test Base.to_index(ca, :a) == :a
+    # Issue #70
+    let 
+        ca = ComponentVector(a=1, b=2, c=3)
+        @test_throws BoundsError ca[:a, :b]
+    end
 end
 
 @testset "Set" begin
