@@ -34,16 +34,16 @@ flat vectors is fair game.
 The easiest way to construct 1-dimensional ```ComponentArray```s (aliased as `ComponentVector`) is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.
 ```julia
 julia> c = (a=2, b=[1, 2]);
-  
+
 julia> x = ComponentArray(a=5, b=[(a=20., b=0), (a=33., b=0), (a=44., b=3)], c=c)
 ComponentVector{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 2.0, b = [1.0, 2.0]))
-  
+
 julia> x.c.a = 400; x
 ComponentVector{Float64}(a = 5.0, b = [(a = 20.0, b = 0.0), (a = 33.0, b = 0.0), (a = 44.0, b = 3.0)], c = (a = 400.0, b = [1.0, 2.0]))
-  
+
 julia> x[8]
 400.0
-  
+
 julia> collect(x)
 10-element Array{Float64,1}:
    5.0
@@ -60,6 +60,14 @@ julia> collect(x)
 julia> typeof(similar(x, Int32)) === typeof(ComponentVector{Int32}(a=5, b=[(a=20., b=0), (a=33., b=0), (a=44., b=3)], c=c))
 true
 ```
+`ComponentArray`s can be constructed from existing
+`ComponentArray`s (currently nested fields cannot be changed this way):
+```julia
+julia> x = ComponentVector(a=1, b=2, c=3);
+
+julia> ComponentVector(x; a=11, new=42)
+ComponentVector{Int64}(a = 11, b = 2, c = 3, new = 42)
+```
 
 Higher dimensional ```ComponentArray```s can be created too, but it's a little messy at the moment. The nice thing for modeling is that dimension expansion through broadcasted operations can create higher-dimensional ```ComponentArray```s automatically, so Jacobian cache arrays that are created internally with ```false .* x .* x'``` will be two-dimensional ```ComponentArray```s (aliased as `ComponentMatrix`) with proper axes. Check out the [ODE with Jacobian](https://github.com/jonniedie/ComponentArrays.jl/blob/master/examples/ODE_jac_example.jl) example in the examples folder to see how this looks in practice.
 ```julia
@@ -75,16 +83,16 @@ julia> x2 = x .* x'
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
  1.0  2.0  1.0   4.0  2.0  1.0  2.0
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
- 
+
 julia> x2[:c,:c]
 3×3 ComponentMatrix{Float64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
  4.0  2.0  4.0
  2.0  1.0  2.0
  4.0  2.0  4.0
- 
+
 julia> x2[:a,:a]
  1.0
- 
+
 julia> x2[:a,:c]
 ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 2.0])
 
@@ -114,7 +122,7 @@ tspan = (0.0, 20.0)
 function lorenz!(D, u, p, t; f=0.0)
     @unpack σ, ρ, β = p
     @unpack x, y, z = u
-    
+
     D.x = σ*(y - x)
     D.y = x*(ρ - z) - y - f
     D.z = x*y - β*z
@@ -130,7 +138,7 @@ lorenz_prob = ODEProblem(lorenz!, lorenz_ic, tspan, lorenz_p)
 function lotka!(D, u, p, t; f=0.0)
     @unpack α, β, γ, δ = p
     @unpack x, y = u
-    
+
     D.x =  α*x - β*x*y + f
     D.y = -γ*y + δ*x*y
     return nothing
@@ -145,7 +153,7 @@ lotka_prob = ODEProblem(lotka!, lotka_ic, tspan, lotka_p)
 function composed!(D, u, p, t)
     c = p.c #coupling parameter
     @unpack lorenz, lotka = u
-    
+
     lorenz!(D.lorenz, lorenz, p.lorenz, t, f=c*lotka.x)
     lotka!(D.lotka, lotka, p.lotka, t, f=c*lorenz.x)
     return nothing
@@ -238,7 +246,7 @@ sine_input(;mag=1.0, period=10.0) = (x,p,t) -> mag*sin(t*2π/period)
 
 ## Interactive GUI for switching out plant models and varying PID gains
 @manipulate for kp in 0:0.01:15,
-                ki in 0:0.01:15, 
+                ki in 0:0.01:15,
                 kd in 0:0.01:15,
                 damping in Dict(
                     "Coulomb" => coulomb_block!,
@@ -251,19 +259,19 @@ sine_input(;mag=1.0, period=10.0) = (x,p,t) -> mag*sin(t*2π/period)
                 magnitude in 0:0.01:10, # pop-pop!
                 period in 1:0.01:30,
                 plot_v in false
-    
+
     # Inputs
     tspan = (0.0, 30.0)
 
     ctrl_fun = PID_controller!
     # plant_fun = coulomb_block!
-    
+
     ref = if reference==sine_input
         reference(period=period, mag=magnitude)
     else
         reference(mag=magnitude)
     end
-    
+
     m = 50.0
     μ = 0.1
     ω = 2π/period
