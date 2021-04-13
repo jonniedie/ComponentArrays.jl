@@ -1,7 +1,6 @@
 module ComponentArrays
 
 using ArrayInterface
-# using ChainRulesCore
 using LinearAlgebra
 using Requires
 
