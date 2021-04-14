@@ -107,6 +107,10 @@ end
 
     @test keys(ca) == (:a, :b, :c)
     @test valkeys(ca) == Val.((:a, :b, :c))
+
+    @test ca == getdata(ca)
+    @test hash(ca) == hash(getdata(ca))
+    @test hash(ca, zero(UInt)) == hash(getdata(ca), zero(UInt))
 end
 
 @testset "Get" begin

@@ -284,6 +284,8 @@ Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
+Base.hash(x::ComponentArray, h::UInt) = hash(getdata(x), h)
+
 """
     valkeys(x::ComponentVector)
 
