@@ -1,5 +1,6 @@
 using ComponentArrays
 using ForwardDiff
+using LabelledArrays
 using LinearAlgebra
 using StaticArrays
 using OffsetArrays
@@ -108,9 +109,18 @@ end
     @test keys(ca) == (:a, :b, :c)
     @test valkeys(ca) == Val.((:a, :b, :c))
 
-    @test ca == getdata(ca)
-    @test hash(ca) == hash(getdata(ca))
-    @test hash(ca, zero(UInt)) == hash(getdata(ca), zero(UInt))
+    @test ca != getdata(ca)
+    @test getdata(ca) != ca
+    @test hash(ca) != hash(getdata(ca))
+    @test hash(ca, zero(UInt)) != hash(getdata(ca), zero(UInt))
+
+    ab = ComponentArray(a=1, b=2)
+    xy = ComponentArray(x=1, y=2)
+    @test ab != xy
+    @test hash(ab) != hash(xy)
+    @test hash(ab, zero(UInt)) != hash(xy, zero(UInt))
+
+    @test ab == LVector(a=1, b=2)
 end
 
 @testset "Get" begin
@@ -229,7 +239,7 @@ end
 
     A = ComponentArray(zeros(Int,4,4), Axis(x=1:4), Axis(x=1:4))
     A[1,:] .= 1
-    @test A[1,:] == ones(Int,4)
+    @test A[1,:] == ComponentVector(x=ones(Int,4))
 end
 
 @testset "Similar" begin
@@ -258,7 +268,7 @@ end
     temp = deepcopy(ca)
     @test eltype(Float32.(ca)) == Float32
     @test ca .* ca' == cmat
-    @test 1 .* (ca .+ ca) == ComponentArray(a .+ a)
+    @test 1 .* (ca .+ ca) == ComponentArray(a .+ a, getaxes(ca))
     @test typeof(ca .+ cmat) == typeof(cmat)
     @test getaxes(false .* ca .* ca') == (ax, ax)
     @test getaxes(false .* ca' .* ca) == (ax, ax)
@@ -313,7 +323,7 @@ end
     @test ca * ca' == collect(cmat)
     @test ca * ca' == a * a'
     @test ca' * ca == a' * a
-    @test cmat * ca == cmat * a
+    @test cmat * ca == ComponentArray(cmat * a, getaxes(ca))
     @test cmat' * ca isa AbstractArray
     @test a' * ca isa Number
     @test cmat'' == cmat
@@ -333,7 +343,7 @@ end
     @test ca * transpose(ca) == collect(cmat)
     @test ca * transpose(ca) == a * transpose(a)
     @test transpose(ca) * ca == transpose(a) * a
-    @test cmat * ca == cmat * a
+    @test ca' * cmat == ComponentArray(a' * getdata(cmat), getaxes(ca))
     @test transpose(transpose(cmat)) == cmat
     @test transpose(transpose(ca)) == ca
     @test transpose(ca.c) * cmat[:c,:c] * ca.c isa Number

@@ -284,7 +284,11 @@ Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
 
-Base.hash(x::ComponentArray, h::UInt) = hash(getdata(x), h)
+Base.hash(x::ComponentArray, h::UInt) = hash(keys(x), hash(getdata(x), h))
+
+Base.:(==)(x::ComponentArray, y::ComponentArray) = getdata(x)==getdata(y) && getaxes(x)==getaxes(y)
+Base.:(==)(x::ComponentArray, y::AbstractArray) = getdata(x)==y && keys(x)==keys(y) # For equality with LabelledArrays
+Base.:(==)(x::AbstractArray, y::ComponentArray) = y==x
 
 """
     valkeys(x::ComponentVector)
