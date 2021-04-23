@@ -1,11 +1,5 @@
 # This file is machine-generated - editing it directly is not advised
 
-[[AbstractFFTs]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "485ee0867925449198280d4af84bdb46a2a404d0"
-uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
-version = "1.0.1"
-
 [[Adapt]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "f1b523983a58802c4695851926203b36e28f09db"
@@ -26,12 +20,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
-
-[[ChainRules]]
-deps = ["ChainRulesCore", "Compat", "LinearAlgebra", "Random", "Reexport", "Requires", "Statistics"]
-git-tree-sha1 = "1f410fba5c04d03ab712f348f1542e6059376547"
-uuid = "082447d4-558c-5d27-93f4-14fc19e9eca2"
-version = "0.7.61"
 
 [[ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
@@ -95,12 +83,6 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
-[[FillArrays]]
-deps = ["LinearAlgebra", "Random", "SparseArrays"]
-git-tree-sha1 = "31939159aeb8ffad1d4d8ee44d07f8558273120a"
-uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.11.7"
-
 [[FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Requires", "SparseArrays", "StaticArrays"]
 git-tree-sha1 = "f6f80c8f934efd49a286bb5315360be66956dfc4"
@@ -124,12 +106,6 @@ git-tree-sha1 = "241552bc2209f0fa068b6415b1942cc0aa486bcc"
 uuid = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
 version = "1.1.2"
 
-[[IRTools]]
-deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "c67e7515a11f726f44083e74f218d134396d6510"
-uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
-version = "0.4.2"
-
 [[IfElse]]
 git-tree-sha1 = "28e837ff3e7a6c3cdb252ce49fb412c8eb3caeef"
 uuid = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
@@ -144,6 +120,12 @@ deps = ["Preferences"]
 git-tree-sha1 = "642a199af8b68253517b80bd3bfd17eb4e84df6e"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.3.0"
+
+[[LabelledArrays]]
+deps = ["ArrayInterface", "LinearAlgebra", "MacroTools", "StaticArrays"]
+git-tree-sha1 = "df09e970c816637191ef8794ef5c5c9f8950db88"
+uuid = "2ee39098-c373-598a-b85f-a56591580800"
+version = "1.6.0"
 
 [[LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -233,11 +215,6 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
-[[Reexport]]
-git-tree-sha1 = "57d8440b0c7d98fc4f889e478e80f268d534c9d5"
-uuid = "189a3867-3050-52da-a836-e630ba90ab69"
-version = "1.0.0"
-
 [[Requires]]
 deps = ["UUIDs"]
 git-tree-sha1 = "4036a3bd08ac7e968e27c203d45f5fff15020621"
@@ -323,18 +300,6 @@ version = "1.7.0"
 [[Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-
-[[Zygote]]
-deps = ["AbstractFFTs", "ChainRules", "ChainRulesCore", "DiffRules", "Distributed", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "927209c83efa62256788a9880c191774c07c5b51"
-uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.6.10"
-
-[[ZygoteRules]]
-deps = ["MacroTools"]
-git-tree-sha1 = "9e7a1e8ca60b742e508a315c17eef5211e7fbfd7"
-uuid = "700de1a5-db45-46bc-99cf-38207098b444"
-version = "0.2.1"
 
 [[nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
