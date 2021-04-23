@@ -421,3 +421,5 @@ end
     @test typeof(zrv0) === typeof(rv0)
     @test typeof(zrv0.r[1]) == typeof(rv0[1])
 end
+
+@testset "Autodiff" begin include("autodiff_tests.jl") end
