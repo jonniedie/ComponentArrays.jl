@@ -9,7 +9,7 @@ const FlatOrColonIdx = Union{FlatIdx, Colon}
 
 
 include("utils.jl")
-export fastindices
+export fastindices # Deprecated
 
 include("lazyarray.jl")
 
@@ -21,13 +21,19 @@ include("componentindex.jl")
 include("componentarray.jl")
 export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys
 
-include("set_get.jl")
+include("array_interface.jl")
+# Base methods: parent, size, elsize, axes, reinterpret, hcat, vcat, permutedims, IndexStyle, to_indices, to_index, getindex, setindex!, view, pointer, unsafe_convert, strides, stride
+# ArrayInterface methods: strides, size, lu_instance, parent_type
+
+include("namedtuple_interface.jl")
+# Base methods: hash, ==, keys, haskey, propertynames, getproperty, setproperty!
 
 include("similar_convert_copy.jl")
+# Base methods: similar, zero, copy, copyto!, deepcopy, convert (to Array and NamedTuple), promote
 
 include("broadcasting.jl")
-
-include("math.jl")
+# Base methods: BroadcastStyle, convert(to Broadcasted{Nothing}), similar, map, dataids
+# Broadcast methods: BroadcastStyle, broadcasted, broadcast_unalias
 
 include("show.jl")
 

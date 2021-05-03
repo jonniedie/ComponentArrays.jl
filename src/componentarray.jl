@@ -269,26 +269,11 @@ julia> getaxes(ca)
 @inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
 @inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
+## Field access through these functions to reserve dot-getting for keys
+@inline getaxes(x::VarAxes) = getaxes(typeof(x))
+@inline getaxes(Ax::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
 
-Base.parent(x::ComponentArray) = getfield(x, :data)
-
-Base.size(x::ComponentArray) = size(getdata(x))
-
-Base.elsize(x::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = Base.elsize(A)
-
-Base.axes(x::ComponentArray) = axes(getdata(x))
-
-Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
-
-Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
-
-Base.keys(x::ComponentVector) = keys(indexmap(getaxes(x)[1]))
-
-Base.hash(x::ComponentArray, h::UInt) = hash(keys(x), hash(getdata(x), h))
-
-Base.:(==)(x::ComponentArray, y::ComponentArray) = getdata(x)==getdata(y) && getaxes(x)==getaxes(y)
-Base.:(==)(x::ComponentArray, y::AbstractArray) = getdata(x)==y && keys(x)==keys(y) # For equality with LabelledArrays
-Base.:(==)(x::AbstractArray, y::ComponentArray) = y==x
+getaxes(x) = ()
 
 """
     valkeys(x::ComponentVector)
@@ -318,22 +303,3 @@ julia> sum(prod(ca[k]) for k in valkeys(ca))
     k = Val.(keys(idxmap))
     return :($k)
 end
-
-Base.haskey(x::ComponentVector, s::Symbol) = haskey(indexmap(getaxes(x)[1]), s)
-
-function Base.permutedims(x::ComponentArray, dims)
-    axs = getaxes(x)
-    return ComponentArray(permutedims(getdata(x), dims), map(i->axs[i], dims)...)
-end
-
-Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)
-
-
-ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A
-ArrayInterface.size(A::ComponentArray) = ArrayInterface.size(parent(A))
-ArrayInterface.strides(A::ComponentArray) = ArrayInterface.strides(parent(A))
-for f in [:device, :stride_rank, :contiguous_axis, :contiguous_batch_size, :dense_dims] 
-    @eval ArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.$f(A)
-end
-
-

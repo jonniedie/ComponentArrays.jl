@@ -69,7 +69,7 @@ function Base.similar(bc::BC.Broadcasted{<:CAStyle{<:BC.Unknown, Axes, N}}, T::T
 end
 
 
-Base.Broadcast.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, getdata(x)), getaxes(x))
+BC.broadcasted(f, x::ComponentArray) = ComponentArray(map(f, getdata(x)), getaxes(x))
 
 # Need a special case here because `map` doesn't follow same rules as normal broadcasting. To be safe and avoid ambiguities,
 # we'll just handle the case where everything is a ComponentArray. Else it falls back to a plain Array output.

@@ -32,9 +32,7 @@ labels(x::ComponentVector) = map(x->x[firstindex(x)+1:end], _labels(x))
 labels(x) = map(x->x[firstindex(x):end], _labels(x))
 
 
-function _labels(x::ComponentVector)
-    vcat((".$(key)" .* _labels(x[key]) for key in keys(x))...)
-end
+_labels(x::ComponentVector) = vcat((".$(key)" .* _labels(x[key]) for key in keys(x))...)
 _labels(x::AbstractArray{<:ComponentArray}) = vcat(("[$i]" .* _labels(x[i]) for i in eachindex(x))...)
 _labels(x::LazyArray) = vcat(("[$i]" .* _labels(x[i]) for i in eachindex(x))...)
 _labels(x::AbstractArray) = vcat(("[" * join(i.I, ",") * "]" for i in CartesianIndices(x))...)
@@ -87,9 +85,5 @@ see also `labels`
 label2index(x::ComponentVector, str) = label2index(labels(x), str)
 function label2index(labs, str)
     idx = findall(startswith.(labs, Regex("\\Q$str\\E(?:(\\.|\\[))")))
-    if !isempty(idx)
-        return idx
-    else
-        return [findfirst(l -> l .== str, labs)]
-    end
+    return !isempty(idx) ? idx : [findfirst(l -> l .== str, labs)]
 end

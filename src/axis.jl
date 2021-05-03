@@ -78,6 +78,7 @@ const NullOrFlatView{Inds,IdxMap} = ViewAxis{Inds,IdxMap,<:NullorFlatAxis}
 
 viewindex(::ViewAxis{Inds,IdxMap}) where {Inds,IdxMap} = Inds
 viewindex(::Type{<:ViewAxis{Inds,IdxMap}}) where {Inds,IdxMap} = Inds
+viewindex(i) = i
 
 
 
@@ -133,3 +134,9 @@ const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where
 
 
 Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
+
+Base.lastindex(ax::AbstractAxis) = last(viewindex(last(indexmap(ax))))
+
+reindex(i, offset) = i .+ offset
+reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
+reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
