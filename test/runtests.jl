@@ -32,14 +32,13 @@ cmat2 = ca2 .* ca2'
 
 caa = ComponentArray(a=ca, b=sq_mat)
 
-_a, _b, _c = fastindices(:a, :b, :c)
+_a, _b, _c = Val.((:a, :b, :c))
 
 
 ## Tests
 @testset "Utilities" begin
-    @test ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
-    @test fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
-    @test fastindices(("a", Val(:b))) == (Val(:a), Val(:b))
+    @test_deprecated ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
+    @test_deprecated fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
 
     @test collect(ComponentArrays.partition(collect(1:12), 3)) == [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
     @test size(collect(ComponentArrays.partition(zeros(2,2,2), 1, 2, 2))[2,1,1]) == (1, 2, 2)
