@@ -18,7 +18,7 @@ function Base.vcat(x::ComponentVector, y::ComponentVector)
         return vcat(getdata(x), getdata(y))
     else
         data_x, data_y = getdata.((x, y))
-        ax_x, ax_y = only.(getaxes.((x, y)))
+        ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
         ax_y = reindex(ax_y, length(x))
         idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)))
