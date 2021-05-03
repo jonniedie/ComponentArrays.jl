@@ -1,41 +1,5 @@
-"""
-    fastindices(i...)
-
-Wrap ```ComponentArray``` symbolic indices in ```Val```s for type-stable indexing.
-
-# Examples
-```julia-repl
-julia> using ComponentArrays
-
-julia> ca = ComponentArray(a=1, b=[2, 1, 4], c=(a=2, b=[1, 2]))
-ComponentVector{Int64}(a = 1, b = [2, 1, 4], c = (a = 2, b = [1, 2]))
-
-julia> ca2 = ca .* ca'
-7×7 ComponentMatrix{Int64} with axes Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3))) × Axis(a = 1, b = 2:4, c = ViewAxis(5:7, Axis(a = 1, b = 2:3)))
- 1  2  1   4  2  1  2
- 2  4  2   8  4  2  4
- 1  2  1   4  2  1  2
- 4  8  4  16  8  4  8
- 2  4  2   8  4  2  4
- 1  2  1   4  2  1  2
- 2  4  2   8  4  2  4
-
-julia> _a, _b, _c = fastindices(:a, :b, :c)
-(Val{:a}(), Val{:b}(), Val{:c}())
-
-julia> ca2[_c, _c]
-3×3 ComponentMatrix{Int64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
- 4  2  4
- 2  1  2
- 4  2  4
-
-julia> ca2[_c, _c] == ca2[:c, :c]
-true
-```
-"""
-fastindices(i...) = toval.(i)
-fastindices(i::Tuple) = toval.(i)
-
+@deprecate fastindices(i::Tuple) Val.(i)
+@deprecate fastindices(i...) Val.((i...,))
 
 # Make a Val if input isn't already one
 toval(x::Val) = x

@@ -9,20 +9,32 @@ const FlatOrColonIdx = Union{FlatIdx, Colon}
 
 
 include("utils.jl")
-include("lazyarray.jl")
-include("axis.jl")
-include("componentindex.jl")
-include("componentarray.jl")
-include("set_get.jl")
-include("similar_convert_copy.jl")
-include("broadcasting.jl")
-include("math.jl")
-include("show.jl")
-include("plot_utils.jl")
-# include(joinpath("if_required", "chainrulescore.jl"))
+export fastindices
 
-# If using for differential equations, the Array(sol) overload in RecursiveArrayTools will
-# concatenate the ComponentVectors while preserving their ComponentArrayness
+include("lazyarray.jl")
+
+include("axis.jl")
+export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
+
+include("componentindex.jl")
+
+include("componentarray.jl")
+export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys
+
+include("set_get.jl")
+
+include("similar_convert_copy.jl")
+
+include("broadcasting.jl")
+
+include("math.jl")
+
+include("show.jl")
+
+include("plot_utils.jl")
+export labels, label2index
+
+
 required(filename) = include(joinpath("if_required", filename))
 
 function __init__()
@@ -33,16 +45,8 @@ function __init__()
     @require SciMLBase="0bca4576-84f4-4d90-8ffe-ffa030f20462" required("scimlbase.jl")
     @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
     @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
-    # @require Zygote="e88e6eb3-aa80-5325-afca-941959d7151f" required("zygote.jl")
     @require ChainRulesCore="d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4" required("chainrulescore.jl")
     @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" required("reversediff.jl")
 end
-
-
-export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
-
-export ComponentArray, ComponentVector, ComponentMatrix
-
-export getdata, getaxes, fastindices, labels, label2index, valkeys
 
 end
