@@ -21,7 +21,7 @@ julia> x[5]
 400
 
 julia> collect(x)
-7-element Array{Int64,1}:
+7-element Vector{Int64}:
    1
    2
    1
@@ -252,7 +252,7 @@ Access ```.axes``` field of a ```ComponentArray```. This is different than ```ax
 julia> using ComponentArrays
 
 julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
-Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
+Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3)))
 
 julia> A = zeros(6,6);
 

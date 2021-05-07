@@ -88,7 +88,7 @@ viewindex(i) = i
 Gives named component access for `ComponentArray`s.
 # Examples
 
-```jldoctest
+```
 julia> using ComponentArrays
 
 julia> ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
@@ -102,7 +102,7 @@ julia> ca.a
 100.0
 
 julia> ca.b
-3-element LazyArray{ComponentVector{Float64,SubArray...},1}:
+3-element LazyArray{ComponentVector{Float64,SubArray...}}:
  ComponentVector{Float64,SubArray...}(a = 4.0, b = 1.3)
  ComponentVector{Float64,SubArray...}(a = 1.0, b = 1.0)
  ComponentVector{Float64,SubArray...}(a = 4.4, b = 0.4)
@@ -111,7 +111,7 @@ julia> ca.c
 ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 45.0])
 
 julia> ca.c.b
-2-element view(::Array{Float64,1}, 9:10) with eltype Float64:
+2-element view(::Vector{Float64}, 9:10) with eltype Float64:
   1.0
  45.0
 ```
