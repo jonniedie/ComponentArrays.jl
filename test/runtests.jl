@@ -93,6 +93,14 @@ end
 
     # Issue #61
     @test ComponentArray(x=1) isa ComponentArray{Int}
+
+    # Issue #81
+    @test ComponentArray() isa ComponentArray
+    @test ComponentVector() isa ComponentVector
+    @test ComponentMatrix() isa ComponentMatrix
+    @test ComponentArray{Float32}() isa ComponentArray{Float32}
+    @test ComponentVector{Float32}() isa ComponentVector{Float32}
+    @test ComponentMatrix{Float32}() isa ComponentMatrix{Float32}
 end
 
 @testset "Attributes" begin

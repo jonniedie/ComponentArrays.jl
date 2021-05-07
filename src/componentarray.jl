@@ -59,7 +59,9 @@ end
 
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
+ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
 ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
+ComponentArray(::NamedTuple{(), Tuple{}}) = ComponentArray(Any[], (FlatAxis(),))
 ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
@@ -67,6 +69,7 @@ ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 ComponentArray(x::ComponentArray) = x
 ComponentArray{T}(x::ComponentArray) where {T} = T.(x)
 (CA::Type{<:ComponentArray{T,N,A,Ax}})(x::ComponentArray) where {T,N,A,Ax} = ComponentArray(T.(getdata(x)), getaxes(x))
+
 
 ## Some aliases
 """
@@ -109,6 +112,9 @@ ComponentMatrix(data::AbstractArray, ax...) = throw(DimensionMismatch("A `Compon
 ComponentMatrix(x::ComponentMatrix) = x
 ComponentMatrix{T}(x::ComponentMatrix) where {T} = T.(x)
 
+ComponentMatrix() = ComponentMatrix(Array{Any}(undef, 0, 0), (FlatAxis(), FlatAxis()))
+ComponentMatrix{T}() where {T} = ComponentMatrix(Array{T}(undef, 0, 0), (FlatAxis(), FlatAxis()))
+
 const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
@@ -119,12 +125,14 @@ const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} whe
 
 ## Constructor helpers
 # For making ComponentArrays from named tuples
+make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
+make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
 function make_carray_args(nt)
     data, ax = make_carray_args(Vector, nt)
     data = length(data)==1 ? [data[1]] : reduce(vcat, data)
     return (data, ax)
 end
-make_carray_args(T::Type, nt) = make_carray_args(Vector{T}, nt)
+make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     data, idx = make_idx([], nt, 0)
     return (A(data), Axis(idx))
