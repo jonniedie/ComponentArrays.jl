@@ -10,6 +10,6 @@ research/
 /examples/wip
 /examples/ignore
 /examples/.ipynb_checkpoints
-.vscode/settings.json
+.vscode
 /issue_debug
 Manifest.toml

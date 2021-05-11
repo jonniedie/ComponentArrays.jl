@@ -59,14 +59,14 @@ Base.@propagate_inbounds function Base.getindex(x::ComponentArray, idx::FlatOrCo
     return ComponentArray(getdata(x)[idx...], axs...)
 end
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[:]
-@inline Base.getindex(x::ComponentArray, ::Colon...) = x
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon...) = x
+@inline Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
 @inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(x, idx...)
 
 # Set ComponentArray index
-@inline Base.setindex!(x::ComponentArray, v, idx::FlatIdx...) = setindex!(getdata(x), v, idx...)
+Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx::FlatOrColonIdx...) = setindex!(getdata(x), v, idx...)
 Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, ::Colon) = setindex!(getdata(x), v, :)
-Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx...) = setindex!(x, v, toval.(idx)...)
+@inline Base.setindex!(x::ComponentArray, v, idx...) = setindex!(x, v, toval.(idx)...)
 @inline Base.setindex!(x::ComponentArray, v, idx::Val...) = _setindex!(x, v, idx...)
 
 # Explicitly view
