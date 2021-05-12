@@ -108,6 +108,32 @@ ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_in
 
 ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A
 
+for f in [*, \, /]
+    op = nameof(f)
+    @eval begin
+        function Base.$op(A::ComponentMatrix, B::ComponentMatrix)
+            C = $op(getdata(A), getdata(B))
+            ax1 = getaxes(A)[1]
+            ax2 = getaxes(B)[2]
+            return ComponentArray(C, (ax1, ax2))
+        end
+        function Base.$op(A::ComponentMatrix, b::ComponentVector)
+            c = $op(getdata(A), getdata(b))
+            ax1 = getaxes(A)[1]
+            return ComponentArray(c, ax1)
+        end
+        function Base.$op(aᵀ::Adjoint{T,<:ComponentVector}, B::ComponentMatrix) where {T}
+            cᵀ = parent($op(getdata(aᵀ), getdata(B)))
+            ax2 = getaxes(B)[2]
+            return ComponentArray(cᵀ, ax2)'
+        end
+        function Base.$op(aᵀ::Transpose{T,<:ComponentVector}, B::ComponentMatrix) where {T}
+            cᵀ = parent($op(getdata(aᵀ), getdata(B)))
+            ax2 = getaxes(B)[2]
+            return transpose(ComponentArray(cᵀ, ax2))
+        end
+    end
+end
 
 
 # While there are some cases where these were faster, it is going to be almost impossible to

@@ -392,6 +392,19 @@ end
     smat = @SMatrix [1 2; 3 4]
     b = ComponentArray(a = 1, b = 2)
     @test smat*b isa StaticArray
+
+    # Issue #86: Matrix multiplication
+    in1 = ComponentArray(u1=1)
+    in2 = ComponentArray(u2=1)
+    out1 = ComponentArray(y1=1)
+    out2 = ComponentArray(y2=1)
+    s1_D = out1 * in1'
+    s2_D = out2 * in2'
+    @test getaxes(s1_D * s2_D) == (Axis(y1=1), Axis(u2=1))
+    @test getaxes(s2_D * s1_D) == (Axis(y2=1), Axis(u1=1))
+    @test getaxes((s1_D * s2_D) * in2) == getaxes(s1_D * (s2_D * in2)) == (Axis(y1=1),)
+    @test getaxes((s2_D * s1_D) * in1) == getaxes(s2_D * (s1_D * in1)) == (Axis(y2=1),)
+    @test getaxes(out1' * (s1_D * s2_D)) == getaxes(transpose(out1) * (s1_D * s2_D)) == (FlatAxis(), Axis(u2=1))
 end
 
 @testset "Plot Utilities" begin
