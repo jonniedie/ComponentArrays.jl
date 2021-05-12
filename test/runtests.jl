@@ -206,6 +206,17 @@ end
         ca = ComponentVector(a=1, b=2, c=3)
         @test_throws BoundsError ca[:a, :b]
     end
+
+    # Issue # 87: Conversion/promotion
+    let
+        ax1 = Axis((; x1=1))
+        ax2 = Axis((; x2=1))
+        A1 = ComponentMatrix(zeros(1, 1), ax1, ax1)
+        A2 = ComponentMatrix(zeros(1, 1), ax2, ax2)
+        A = [A for A in [A1, A2]]
+        @test A[1] == A1
+        @test A[2] == A2
+    end
 end
 
 @testset "Set" begin

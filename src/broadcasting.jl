@@ -104,7 +104,7 @@ function fill_flat(Ax1, Ax2, N1, N2)
         N = N1
         ax1, ax2 = Ax1, Ax2
     end
-    Ax = promote.(getaxes(ax1), getaxes(ax2)) |> typeof
+    Ax = Base.promote_typeof(getaxes(ax1), getaxes(ax2))
     return Ax, N
 end
 fill_flat(Ax::Type{<:VarAxes}, N) = fill_flat(getaxes(Ax), N) |> typeof

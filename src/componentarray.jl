@@ -273,13 +273,13 @@ julia> getaxes(ca)
 @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
 @inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
-@inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
-@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
+@inline getaxes(::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
+@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
 ## Field access through these functions to reserve dot-getting for keys
 @inline getaxes(x::VarAxes) = getaxes(typeof(x))
-@inline getaxes(Ax::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
+@inline getaxes(Ax::Type{Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
 
 getaxes(x) = ()
 
