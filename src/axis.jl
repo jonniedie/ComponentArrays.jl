@@ -119,8 +119,8 @@ julia> ca.c.b
 struct Axis{IdxMap} <: AbstractAxis{IdxMap} end
 @inline Axis(IdxMap::NamedTuple) = Axis{IdxMap}()
 Axis(;kwargs...) = Axis((;kwargs...))
-function Axis(symbols::Union{AbstractVector{Symbol}, NTuple{N,Symbol}}) where N
-    return Axis(NamedTuple(symbols .=> eachindex(symbols)))
+function Axis(symbols::Union{AbstractVector{Symbol}, NTuple{N,Symbol}}) where {N}
+    return Axis((;(symbols .=> eachindex(symbols))...))
 end
 Axis(symbols::Symbol...) = Axis(symbols)
 
