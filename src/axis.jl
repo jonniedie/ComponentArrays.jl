@@ -119,11 +119,16 @@ julia> ca.c.b
 struct Axis{IdxMap} <: AbstractAxis{IdxMap} end
 @inline Axis(IdxMap::NamedTuple) = Axis{IdxMap}()
 Axis(;kwargs...) = Axis((;kwargs...))
+function Axis(symbols::Union{AbstractVector{Symbol}, NTuple{N,Symbol}}) where N
+    return Axis(NamedTuple(symbols .=> eachindex(symbols)))
+end
+Axis(symbols::Symbol...) = Axis(symbols)
 
 Axis(ax::AbstractAxis) = ax
 Axis(ax::PartitionedAxis) = ax.ax
 Axis(ax::ViewAxis) = ax.ax
 
+# Get rid of this
 Axis(::Number) = NullAxis()
 Axis(::NamedTuple{()}) = FlatAxis()
 Axis(x) = FlatAxis()

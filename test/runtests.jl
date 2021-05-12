@@ -68,6 +68,11 @@ end
     @test_throws DimensionMismatch ComponentMatrix(rand(11,11,11), ax, ax)
     @test_throws ErrorException ComponentArray(v=[(a=1, b=2), (a=3, c=4)])
 
+    # Axis construction from symbols
+    @test Axis([:a, :b, :c]) == Axis(a=1, b=2, c=3)
+    @test Axis((:a, :b, :c)) == Axis(a=1, b=2, c=3)
+    @test Axis(:a, :b, :c) == Axis(a=1, b=2, c=3)
+
     # Issue #24
     @test ComponentVector(a=1, b=2f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
     @test ComponentVector(a=1, b=2+im) == ComponentVector{Complex{Int64}}(a = 1 + 0im, b = 2 + 1im)
