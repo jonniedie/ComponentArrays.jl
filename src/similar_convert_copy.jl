@@ -85,7 +85,6 @@ Base.NamedTuple(x::ComponentVector) = _namedtuple(x)
 
 
 ## AbstractAxis conversion and promotion
-Base.convert(::Type{AbstractAxis}, ax::AbstractAxis) = ax
 Base.convert(::Type{Ax}, ::AbstractAxis) where {Ax<:AbstractAxis} = Ax()
 Base.convert(::Type{Ax}, ax::AbstractAxis) where {Ax<:VarAxes} = convert.(typeof.(getaxes(Ax)), (ax,))
 
