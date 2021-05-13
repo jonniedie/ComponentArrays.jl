@@ -122,6 +122,10 @@ const CMatrix = ComponentMatrix
 const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
 const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
 
+const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
+const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T
+const AbstractComponentVecOrMat = Union{ComponentVecOrMat, AdjOrTransComponentVecOrMat}
+
 
 ## Constructor helpers
 # For making ComponentArrays from named tuples

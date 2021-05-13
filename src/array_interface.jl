@@ -9,8 +9,26 @@ Base.axes(x::ComponentArray) = axes(getdata(x))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.hcat(x::CV...) where {CV<:ComponentVector} = ComponentArray(reduce(hcat, getdata.(x)), getaxes(x[1])[1], FlatAxis())
+# Cats
+# TODO: Make this a little less copy-pastey
+function Base.hcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
+    ax_x, ax_y = second_axis.((x,y))
+    if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[1] != getaxes(y)[1]
+        return hcat(getdata(x), getdata(y))
+    else
+        data_x, data_y = getdata.((x, y))
+        ax_y = reindex(ax_y, size(x,2))
+        idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
+        axs = getaxes(x)
+        return ComponentArray(hcat(data_x, data_y), axs[1], Axis((;idxmap_x..., idxmap_y...)), axs[3:end]...)
+    end
+end
 
+second_axis(ca::AbstractComponentVecOrMat) = getaxes(ca)[2]
+second_axis(::ComponentVector) = FlatAxis()
+
+# Are all these methods necessary?
+# TODO: See what we can reduce down to without getting ambiguity errors
 Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
 Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
 function Base.vcat(x::ComponentVector, y::ComponentVector)
@@ -24,10 +42,32 @@ function Base.vcat(x::ComponentVector, y::ComponentVector)
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)))
     end
 end
+function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
+    ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
+    if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[2:end] != getaxes(y)[2:end]
+        return vcat(getdata(x), getdata(y))
+    else
+        data_x, data_y = getdata.((x, y))
+        ax_y = reindex(ax_y, size(x,1))
+        idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
+        return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)), getaxes(x)[2:end]...)
+    end
+end
 Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
-Base.vcat(x::ComponentVector...) = reduce(vcat, x)
 Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
 Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
+
+function Base.hvcat(row_lengths::Tuple{Vararg{Int}}, xs::AbstractComponentVecOrMat...)
+    i = 1
+    idxs = UnitRange{Int}[]
+    for row_length in row_lengths
+        i_last = i + row_length - 1
+        push!(idxs, i:i_last)
+        i = i_last + 1
+    end
+    rows = [reduce(hcat, xs[idx]) for idx in idxs]
+    return vcat(rows...)
+end
 
 function Base.permutedims(x::ComponentArray, dims)
     axs = getaxes(x)
@@ -111,26 +151,55 @@ ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes
 for f in [*, \, /]
     op = nameof(f)
     @eval begin
-        function Base.$op(A::ComponentMatrix, B::ComponentMatrix)
+        function Base.$op(A::ComponentVecOrMat, B::ComponentMatrix)
             C = $op(getdata(A), getdata(B))
             ax1 = getaxes(A)[1]
             ax2 = getaxes(B)[2]
             return ComponentArray(C, (ax1, ax2))
         end
-        function Base.$op(A::ComponentMatrix, b::ComponentVector)
+        function Base.$op(A::ComponentVecOrMat, b::ComponentVector)
             c = $op(getdata(A), getdata(b))
             ax1 = getaxes(A)[1]
             return ComponentArray(c, ax1)
         end
-        function Base.$op(aᵀ::Adjoint{T,<:ComponentVector}, B::ComponentMatrix) where {T}
-            cᵀ = parent($op(getdata(aᵀ), getdata(B)))
-            ax2 = getaxes(B)[2]
-            return ComponentArray(cᵀ, ax2)'
-        end
-        function Base.$op(aᵀ::Transpose{T,<:ComponentVector}, B::ComponentMatrix) where {T}
-            cᵀ = parent($op(getdata(aᵀ), getdata(B)))
-            ax2 = getaxes(B)[2]
-            return transpose(ComponentArray(cᵀ, ax2))
+    end
+    for (adjfun, AdjType) in zip([adjoint, transpose], [Adjoint, Transpose])
+        adj = nameof(adjfun)
+        Adj = nameof(AdjType)
+        @eval begin
+            function Base.$op(aᵀ::$Adj{T,<:ComponentVector}, B::ComponentMatrix) where {T}
+                cᵀ = parent($op(getdata(aᵀ), getdata(B)))
+                ax2 = getaxes(B)[2]
+                return $adj(ComponentArray(cᵀ, ax2))
+            end
+            function Base.$op(Aᵀ::$Adj{T,<:ComponentMatrix}, B::AdjOrTransComponentVecOrMat) where {T}
+                Cᵀ = $op(getdata(Aᵀ), getdata(B))
+                ax1 = getaxes(Aᵀ)[1]
+                ax2 = getaxes(B)[2]
+                return ComponentArray(Cᵀ, ax1, ax2)
+            end
+            function Base.$op(Aᵀ::ComponentMatrix{T}, B::AdjOrTransComponentVecOrMat{T}) where {T}
+                Cᵀ = $op(getdata(Aᵀ), getdata(B))
+                ax1 = getaxes(Aᵀ)[1]
+                ax2 = getaxes(B)[2]
+                return ComponentArray(Cᵀ, ax1, ax2)
+            end
+            function Base.$op(Aᵀ::$Adj{T,<:ComponentMatrix}, B::ComponentMatrix{T}) where {T}
+                Cᵀ = $op(getdata(Aᵀ), getdata(B))
+                ax1 = getaxes(Aᵀ)[1]
+                ax2 = getaxes(B)[2]
+                return ComponentArray(Cᵀ, ax1, ax2)
+            end
+            function Base.$op(aᵀ::$Adj{T,<:ComponentVector}, B::ComponentMatrix) where {T}
+                cᵀ = parent($op(getdata(aᵀ), getdata(B)))
+                ax2 = getaxes(B)[2]
+                return $adj(ComponentArray(cᵀ, ax2))
+            end
+            function Base.$op(Aᵀ::$Adj{T,<:ComponentMatrix}, b::ComponentVector) where {T}
+                cᵀ = $op(getdata(Aᵀ), getdata(b))
+                ax1 = getaxes(Aᵀ)[1]
+                return ComponentArray(cᵀ, ax1)
+            end
         end
     end
 end

@@ -142,6 +142,9 @@ Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
 
 Base.lastindex(ax::AbstractAxis) = last(viewindex(last(indexmap(ax))))
 
+Base.keys(ax::AbstractAxis) = keys(indexmap(ax))
+
 reindex(i, offset) = i .+ offset
+reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))

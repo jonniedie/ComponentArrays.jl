@@ -403,6 +403,46 @@ end
     @test length(vtempca) == length(temp) + length(ca)
     @test [ca; ca; ca] isa Vector
     @test vcat(ca, 100) isa Vector
+    @test [ca' ca']' isa Vector
+    @test keys(getaxes([ca' temp']')[1]) == (:a, :b, :c, :q, :r)
+
+    # Getting serious about axes
+    let
+        ab = ComponentArray(a=1, b=5)
+        cd = ComponentArray(c=3, d=7)
+        ab_ab = ab * ab'
+        ab_cd = ab * cd'
+        cd_ab = cd * ab'
+        cd_cd = cd * cd'
+        AB = Axis(a=1, b=2)
+        CD = Axis(c=1, d=2)
+        _AB = Axis(a=2, b=3)
+        _CD = Axis(c=2, d=3)
+        ABCD = Axis(a=1, b=2, c=3, d=4)
+        CDAB = Axis(c=1, d=2, a=3, b=4)
+
+        # Cats
+        @test [ab_ab; ab_ab] isa Matrix
+        @test [ab_ab; ab_cd] isa Matrix
+        @test getaxes([ab_ab; cd_ab]) == (ABCD, AB)
+        @test getaxes([ab_ab ab_cd]) == (AB, ABCD)
+        @test getaxes([ab_ab ab_cd; cd_ab cd_cd]) == (ABCD, ABCD)
+        @test getaxes([ab_ab ab_cd; cd_ab cd_cd]) == (ABCD, ABCD)
+        @test getaxes([ab ab_cd]) == (AB, _CD)
+        @test getaxes([ab_cd ab]) == (AB, CD)
+        @test getaxes([ab'; cd_ab]) == (_CD, AB)
+        @test getaxes([cd'; cd_ab']) == (_AB, CD)
+        @test getaxes([cd'; cd_ab']) == (_AB, CD)
+
+        # Math
+        @test getaxes(ab_cd * cd) == (AB,)
+        @test getaxes(cd_ab' * cd) == (AB,)
+        @test getaxes(cd' * cd_ab) == (FlatAxis(), AB)
+        @test getaxes(cd' * cd_ab') == (FlatAxis(), CD)
+        @test getaxes(cd_ab' * cd_ab) == (AB, AB)
+        @test getaxes(cd_ab' * ab_cd') == (AB, AB)
+        @test getaxes(ab_cd * ab_cd') == (AB, AB)
+    end
 
     # Issue #33
     smat = @SMatrix [1 2; 3 4]
