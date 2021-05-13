@@ -162,6 +162,12 @@ for f in [*, \, /]
             ax1 = getaxes(A)[1]
             return ComponentArray(c, ax1)
         end
+        function Base.$op(Aᵀ::ComponentMatrix{T}, B::AdjOrTransComponentVecOrMat{T}) where {T}
+            Cᵀ = $op(getdata(Aᵀ), getdata(B))
+            ax1 = getaxes(Aᵀ)[1]
+            ax2 = getaxes(B)[2]
+            return ComponentArray(Cᵀ, ax1, ax2)
+        end
     end
     for (adjfun, AdjType) in zip([adjoint, transpose], [Adjoint, Transpose])
         adj = nameof(adjfun)
@@ -178,22 +184,11 @@ for f in [*, \, /]
                 ax2 = getaxes(B)[2]
                 return ComponentArray(Cᵀ, ax1, ax2)
             end
-            function Base.$op(Aᵀ::ComponentMatrix{T}, B::AdjOrTransComponentVecOrMat{T}) where {T}
-                Cᵀ = $op(getdata(Aᵀ), getdata(B))
-                ax1 = getaxes(Aᵀ)[1]
-                ax2 = getaxes(B)[2]
-                return ComponentArray(Cᵀ, ax1, ax2)
-            end
             function Base.$op(Aᵀ::$Adj{T,<:ComponentMatrix}, B::ComponentMatrix{T}) where {T}
                 Cᵀ = $op(getdata(Aᵀ), getdata(B))
                 ax1 = getaxes(Aᵀ)[1]
                 ax2 = getaxes(B)[2]
                 return ComponentArray(Cᵀ, ax1, ax2)
-            end
-            function Base.$op(aᵀ::$Adj{T,<:ComponentVector}, B::ComponentMatrix) where {T}
-                cᵀ = parent($op(getdata(aᵀ), getdata(B)))
-                ax2 = getaxes(B)[2]
-                return $adj(ComponentArray(cᵀ, ax2))
             end
             function Base.$op(Aᵀ::$Adj{T,<:ComponentMatrix}, b::ComponentVector) where {T}
                 cᵀ = $op(getdata(Aᵀ), getdata(b))
