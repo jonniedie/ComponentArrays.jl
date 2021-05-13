@@ -3,6 +3,7 @@ Base.show(io::IO, ::MIME"text/plain", ::Axis{IdxMap}) where IdxMap = print(io, "
 Base.show(io::IO, ::Axis{IdxMap}) where IdxMap = print(io, "Axis$IdxMap")
 
 Base.show(io::IO, ::FlatAxis) = print(io, "FlatAxis()")
+Base.show(io::IO, ::MIME"text/plain", ::FlatAxis) = print(io, "FlatAxis()")
 
 Base.show(io::IO, ::NullAxis) = print(io, "NullAxis()")
 
