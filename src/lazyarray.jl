@@ -10,6 +10,9 @@ struct LazyArray{T,N,G} <: AbstractArray{T,N}
     LazyArray(gen::Base.Generator{A,F}) where {A,F} = new{eltype(A), ndims(gen), typeof(gen)}(gen)
 end
 
+const LazyVector{T,G} = LazyArray{T,1,G}
+const LazyMatrix{T,G} = LazyArray{T,2,G}
+
 Base.getindex(a::LazyArray, i...) =  _un_iter(getfield(a, :gen), i)
 
 _un_iter(iter, idxs) = _un_iter(iter.f, iter.iter, idxs)
@@ -32,6 +35,6 @@ Base.eltype(::LazyArray{T,N,G}) where {T,N,G} = T
 
 Base.show(io::IO, a::LazyArray) = show(io, collect(a))
 function Base.show(io::IO, mime::MIME"text/plain", a::LazyArray)
-    rep = repr(mime, collect(a))
-    return print(replace(rep, "Array" => "LazyArray"; count=1))
+    str = repr(mime, collect(a))
+    return print(replace(str, " "=>" Lazy"; count=1))
 end
