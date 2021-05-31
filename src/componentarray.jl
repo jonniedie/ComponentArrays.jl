@@ -21,7 +21,7 @@ julia> x[5]
 400
 
 julia> collect(x)
-7-element Array{Int64,1}:
+7-element Vector{Int64}:
    1
    2
    1
@@ -59,7 +59,9 @@ end
 
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
+ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
 ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
+ComponentArray(::NamedTuple{(), Tuple{}}) = ComponentArray(Any[], (FlatAxis(),))
 ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
@@ -67,6 +69,7 @@ ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 ComponentArray(x::ComponentArray) = x
 ComponentArray{T}(x::ComponentArray) where {T} = T.(x)
 (CA::Type{<:ComponentArray{T,N,A,Ax}})(x::ComponentArray) where {T,N,A,Ax} = ComponentArray(T.(getdata(x)), getaxes(x))
+
 
 ## Some aliases
 """
@@ -109,6 +112,9 @@ ComponentMatrix(data::AbstractArray, ax...) = throw(DimensionMismatch("A `Compon
 ComponentMatrix(x::ComponentMatrix) = x
 ComponentMatrix{T}(x::ComponentMatrix) where {T} = T.(x)
 
+ComponentMatrix() = ComponentMatrix(Array{Any}(undef, 0, 0), (FlatAxis(), FlatAxis()))
+ComponentMatrix{T}() where {T} = ComponentMatrix(Array{T}(undef, 0, 0), (FlatAxis(), FlatAxis()))
+
 const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
@@ -116,15 +122,21 @@ const CMatrix = ComponentMatrix
 const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
 const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
 
+const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
+const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T
+const AbstractComponentVecOrMat = Union{ComponentVecOrMat, AdjOrTransComponentVecOrMat}
+
 
 ## Constructor helpers
 # For making ComponentArrays from named tuples
+make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
+make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
 function make_carray_args(nt)
     data, ax = make_carray_args(Vector, nt)
     data = length(data)==1 ? [data[1]] : reduce(vcat, data)
     return (data, ax)
 end
-make_carray_args(T::Type, nt) = make_carray_args(Vector{T}, nt)
+make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     data, idx = make_idx([], nt, 0)
     return (A(data), Axis(idx))
@@ -244,7 +256,7 @@ Access ```.axes``` field of a ```ComponentArray```. This is different than ```ax
 julia> using ComponentArrays
 
 julia> ax = Axis(a=1:3, b=(4:6, (a=1, b=2:3)))
-Axis{(a = 1:3, b = (4:6, (a = 1, b = 2:3)))}()
+Axis(a = 1:3, b = (4:6, (a = 1, b = 2:3)))
 
 julia> A = zeros(6,6);
 
@@ -265,13 +277,13 @@ julia> getaxes(ca)
 @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
 @inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
-@inline getaxes(::Type{<:ComponentArray{T,N,A,<:Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
-@inline getaxes(::Type{<:AdjOrTrans{T,<:CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
+@inline getaxes(::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
+@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
 ## Field access through these functions to reserve dot-getting for keys
 @inline getaxes(x::VarAxes) = getaxes(typeof(x))
-@inline getaxes(Ax::Type{<:Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
+@inline getaxes(Ax::Type{Axes}) where {Axes<:VarAxes} = map(x->x(), (Ax.types...,))
 
 getaxes(x) = ()
 

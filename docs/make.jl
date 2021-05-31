@@ -3,7 +3,7 @@ using Documenter, ComponentArrays
 makedocs(;
     modules=[ComponentArrays],
     format=Documenter.HTML(
-        canonical = "https://jonniedie.github.io/ComponentArrays.jl/stable",
+        canonical="https://jonniedie.github.io/ComponentArrays.jl/stable",
         ),
     pages=[
         "Home" => "index.md",
@@ -19,6 +19,7 @@ makedocs(;
     sitename="ComponentArrays.jl",
     authors="Jonnie Diegelman",
     assets=String[],
+    doctest=:fix,
 )
 
 deploydocs(;

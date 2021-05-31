@@ -4,13 +4,56 @@ abstract type AbstractAxis{IdxMap} end
 @inline indexmap(::Type{<:AbstractAxis{IdxMap}}) where IdxMap = IdxMap
 
 
-struct FlatAxis <: AbstractAxis{NamedTuple()} end
+# struct FlatAxis <: AbstractAxis{NamedTuple()} end
 
 struct NullAxis <: AbstractAxis{nothing} end
-
-const NullorFlatAxis = Union{NullAxis, FlatAxis}
-
 const VarAxes = Tuple{Vararg{<:AbstractAxis}}
+
+
+"""
+    ax = Axis(nt::NamedTuple)
+
+Gives named component access for `ComponentArray`s.
+# Examples
+
+```
+julia> using ComponentArrays
+
+julia> ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
+
+julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
+
+julia> ca = ComponentArray(A, ax)
+ComponentVector{Float64}(a = 100.0, b = [(a = 4.0, b = 1.3), (a = 1.0, b = 1.0), (a = 4.4, b = 0.4)], c = (a = 2.0, b = [1.0, 45.0]))
+
+julia> ca.a
+100.0
+
+julia> ca.b
+3-element LazyArray{ComponentVector{Float64,SubArray...}}:
+ ComponentVector{Float64,SubArray...}(a = 4.0, b = 1.3)
+ ComponentVector{Float64,SubArray...}(a = 1.0, b = 1.0)
+ ComponentVector{Float64,SubArray...}(a = 4.4, b = 0.4)
+
+julia> ca.c
+ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 45.0])
+
+julia> ca.c.b
+2-element view(::Vector{Float64}, 9:10) with eltype Float64:
+  1.0
+ 45.0
+```
+"""
+struct Axis{IdxMap} <: AbstractAxis{IdxMap} end
+@inline Axis(IdxMap::NamedTuple) = Axis{IdxMap}()
+Axis(;kwargs...) = Axis((;kwargs...))
+function Axis(symbols::Union{AbstractVector{Symbol}, NTuple{N,Symbol}}) where {N}
+    return Axis((;(symbols .=> eachindex(symbols))...))
+end
+Axis(symbols::Symbol...) = Axis(symbols)
+
+const FlatAxis = Axis{NamedTuple()}
+const NullorFlatAxis = Union{NullAxis, FlatAxis}
 
 
 
@@ -81,49 +124,11 @@ viewindex(::Type{<:ViewAxis{Inds,IdxMap}}) where {Inds,IdxMap} = Inds
 viewindex(i) = i
 
 
-
-"""
-    ax = Axis(nt::NamedTuple)
-
-Gives named component access for `ComponentArray`s.
-# Examples
-
-```jldoctest
-julia> using ComponentArrays
-
-julia> ax = Axis((a = 1, b = ViewAxis(2:7, PartitionedAxis(2, (a = 1, b = 2))), c = ViewAxis(8:10, (a = 1, b = 2:3))));
-
-julia> A = [100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45];
-
-julia> ca = ComponentArray(A, ax)
-ComponentVector{Float64}(a = 100.0, b = [(a = 4.0, b = 1.3), (a = 1.0, b = 1.0), (a = 4.4, b = 0.4)], c = (a = 2.0, b = [1.0, 45.0]))
-
-julia> ca.a
-100.0
-
-julia> ca.b
-3-element LazyArray{ComponentVector{Float64,SubArray...},1}:
- ComponentVector{Float64,SubArray...}(a = 4.0, b = 1.3)
- ComponentVector{Float64,SubArray...}(a = 1.0, b = 1.0)
- ComponentVector{Float64,SubArray...}(a = 4.4, b = 0.4)
-
-julia> ca.c
-ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 45.0])
-
-julia> ca.c.b
-2-element view(::Array{Float64,1}, 9:10) with eltype Float64:
-  1.0
- 45.0
-```
-"""
-struct Axis{IdxMap} <: AbstractAxis{IdxMap} end
-@inline Axis(IdxMap::NamedTuple) = Axis{IdxMap}()
-Axis(;kwargs...) = Axis((;kwargs...))
-
 Axis(ax::AbstractAxis) = ax
 Axis(ax::PartitionedAxis) = ax.ax
 Axis(ax::ViewAxis) = ax.ax
 
+# Get rid of this
 Axis(::Number) = NullAxis()
 Axis(::NamedTuple{()}) = FlatAxis()
 Axis(x) = FlatAxis()
@@ -137,6 +142,9 @@ Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
 
 Base.lastindex(ax::AbstractAxis) = last(viewindex(last(indexmap(ax))))
 
+Base.keys(ax::AbstractAxis) = keys(indexmap(ax))
+
 reindex(i, offset) = i .+ offset
+reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))

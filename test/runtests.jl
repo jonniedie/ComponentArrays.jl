@@ -68,6 +68,11 @@ end
     @test_throws DimensionMismatch ComponentMatrix(rand(11,11,11), ax, ax)
     @test_throws ErrorException ComponentArray(v=[(a=1, b=2), (a=3, c=4)])
 
+    # Axis construction from symbols
+    @test Axis([:a, :b, :c]) == Axis(a=1, b=2, c=3)
+    @test Axis((:a, :b, :c)) == Axis(a=1, b=2, c=3)
+    @test Axis(:a, :b, :c) == Axis(a=1, b=2, c=3)
+
     # Issue #24
     @test ComponentVector(a=1, b=2f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
     @test ComponentVector(a=1, b=2+im) == ComponentVector{Complex{Int64}}(a = 1 + 0im, b = 2 + 1im)
@@ -93,6 +98,14 @@ end
 
     # Issue #61
     @test ComponentArray(x=1) isa ComponentArray{Int}
+
+    # Issue #81
+    @test ComponentArray() isa ComponentArray
+    @test ComponentVector() isa ComponentVector
+    @test ComponentMatrix() isa ComponentMatrix
+    @test ComponentArray{Float32}() isa ComponentArray{Float32}
+    @test ComponentVector{Float32}() isa ComponentVector{Float32}
+    @test ComponentMatrix{Float32}() isa ComponentMatrix{Float32}
 end
 
 @testset "Attributes" begin
@@ -197,6 +210,17 @@ end
     let 
         ca = ComponentVector(a=1, b=2, c=3)
         @test_throws BoundsError ca[:a, :b]
+    end
+
+    # Issue # 87: Conversion/promotion
+    let
+        ax1 = Axis((; x1=1))
+        ax2 = Axis((; x2=1))
+        A1 = ComponentMatrix(zeros(1, 1), ax1, ax1)
+        A2 = ComponentMatrix(zeros(1, 1), ax2, ax2)
+        A = [A for A in [A1, A2]]
+        @test A[1] == A1
+        @test A[2] == A2
     end
 end
 
@@ -379,11 +403,64 @@ end
     @test length(vtempca) == length(temp) + length(ca)
     @test [ca; ca; ca] isa Vector
     @test vcat(ca, 100) isa Vector
+    @test [ca' ca']' isa Vector
+    @test keys(getaxes([ca' temp']')[1]) == (:a, :b, :c, :q, :r)
+
+    # Getting serious about axes
+    let
+        ab = ComponentArray(a=1, b=5)
+        cd = ComponentArray(c=3, d=7)
+        ab_ab = ab * ab'
+        ab_cd = ab * cd'
+        cd_ab = cd * ab'
+        cd_cd = cd * cd'
+        AB = Axis(a=1, b=2)
+        CD = Axis(c=1, d=2)
+        _AB = Axis(a=2, b=3)
+        _CD = Axis(c=2, d=3)
+        ABCD = Axis(a=1, b=2, c=3, d=4)
+        CDAB = Axis(c=1, d=2, a=3, b=4)
+
+        # Cats
+        @test [ab_ab; ab_ab] isa Matrix
+        @test [ab_ab; ab_cd] isa Matrix
+        @test getaxes([ab_ab; cd_ab]) == (ABCD, AB)
+        @test getaxes([ab_ab ab_cd]) == (AB, ABCD)
+        @test getaxes([ab_ab ab_cd; cd_ab cd_cd]) == (ABCD, ABCD)
+        @test getaxes([ab_ab ab_cd; cd_ab cd_cd]) == (ABCD, ABCD)
+        @test getaxes([ab ab_cd]) == (AB, _CD)
+        @test getaxes([ab_cd ab]) == (AB, CD)
+        @test getaxes([ab'; cd_ab]) == (_CD, AB)
+        @test getaxes([cd'; cd_ab']) == (_AB, CD)
+        @test getaxes([cd'; cd_ab']) == (_AB, CD)
+
+        # Math
+        @test getaxes(ab_cd * cd) == (AB,)
+        @test getaxes(cd_ab' * cd) == (AB,)
+        @test getaxes(cd' * cd_ab) == (FlatAxis(), AB)
+        @test getaxes(cd' * cd_ab') == (FlatAxis(), CD)
+        @test getaxes(cd_ab' * cd_ab) == (AB, AB)
+        @test getaxes(cd_ab' * ab_cd') == (AB, AB)
+        @test getaxes(ab_cd * ab_cd') == (AB, AB)
+    end
 
     # Issue #33
     smat = @SMatrix [1 2; 3 4]
     b = ComponentArray(a = 1, b = 2)
     @test smat*b isa StaticArray
+
+    # Issue #86: Matrix multiplication
+    in1 = ComponentArray(u1=1)
+    in2 = ComponentArray(u2=1)
+    out1 = ComponentArray(y1=1)
+    out2 = ComponentArray(y2=1)
+    s1_D = out1 * in1'
+    s2_D = out2 * in2'
+    @test getaxes(s1_D * s2_D) == (Axis(y1=1), Axis(u2=1))
+    @test getaxes(s2_D * s1_D) == (Axis(y2=1), Axis(u1=1))
+    @test getaxes((s1_D * s2_D) * in2) == getaxes(s1_D * (s2_D * in2)) == (Axis(y1=1),)
+    @test getaxes((s2_D * s1_D) * in1) == getaxes(s2_D * (s1_D * in1)) == (Axis(y2=1),)
+    @test getaxes(out1' * (s1_D * s2_D)) == getaxes(transpose(out1) * (s1_D * s2_D)) == (FlatAxis(), Axis(u2=1))
 end
 
 @testset "Plot Utilities" begin

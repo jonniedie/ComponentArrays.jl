@@ -35,6 +35,7 @@ Base.eltype(::LazyArray{T,N,G}) where {T,N,G} = T
 
 Base.show(io::IO, a::LazyArray) = show(io, collect(a))
 function Base.show(io::IO, mime::MIME"text/plain", a::LazyArray)
-    str = repr(mime, collect(a))
-    return print(replace(str, " "=>" Lazy"; count=1))
+    arr = collect(a)
+    rep = repr(mime, arr)
+    return print(replace(rep, r"(\d+-element )?((Vector|Array){(.+)?})" => s"\1LazyArray{\4}"; count=1))
 end
