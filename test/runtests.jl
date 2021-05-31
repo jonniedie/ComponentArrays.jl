@@ -175,8 +175,9 @@ end
     @test size(caa.b) == size(sq_mat)
     @test caa.b[1:2, 3] == sq_mat[1:2, 3]
 
-    @test view(ca, :a) == ca.a
-    @test cmat[:c, :a] == view(cmat, :c, :a)
+    @test Base.maybeview(ca, :a) == ca.a
+    @test cmat[:c, :a] == getindex(cmat, :c, :a)
+    @test @view(cmat[:c, :a]) == view(cmat, :c, :a)
 
     @test ca[CartesianIndex(1)] == ca[1]
     @test cmat[CartesianIndex(1, 2)] == cmat[1, 2]
@@ -230,8 +231,8 @@ end
 
     temp.c.a .= 1000
 
-    tempmat[:b,:b][1,1][:a,:a][:a,:a] = 100000
-    tempmat[:b,:a][2].b = 1000
+    view(view(tempmat,:b,:b)[1,1],:a,:a)[:a,:a] = 100000
+    @view(tempmat[:b,:a])[2].b = 1000
 
     @test temp.c.a.a == 1000
 

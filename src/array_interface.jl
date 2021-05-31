@@ -84,12 +84,6 @@ Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Union{Integer, CartesianIndex
 Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Int64}}) where N = i
 Base.to_index(x::ComponentArray, i) = i
 
-# Get AbstractAxis index
-@inline Base.getindex(::AbstractAxis, idx::FlatIdx) = ComponentIndex(idx)
-@inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
-@inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
-    ComponentIndex(getproperty(IdxMap, s))
-
 # Get ComponentArray index
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = getdata(x)[idx]
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
@@ -101,7 +95,7 @@ end
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[:]
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon...) = x
 @inline Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
-@inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(x, idx...)
+@inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(getindex, x, idx...)
 
 # Set ComponentArray index
 Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx::FlatOrColonIdx...) = setindex!(getdata(x), v, idx...)
@@ -111,22 +105,23 @@ Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, ::Colon) = setinde
 
 # Explicitly view
 Base.@propagate_inbounds Base.view(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = view(getdata(x), idx...)
-Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = _getindex(x, toval.(idx)...)
+Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = _getindex(view, x, toval.(idx)...)
+
+Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = Base.maybeview(getdata(x), idx...)
+Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(Base.maybeview, x, toval.(idx)...)
 
 # Generated get and set index methods to do all of the heavy lifting in the type domain
-@generated function _getindex(x::ComponentArray, idx...)
+@generated function _getindex(index_fun, x::ComponentArray, idx...)
     ci = getindex.(getaxes(x), getval.(idx))
     inds = map(i -> i.idx, ci)
     axs = map(i -> i.ax, ci)
     axs = remove_nulls(axs...)
-    # the index must be valid after computing `ci`
-    :(Base.@_inline_meta; ComponentArray(Base.maybeview(getdata(x), $inds...), $axs...))
+    return :(Base.@_inline_meta; ComponentArray(index_fun(getdata(x), $inds...), $axs...))
 end
 
 @generated function _setindex!(x::ComponentArray, v, idx...)
     ci = getindex.(getaxes(x), getval.(idx))
     inds = map(i -> i.idx, ci)
-    # the index must be valid after computing `ci`
     return :(Base.@_inline_meta; setindex!(getdata(x), v, $inds...))
 end
 

@@ -289,8 +289,10 @@ getaxes(x) = ()
 
 """
     valkeys(x::ComponentVector)
+    valkeys(x::AbstractAxis)
 
-Returns `Val`-wrapped keys of `ComponentVector` for fast iteration over component keys.
+Returns `Val`-wrapped keys of `ComponentVector` for fast iteration over component keys. Also works
+directly on an `AbstractAxis`.
 
 # Examples
 
@@ -310,8 +312,9 @@ julia> sum(prod(ca[k]) for k in valkeys(ca))
 11
 ```
 """
-@generated function valkeys(ca::ComponentVector)
-    idxmap = ComponentArrays.indexmap(getaxes(ca)[1])
+@generated function valkeys(ax::AbstractAxis)
+    idxmap = indexmap(ax)
     k = Val.(keys(idxmap))
     return :($k)
 end
+valkeys(ca::ComponentVector) = valkeys(getaxes(ca)[1])

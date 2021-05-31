@@ -11,8 +11,8 @@ Base.haskey(x::ComponentVector, s::Symbol) = haskey(indexmap(getaxes(x)[1]), s)
 Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 # Property access for ComponentVectors goes through _get/_setindex
-@inline Base.getproperty(x::ComponentVector, s::Symbol) = _getindex(x, Val(s))
-@inline Base.getproperty(x::ComponentVector, s::Val) = _getindex(x, s)
+@inline Base.getproperty(x::ComponentVector, s::Symbol) = _getindex(Base.maybeview, x, Val(s))
+@inline Base.getproperty(x::ComponentVector, s::Val) = _getindex(Base.maybeview, x, s)
 
 @inline Base.setproperty!(x::ComponentVector, s::Symbol, v) = _setindex!(x, v, Val(s))
 @inline Base.setproperty!(x::ComponentVector, s::Val, v) = _setindex!(x, v, s)
