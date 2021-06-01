@@ -26,13 +26,14 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
+# Show ComponentArray types (this is pretty hacky because something is broken when I try to do it normally)
 Base.show(io::IO, ::MIME"text/plain", ::Type{ComponentArray{T,N,A,Ax}}) where {T,N,A,Ax} = print(io, "ComponentArray{$T,$N,$A,$Ax}") # make `typeof(u)` show the full type
 Base.show(io::IO, ::Type{<:ComponentArray{T,N,<:Array}}) where {T,N} = print(io, "ComponentArray{$T,$N}") # do not pollute the stacktrace with verbose type printing
-Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:Array}}) where T = print(io, "ComponentVector{$T}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:Array}}) where T = print(io, "ComponentMatrix{$T}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,N,A}}) where {T,N,A} = print(io, "ComponentArray{$T,$N,$(nameof(A))...}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,1,A}}) where {T,A} = print(io, "ComponentVector{$T,$(nameof(A))...}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,2,A}}) where {T,A} = print(io, "ComponentMatrix{$T,$(nameof(A))...}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:Array}}) where {T} = print(io, "ComponentVector{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:Array}}) where {T} = print(io, "ComponentMatrix{$T}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,N,<:SubArray}}) where {T,N} = print(io, "ComponentArray{$T,$N,SubArray...}") # do not pollute the stacktrace with verbose type printing
+Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:SubArray}}) where {T} = print(io, "ComponentVector{$T,SubArray...}")
+Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:SubArray}}) where {T} = print(io, "ComponentMatrix{$T,SubArray...}")
 
 function Base.show(io::IO, x::ComponentVector)
     print(io, "(")
