@@ -19,7 +19,6 @@ makedocs(;
     sitename="ComponentArrays.jl",
     authors="Jonnie Diegelman",
     assets=String[],
-    doctest=:fix,
 )
 
 deploydocs(;
