@@ -26,14 +26,18 @@ Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(c
 
 
 # Show ComponentArrays
-# Show ComponentArray types (this is pretty hacky because something is broken when I try to do it normally)
-Base.show(io::IO, ::MIME"text/plain", ::Type{ComponentArray{T,N,A,Ax}}) where {T,N,A,Ax} = print(io, "ComponentArray{$T,$N,$A,$Ax}") # make `typeof(u)` show the full type
-Base.show(io::IO, ::Type{<:ComponentArray{T,N,<:Array}}) where {T,N} = print(io, "ComponentArray{$T,$N}") # do not pollute the stacktrace with verbose type printing
-Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:Array}}) where {T} = print(io, "ComponentVector{$T}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:Array}}) where {T} = print(io, "ComponentMatrix{$T}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,N,<:SubArray}}) where {T,N} = print(io, "ComponentArray{$T,$N,SubArray...}") # do not pollute the stacktrace with verbose type printing
-Base.show(io::IO, ::Type{<:ComponentArray{T,1,<:SubArray}}) where {T} = print(io, "ComponentVector{$T,SubArray...}")
-Base.show(io::IO, ::Type{<:ComponentArray{T,2,<:SubArray}}) where {T} = print(io, "ComponentMatrix{$T,SubArray...}")
+_print_type_short(io, ca; color=:normal) = _print_type_short(io, typeof(ca); color=color)
+_print_type_short(io, T::Type; color=:normal) = printstyled(io, T; color=color)
+_print_type_short(io, ::Type{<:ComponentArray{T,N,<:Array}}; color=:normal) where {T,N} = printstyled(io, "ComponentArray{$T,$N}"; color=color) # do not pollute the stacktrace with verbose type printing
+_print_type_short(io, ::Type{<:ComponentArray{T,1,<:Array}}; color=:normal) where {T} = printstyled(io, "ComponentVector{$T}"; color=color)
+_print_type_short(io, ::Type{<:ComponentArray{T,2,<:Array}}; color=:normal) where {T} = printstyled(io, "ComponentMatrix{$T}"; color=color)
+_print_type_short(io, ::Type{<:ComponentArray{T,N,<:SubArray}}; color=:normal) where {T,N} = printstyled(io, "ComponentArray{$T,$N,SubArray...}"; color=color) # do not pollute the stacktrace with verbose type printing
+_print_type_short(io, ::Type{<:ComponentArray{T,1,<:SubArray}}; color=:normal) where {T} = printstyled(io, "ComponentVector{$T,SubArray...}"; color=color)
+_print_type_short(io, ::Type{<:ComponentArray{T,2,<:SubArray}}; color=:normal) where {T} = printstyled(io, "ComponentMatrix{$T,SubArray...}"; color=color)
+
+@static if VERSION >= v"1.6"
+    Base.print_type_stacktrace(io, CA::Type{<:ComponentArray}; color=:normal) = _print_type_short(io, CA; color=color)
+end
 
 function Base.show(io::IO, x::ComponentVector)
     print(io, "(")
@@ -50,18 +54,8 @@ function Base.show(io::IO, x::ComponentVector)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector)
-    show(io, typeof(x))
+    _print_type_short(io, x)
     show(io, x)
-    return nothing
-end
-
-function Base.show(io::IO, a::AbstractVector{<:T}) where T<:ComponentVector
-    elem = a[1]
-    print(io, "[$elem")
-    for idx in 2:length(a)
-        print(io, ", $(a[idx])")
-    end
-    print(io, "]")
     return nothing
 end
 
@@ -71,7 +65,9 @@ function Base.show(io::IO, ::MIME"text/plain", x::ComponentMatrix{T,A,Axes}) whe
     end
     axs = getaxes(x)
     sz = size(x)
-    println(io, "$(sz[1])×$(sz[2]) $(typeof(x)) with axes $(axs[1]) × $(axs[2])")
+    print(io, "$(sz[1])×$(sz[2]) ")
+    _print_type_short(io, x)
+    println(io, " with axes $(axs[1]) × $(axs[2])")
     Base.print_matrix(io, getdata(x))
     return nothing
 end
