@@ -79,11 +79,11 @@ function composed_jac!(D, u, p, t)
     c = p.c
     @unpack lorenz, lotka = u
     
-    lorenz_jac!(D[:lorenz,:lorenz], lorenz, p.lorenz, t)
-    lotka_jac!(D[:lotka,:lotka], lotka, p.lotka, t)
+    lorenz_jac!(@view(D[:lorenz,:lorenz]), lorenz, p.lorenz, t)
+    lotka_jac!(@view(D[:lotka,:lotka]), lotka, p.lotka, t)
 
-    D[:lorenz,:lotka][:y,:x] = -c
-    D[:lotka,:lorenz][:x,:x] = c
+    @view(D[:lorenz,:lotka])[:y,:x] = -c
+    @view(D[:lotka,:lorenz])[:x,:x] = c
     return nothing
 end
 
