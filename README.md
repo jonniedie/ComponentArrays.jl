@@ -83,7 +83,7 @@ julia> x2 = x .* x'
  2.0  4.0  2.0   8.0  4.0  2.0  4.0
 
 julia> x2[:c,:c]
-3×3 ComponentMatrix{Float64,SubArray...} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
+3×3 ComponentMatrix{Float64} with axes Axis(a = 1, b = 2:3) × Axis(a = 1, b = 2:3)
  4.0  2.0  4.0
  2.0  1.0  2.0
  4.0  2.0  4.0
@@ -91,11 +91,11 @@ julia> x2[:c,:c]
 julia> x2[:a,:a]
  1.0
 
-julia> x2[:a,:c]
+julia> @view x2[:a,:c]
 ComponentVector{Float64,SubArray...}(a = 2.0, b = [1.0, 2.0])
 
 julia> x2[:b,:c]
-3×3 ComponentMatrix{Float64,SubArray...} with axes FlatAxis() × Axis(a = 1, b = 2:3)
+3×3 ComponentMatrix{Float64} with axes FlatAxis() × Axis(a = 1, b = 2:3)
  4.0  2.0  4.0
  2.0  1.0  2.0
  8.0  4.0  8.0
