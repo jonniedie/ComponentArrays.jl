@@ -1,13 +1,8 @@
 # ODE with Jacobian
 
-This example shows how to use ComponentArrays for composing Jacobian update functions as well as ODE functions. Note using plain symbols to index into ```ComponentArrays``` is still pretty slow. Until symbolic indexing is faster, the convenience function ```fastindices``` can be used to speed up simulation. The general syntax looks like
+This example shows how to use ComponentArrays for composing Jacobian update functions as well as ODE functions. For most practical purposes, it is generally easier to use automatic differentiation libraries like ForwardDiff.jl, ReverseDiff.jl, or Zygote.jl for calculating Jacobians. Although those libraries all work with ComponentArrays, this is a nice way to handle it if you already have derived analytical Jacobians.
 
-```julia
-_x, _y, _z = fastindices(:x, :y, :z)
-D[_x,_y] = σ
-```
-
-For more information on fastindices, see its entry in the API section.
+Note using plain symbols to index into `ComponentArrays` is still pretty slow. For speed, all symbolic indices should be wrapped in a `Val` like `D[Val(:x), Val(:y)]`.
 
 ```julia
 using ComponentArrays
@@ -91,11 +86,11 @@ function composed_jac!(D, u, p, t)
     c = p.c
     @unpack lorenz, lotka = u
     
-    lorenz_jac!(D[:lorenz,:lorenz], lorenz, p.lorenz, t)
-    lotka_jac!(D[:lotka,:lotka], lotka, p.lotka, t)
+    lorenz_jac!(@view(D[:lorenz,:lorenz]), lorenz, p.lorenz, t)
+    lotka_jac!(@view(D[:lotka,:lotka]), lotka, p.lotka, t)
 
-    D[:lorenz,:lotka][:y,:x] = -c
-    D[:lotka,:lorenz][:x,:x] = c
+    @view(D[:lorenz,:lotka])[:y,:x] = -c
+    @view(D[:lotka,:lorenz])[:x,:x] = c
     return nothing
 end
 

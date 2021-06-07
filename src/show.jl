@@ -53,9 +53,18 @@ function Base.show(io::IO, x::ComponentVector)
     return nothing
 end
 
-function Base.show(io::IO, ::MIME"text/plain", x::ComponentVector)
-    _print_type_short(io, x)
-    show(io, x)
+function Base.show(io::IO, mime::MIME"text/plain", x::ComponentVector)
+    len = length(x)
+    ax = getaxes(x)[1]
+    if last_index(ax) == len
+        _print_type_short(io, x)
+        show(io, x)
+    else
+        print(io, "$len-element ")
+        _print_type_short(io, x)
+        println(io, " with axis $ax:")
+        Base.print_array(io, getdata(x))
+    end
     return nothing
 end
 
