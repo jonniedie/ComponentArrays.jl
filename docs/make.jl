@@ -8,7 +8,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Quick Start" => "quickstart.md",
-        "Indexing Behavior" => "indexing_behavior.md"
+        "Indexing Behavior" => "indexing_behavior.md",
         "Examples" => [
             "examples/DiffEqFlux.md",
             "examples/adaptive_control.md",
