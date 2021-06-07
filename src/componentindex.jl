@@ -25,7 +25,8 @@ Base.getindex(ax::AbstractAxis, i::KeepIndex{Idx}) where {Idx} = _getindex_keep(
 _getindex_keep(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 function _getindex_keep(ax::AbstractAxis, idx::AbstractRange)
     idx_map = indexmap(ax)
-    keeps = NamedTuple([s=>x for (s,x) in pairs(idx_map) if first(viewindex(x)) in idx && last(viewindex(x)) in idx])
+    keeps = (s=>x for (s,x) in pairs(idx_map) if first(viewindex(x)) in idx && last(viewindex(x)) in idx)
+    keeps = NamedTuple{Tuple(first.(keeps))}(Tuple(last.(keeps)))
     new_ax = reindex(Axis(keeps), -first(idx)+1)
     return ComponentIndex(idx, new_ax)
 end
