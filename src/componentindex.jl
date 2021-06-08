@@ -9,7 +9,10 @@ ComponentIndex(vax::ViewAxis{Inds,IdxMap,Ax}) where {Inds,IdxMap,Ax} = Component
 const FlatComponentIndex{Idx} = ComponentIndex{Idx, FlatAxis}
 const NullComponentIndex{Idx} = ComponentIndex{Idx, NullAxis}
 
-Base.getindex(A::AbstractArray, inds::ComponentIndex...) = ComponentArray(A[(i.idx for i in inds)...], Tuple(i.ax for i in inds))
+function Base.getindex(A::AbstractArray, ind::ComponentIndex, inds::ComponentIndex...)
+    inds = (ind, inds...)
+    return ComponentArray(A[(i.idx for i in inds)...], Tuple(i.ax for i in inds))
+end
 
 """
     KeepIndex(idx)
