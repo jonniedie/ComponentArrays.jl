@@ -275,7 +275,7 @@ end
         cmat = ca * ca'
 
         @testset "ComponentIndex" begin
-            ax = only(getaxes(ca))
+            ax = getaxes(ca)[1]
             @test ax[:a] == ax[1] == ComponentArrays.ComponentIndex(1, ComponentArrays.NullAxis())
             @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, FlatAxis())
             @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = 1:3, b = 4))
