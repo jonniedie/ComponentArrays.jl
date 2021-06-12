@@ -1,14 +1,4 @@
-function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, ::Val{s}) where {s}
-    function getproperty_adjoint(Δ)
-        zero_x = zero(x)
-        setproperty!(zero_x, s, Δ)
-        return (ChainRulesCore.NoTangent(), zero_x, ChainRulesCore.NoTangent())
-    end
-
-    return getproperty(x, s), getproperty_adjoint
-end
-
-function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Symbol)
+function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Union{Symbol, Val})
     function getproperty_adjoint(Δ)
         zero_x = zero(x)
         setproperty!(zero_x, s, Δ)
