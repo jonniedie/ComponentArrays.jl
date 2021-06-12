@@ -13,3 +13,4 @@ research/
 .vscode
 /issue_debug
 Manifest.toml
+test/Manifest.toml
