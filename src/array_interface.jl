@@ -5,7 +5,8 @@ ArrayInterface.size(A::ComponentArray) = ArrayInterface.size(parent(A))
 
 Base.elsize(x::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = Base.elsize(A)
 
-Base.axes(x::ComponentArray) = axes(getdata(x))
+# Base.axes(x::ComponentArray) = axes(getdata(x))
+Base.axes(x::ComponentArray) = CombinedAxis.(getaxes(x), axes(getdata(x)))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 

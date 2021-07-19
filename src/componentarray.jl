@@ -121,6 +121,7 @@ const CMatrix = ComponentMatrix
 
 const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
 const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
+const AdjOrTransComponentVector{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentVector
 
 const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
 const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T

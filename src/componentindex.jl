@@ -6,6 +6,9 @@ ComponentIndex(idx::Int) = ComponentIndex(idx, NullAxis())
 ComponentIndex(idx::Union{FlatIdx, Colon}) = ComponentIndex(idx, FlatAxis())
 ComponentIndex(vax::ViewAxis{Inds,IdxMap,Ax}) where {Inds,IdxMap,Ax} = ComponentIndex(Inds, vax.ax)
 
+value(idx::ComponentIndex) = idx.idx
+value(idx) = idx
+
 const FlatComponentIndex{Idx} = ComponentIndex{Idx, FlatAxis}
 const NullComponentIndex{Idx} = ComponentIndex{Idx, NullAxis}
 
@@ -13,6 +16,14 @@ function Base.getindex(A::AbstractArray, ind::ComponentIndex, inds::ComponentInd
     inds = (ind, inds...)
     return ComponentArray(A[(i.idx for i in inds)...], Tuple(i.ax for i in inds))
 end
+Base.getindex(A::ComponentArray, ind::ComponentIndex, inds::ComponentIndex...) = getindex(A, ind.idx, (i.idx for i in inds)...)
+Base.getindex(bc::Base.Broadcast.Broadcasted{Nothing}, idx::ComponentIndex) = bc[CartesianIndex(idx)]
+
+# Do we still need this?
+Base.getindex(ax::AbstractAxis, ind::ComponentIndex) = ax[ind.idx]
+
+Base.CartesianIndex(idx::Union{ComponentIndex, Integer, CartesianIndex}...) = CartesianIndex(value.(idx)...)
+
 
 """
     KeepIndex(idx)

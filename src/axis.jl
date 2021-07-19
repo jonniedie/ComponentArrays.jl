@@ -140,6 +140,7 @@ const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where
 
 Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
 
+Base.firstindex(ax::AbstractAxis) = first(viewindex(first(indexmap(ax))))
 Base.lastindex(ax::AbstractAxis) = last(viewindex(last(indexmap(ax))))
 
 Base.keys(ax::AbstractAxis) = keys(indexmap(ax))
@@ -154,3 +155,39 @@ reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
     ComponentIndex(getproperty(IdxMap, s))
+
+Base.iterate(ax::AbstractAxis, state=1) = state > lastindex(ax) ? nothing : (ax[state], state+1)
+
+Base.length(ax::AbstractAxis) = lastindex(ax) - firstindex(ax) + 1
+
+Base.UnitRange(ax::AbstractAxis) = firstindex(ax):lastindex(ax)
+Base.UnitRange{T}(ax::AbstractAxis) where {T} = T(firstindex(ax)):T(lastindex(ax))
+
+
+struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
+    component_axis::C
+    array_axis::A
+end
+
+const CombinedOrRegularAxis = Union{Integer, AbstractUnitRange, CombinedAxis}
+
+_component_axis(ax::CombinedAxis) = ax.component_axis
+_component_axis(ax) = FlatAxis()
+
+_array_axis(ax::CombinedAxis) = ax.array_axis
+_array_axis(ax) = ax
+
+Base.first(ax::CombinedAxis) = first(_array_axis(ax))
+
+Base.last(ax::CombinedAxis) = last(_array_axis(ax))
+
+Base.firstindex(ax::CombinedAxis) = firstindex(_array_axis(ax))
+
+Base.lastindex(ax::CombinedAxis) = lastindex(_array_axis(ax))
+
+Base.getindex(ax::CombinedAxis, i::Integer) = _array_axis(ax)[i]
+Base.getindex(ax::CombinedAxis, i::AbstractArray) = _array_axis(ax)[i]
+
+Base.length(ax::CombinedAxis) = lastindex(ax) - firstindex(ax) + 1
+
+Base.CartesianIndices(ax::Tuple{Vararg{CombinedAxis}}) = CartesianIndices(_array_axis.(ax))
