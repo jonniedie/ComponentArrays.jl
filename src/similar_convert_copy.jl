@@ -80,30 +80,4 @@ Base.NamedTuple(x::ComponentVector) = _namedtuple(x)
 
 
 ## AbstractAxis conversion and promotion
-Base.convert(::Type{Ax}, ax::AbstractAxis) where {Ax<:AbstractAxis} = ax #Ax()
-# Base.convert(::Type{Axis}, ax::AbstractAxis) = ax #Ax()
-Base.convert(::Type{Ax}, ax::AbstractAxis) where {Ax<:VarAxes} = convert.(typeof.(getaxes(Ax)), (ax,))
-
-Base.promote_rule(AA::Type{<:Axis}, ::Type{NullAxis}) = AA
-Base.promote_rule(AA::Type{<:Axis}, ::Type{FlatAxis}) = AA
-Base.promote_rule(FA::Type{FlatAxis}, ::Type{NullAxis}) = FA
-Base.promote_rule(FA::Type{FlatAxis}, ::Type{FlatAxis}) = FA
-Base.promote_rule(NA::Type{NullAxis}, ::Type{NullAxis}) = NA
-function Base.promote_rule(A1::Type{<:VarAxes}, A2::Type{<:VarAxes})
-    # promote_type.(typeof.(getaxes(A1)), typeof.(getaxes(A2)))
-    ax = typeof(first.(promote.(getaxes(A1), getaxes(A2))))
-end
-
-broadcast_promote_type(::Type{FlatAxis}, ax2::Type{<:Axis}) = ax2
-broadcast_promote_type(ax1::Type{<:Axis}, ::Type{FlatAxis}) = ax1
-broadcast_promote_type(ax1::Type{FlatAxis}, ::Type{NullAxis}) = ax1
-broadcast_promote_type(::Type{NullAxis}, ax2::Type{FlatAxis}) = ax2
-broadcast_promote_type(::Type{<:Axis}, ::Type{<:Axis}) = FlatAxis
-broadcast_promote_type(ax1::Type{Ax}, ::Type{Ax}) where {Ax<:Axis} = ax1
-function broadcast_promote_type(A1::Type{<:VarAxes}, A2::Type{<:VarAxes})
-    ax = Tuple{broadcast_promote_typeof.(getaxes(A1), getaxes(A2))...}
-end
-
-broadcast_promote_typeof(ax1, ax2) = broadcast_promote_type(typeof(ax1), typeof(ax2))
-
-broadcast_promote(ax1, ax2) = broadcast_promote_typeof(ax1, ax2)()
+Base.convert(::Type{Ax}, ax::AbstractAxis) where {Ax<:AbstractAxis} = ax

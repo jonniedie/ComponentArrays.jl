@@ -156,13 +156,6 @@ reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
     ComponentIndex(getproperty(IdxMap, s))
 
-Base.iterate(ax::AbstractAxis, state=1) = state > lastindex(ax) ? nothing : (ax[state], state+1)
-
-Base.length(ax::AbstractAxis) = lastindex(ax) - firstindex(ax) + 1
-
-Base.UnitRange(ax::AbstractAxis) = firstindex(ax):lastindex(ax)
-Base.UnitRange{T}(ax::AbstractAxis) where {T} = T(firstindex(ax)):T(lastindex(ax))
-
 
 struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
     component_axis::C

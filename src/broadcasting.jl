@@ -18,13 +18,6 @@ Base.promote_shape(a::NTuple{N,AbstractUnitRange}, b::Tuple{Vararg{CombinedAxis}
 Base.promote_shape(a::Tuple{Vararg{CombinedAxis}}, b::Tuple{Vararg{CombinedAxis}}) = Base.promote_shape(_array_axis.(a), _array_axis.(b))
 Base.promote_shape(a::T, b::T) where {T<:Tuple{Vararg{CombinedAxis}}} = a
 
-# Need a special case here because `map` doesn't follow same rules as normal broadcasting. To be safe and avoid ambiguities,
-# we'll just handle the case where everything is a ComponentArray. Else it falls back to a plain Array output.
-function Base.map(f, xs::ComponentArray{<:Any, <:Any, <:Any, Axes}...) where Axes
-    return ComponentArray(map(f, getdata.(xs)...), getaxes(Axes))
-end
-
-
 # From https://github.com/JuliaArrays/OffsetArrays.jl/blob/master/src/OffsetArrays.jl
 Base.dataids(A::ComponentArray) = Base.dataids(parent(A))
 Broadcast.broadcast_unalias(dest::ComponentArray, src) = getdata(dest) === getdata(src) ? src : Broadcast.unalias(dest, src)
