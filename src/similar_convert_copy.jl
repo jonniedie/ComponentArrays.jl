@@ -11,13 +11,62 @@ Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getd
 #         return A
 #     end
 # end
-function Base.similar(x::ComponentArray{T1,N,A,Ax}, ::Type{T}, dims::NTuple{N,Int}) where {T,T1,N,A,Ax}
-    arr = similar(getdata(x), T, dims)
-    return ComponentArray(arr, getaxes(x))
+# function Base.similar(x::ComponentArray{T1,N,A,Ax}, ::Type{T}, dims::Union{Integer, AbstractUnitRange}...) where {T,T1,N,A,Ax}
+#     arr = similar(getdata(x), T, dims)
+#     return ComponentArray(arr, getaxes(x))
+# end
+# function Base.similar(x::ComponentArray{T1,N,A,Ax}, ::Type{T}, dims::Union{Integer, AbstractUnitRange}...) where {T,T1,N,A,Ax}
+#     return similar(getdata(x), T, dims)
+# end
+function Base.similar(x::AbstractArray, dims::Tuple{<:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(getdata(x), length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
 end
-function Base.similar(x::ComponentArray{T1,N1,A,Ax}, ::Type{T}, dims::NTuple{N2,Int}) where {T,T1,N1,N2,A,Ax}
-    return similar(getdata(x), T, dims)
+function Base.similar(x::AbstractArray, dims::Tuple{<:Union{Integer,AbstractUnitRange}, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(getdata(x), length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
 end
+function Base.similar(x::AbstractArray, dims::Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(getdata(x), length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+function Base.similar(x::AbstractArray, ::Type{T}, dims::Tuple{<:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}) where {T}
+    arr = similar(getdata(x), T, length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+function Base.similar(x::AbstractArray, ::Type{T}, dims::Tuple{<:Union{Integer,AbstractUnitRange}, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}) where {T}
+    arr = similar(getdata(x), T, length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+function Base.similar(x::Type{<:AbstractArray}, dims::Tuple{<:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(x, length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+function Base.similar(x::Type{<:AbstractArray}, dims::Tuple{<:CombinedOrRegularAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(x, length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+function Base.similar(x::Type{<:AbstractArray}, dims::Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}})
+    arr = similar(x, length.(_array_axis.(dims)))
+    return ComponentArray(arr, _component_axis.(dims)...)
+end
+
+# function Base.similar(A::Type{<:AbstractArray}, dims::Tuple{<:AbstractAxis,Vararg{<:AbstractAxis}})
+#     arr = similar(A, length.(dims))
+#     return ComponentArray(arr, Axis.(dims))
+# end
+# function Base.similar(A::Type{<:AbstractArray}, ::Type{T}, dims::Tuple{<:AbstractAxis,Vararg{<:AbstractAxis}}) where {T}
+#     arr = similar(A, T, length.(dims))
+#     return ComponentArray(arr, Axis.(dims))
+# end
+# function Base.similar(A::Type{<:AbstractArray}, dims::Tuple{<:UnitRange,Vararg{<:AbstractAxis}})
+#     arr = similar(A, length.(dims))
+#     return ComponentArray(arr, Axis.(dims))
+# end
+# function Base.similar(A::Type{<:AbstractArray}, ::Type{T}, dims::Tuple{<:UnitRange,Vararg{<:AbstractAxis}}) where {T}
+#     arr = similar(A, T, length.(dims))
+#     return ComponentArray(arr, Axis.(dims))
+# end
 
 ## TODO: write length method for AbstractAxis so we can do this?
     # function Base.similar(::Type{CA}) where CA<:ComponentArray{T,N,A,Axes} where {T,N,A,Axes}

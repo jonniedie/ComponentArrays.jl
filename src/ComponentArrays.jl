@@ -16,11 +16,11 @@ include("lazyarray.jl")
 include("axis.jl")
 export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
 
-include("componentindex.jl")
-export KeepIndex
-
 include("componentarray.jl")
 export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys
+
+include("componentindex.jl")
+export KeepIndex
 
 include("array_interface.jl")
 # Base methods: parent, size, elsize, axes, reinterpret, hcat, vcat, permutedims, IndexStyle, to_indices, to_index, getindex, setindex!, view, pointer, unsafe_convert, strides, stride
