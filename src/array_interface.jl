@@ -56,6 +56,7 @@ function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
 end
 Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
 Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
+Base.vcat(x::ComponentVector, args::Union{Number, UniformScaling, AbstractVecOrMat}...) = vcat(getdata(x), getdata.(args)...)
 Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
 
 function Base.hvcat(row_lengths::Tuple{Vararg{Int}}, xs::AbstractComponentVecOrMat...)
