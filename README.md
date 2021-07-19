@@ -27,6 +27,8 @@ in [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl)
 [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl), but anything that requires
 flat vectors is fair game.
 
+Check out the [NEWS](https://github.com/jonniedie/ComponentArrays.jl/blob/master/NEWS.md) for new features by minor release version.
+
 
 ## General use
 The easiest way to construct 1-dimensional ```ComponentArray```s (aliased as `ComponentVector`) is as if they were ```NamedTuple```s. In fact, a good way to think about them is as arbitrarily nested, mutable ```NamedTuple```s that can be passed through a solver.

@@ -1,6 +1,35 @@
 # ComponentArrays.jl NEWS
 Notes on new features (minor releases). For more details on bugfixes and non-feature-adding changes (patch releases), check out the [releases page](https://github.com/jonniedie/ComponentArrays.jl/releases).
 
+
+### v0.11.0
+- Calling `axes` on a `ComponentArray` returns a new `CombinedAxis` type!
+  - Doing things The Right Way™!
+  - No more complicated and error-prone custom broadcasting machinery!
+  - No more wierd special cases!
+### v0.10.0
+- All indexing now slices rather than sometimes viewing and sometimes slicing!
+- Property access methods (i.e. "dot-access") still use views!
+```julia
+julia> x = ComponentArray(a=1, b=[4,2])
+ComponentVector{Int64}(a = 1, b = [4, 2])
+
+julia> x.b # Dot-access still views by default
+2-element view(::Vector{Int64}, 2:3) with eltype Int64:
+ 4
+ 2
+
+julia> x[:b] # Slicing now slices
+2-element Vector{Int64}:
+ 4
+ 2
+
+julia> @view x[:b] # Use @view to view
+2-element view(::Vector{Int64}, 2:3) with eltype Int64:
+ 4
+ 2
+```
+
 ### v0.9.0
 - Construct `ComponentArray`s from `Dict`s!
 ```julia
