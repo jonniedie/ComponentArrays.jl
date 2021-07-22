@@ -55,6 +55,8 @@ function Base.convert(::Type{ComponentArray{T1,N,A1,Ax1}}, x::ComponentArray{T2,
 end
 Base.convert(::Type{<:Array}, x::ComponentArray) = convert(Array, getdata(x))
 
+Base.convert(::Type{Cholesky{T1,Matrix{T1}}}, x::Cholesky{T2,<:ComponentArray}) where {T1,T2} = Cholesky(Matrix{T1}(x.factors), x.uplo, x.info)
+
 
 # Conversion to from ComponentArray to NamedTuple (note, does not preserve numeric types of
 # original NamedTuple)
