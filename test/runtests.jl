@@ -558,6 +558,10 @@ end
     @test all(zero(cmat) * ca .== zero(ca))
     @test typeof(zrv0) === typeof(rv0)
     @test typeof(zrv0.r[1]) == typeof(rv0[1])
+
+    # Issue #100
+    chol = cholesky(cmat+I)
+    @test convert(Cholesky{Float32, Matrix{Float32}}, chol).factors isa Matrix{Float32}
 end
 
 @testset "Autodiff" begin include("autodiff_tests.jl") end
