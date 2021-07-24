@@ -11,7 +11,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 ArrayInterface = "2.13, 3"
-ChainRulesCore = "0.8, 0.9, 0.10"
+ChainRulesCore = "0.8, 0.9, 0.10, 1"
 Requires = "1.0.1"
 julia = "1"
 
