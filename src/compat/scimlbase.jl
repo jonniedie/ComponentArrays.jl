@@ -2,11 +2,12 @@
 
 # Plotting stuff
 function SciMLBase.getsyms(sol::SciMLBase.AbstractODESolution{T,N,C}) where {T,N,C<:AbstractVector{<:ComponentArray}}
-    if SciMLBase.has_syms(sol.prob.f)
-        return sol.prob.f.syms
-    else
-        return labels(sol.u[1])
-    end
+#    if SciMLBase.has_syms(sol.prob.f)
+#       return sol.prob.f.syms
+#    else
+#        return labels(sol.u[1])
+#    end
+    keys(sol.prob.u0)
 end
 
 # A little bit of type piracy. Should probably make this a PR to DiffEqBase
