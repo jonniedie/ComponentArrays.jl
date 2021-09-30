@@ -123,22 +123,3 @@ end
         @test (ctime - ltime)/ltime < 0.05
     end
 end
-
-@testset "symbolic-indexing" begin
-    function lotka!(D, u, p, t; f=0)
-        @unpack α, β, γ, δ = p
-        @unpack x, y = u
-    
-        D.x =  α*x - β*x*y
-        D.y = -γ*y + δ*x*y
-        return nothing
-    end
-    
-    lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
-    lotka_ic = ComponentArray(x=1.0, y=1.0)
-    tspan = (0.0,10.0)
-    lotka_prob = ODEProblem(lotka!, lotka_ic, tspan, lotka_p)
-    sol = solve(lotka_prob, Tsit5(), saveat=1.0)
-    @test length(sol[:x]) == 11
-    @test typeof(sol[:x]) == Vector{Float64}
-end
