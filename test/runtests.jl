@@ -1,5 +1,6 @@
 using ComponentArrays
 using ForwardDiff
+using InvertedIndices
 using LabelledArrays
 using LinearAlgebra
 using StaticArrays
@@ -226,6 +227,10 @@ end
 
     # Issue # 94: No getindex pirates
     @test_throws BoundsError a[]
+
+    # Issue #112: InvertedIndices
+    @test ca[Not(3)] == getdata(ca)[Not(3)]
+    @test ca[Not(2:3)] == getdata(ca)[Not(2:3)]
 end
 
 @testset "Set" begin

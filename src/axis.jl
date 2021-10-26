@@ -151,6 +151,7 @@ reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 
 # Get AbstractAxis index
+@inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)
 @inline Base.getindex(::AbstractAxis, idx::FlatIdx) = ComponentIndex(idx)
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
