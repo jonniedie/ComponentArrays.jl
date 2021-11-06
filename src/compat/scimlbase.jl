@@ -5,10 +5,6 @@ function SciMLBase.getsyms(sol::SciMLBase.AbstractODESolution{T,N,C}) where {T,N
     if SciMLBase.has_syms(sol.prob.f)
         return sol.prob.f.syms
     else
-        return labels(sol.u[1])
+        return Symbol.(labels(sol.u[1]))
     end
 end
-
-# A little bit of type piracy. Should probably make this a PR to DiffEqBase
-SciMLBase.cleansyms(syms::AbstractArray{<:String}) = SciMLBase.cleansyms.(syms)
-SciMLBase.cleansyms(syms::String) = syms

@@ -175,13 +175,13 @@ function simulate(plant_fun, plant_ic;
     # Reference model tracking
     top = plot(
         sol,
-        vars=["reference_model[1]", "feedback_loop.sensor"],
+        vars=Symbol.(["reference_model[1]", "feedback_loop.sensor[1]"]),
         # legend=:right,
         title="Reference Model Tracking",
     )
 
     # Parameter estimate tracking
-    bottom = plot(sol, vars="feedback_loop.parameter_estimates")
+    bottom = plot(sol, vars=Symbol.(["feedback_loop.parameter_estimates.θr", "feedback_loop.parameter_estimates.θy"]))
     plot!(
         bottom,
         [tspan...], [θ_truth.r θ_truth.y; θ_truth.r θ_truth.y],
