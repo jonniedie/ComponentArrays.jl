@@ -162,6 +162,7 @@ struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
     component_axis::C
     array_axis::A
 end
+CombinedAxis(ax::CombinedAxis) = ax
 
 const CombinedOrRegularAxis = Union{Integer, AbstractUnitRange, CombinedAxis}
 
@@ -181,6 +182,18 @@ Base.lastindex(ax::CombinedAxis) = lastindex(_array_axis(ax))
 
 Base.getindex(ax::CombinedAxis, i::Integer) = _array_axis(ax)[i]
 Base.getindex(ax::CombinedAxis, i::AbstractArray) = _array_axis(ax)[i]
+
+Base.reduced_index(ax::CombinedAxis) = CombinedAxis(FlatAxis(), Base.reduced_index(_array_axis(ax)))
+function Base.reduced_indices(inds::NTuple{N,<:CombinedAxis}, d::Int) where N
+    d < 1 && throw(ArgumentError("dimension must be ≥ 1, got $d"))
+    if d == 1
+        return (Base.reduced_index(inds[1]), Base.tail(inds)...)
+    elseif 1 < d <= N
+        return tuple(inds[1:d-1]..., Base.reduced_index(inds[d]), inds[d+1:N]...)
+    else
+        return inds
+    end
+end
 
 Base.length(ax::CombinedAxis) = lastindex(ax) - firstindex(ax) + 1
 
