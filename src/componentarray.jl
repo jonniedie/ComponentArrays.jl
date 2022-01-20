@@ -175,7 +175,7 @@ function make_idx(data, x::AbstractArray, last_val)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
-function make_idx(data, x::A, last_val) where A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}
+function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}}
     len = recursive_length(x)
     if eltype(x) |> isconcretetype
         out = ()
@@ -195,6 +195,9 @@ function make_idx(data, x::A, last_val) where A<:AbstractArray{<:Union{NamedTupl
     else
         error("Only homogeneous arrays of inner ComponentArrays are allowed.")
     end
+end
+function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:AbstractArray}}
+    error("ComponentArrays cannot currently contain arrays of arrays as elements. This one contains: \n $x\n")
 end
 
 
