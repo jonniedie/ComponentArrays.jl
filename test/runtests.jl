@@ -110,7 +110,7 @@ end
 
     # Issue #116
     # Part 2: Arrays of arrays
-    @test_throws Exception ComponentVector(a=[[3],[4,5]], b=1)
+    @test_throws Exception ComponentVector(a = [[3], [4, 5]], b = 1)
 end
 
 @testset "Attributes" begin
@@ -138,6 +138,12 @@ end
     @test hash(ab, zero(UInt)) != hash(xy, zero(UInt))
 
     @test ab == LVector(a = 1, b = 2)
+
+    # Issue #117
+    kw_fun(; a, b) = a + b
+    x = ComponentArray(a=4, b=5)
+    @test merge(NamedTuple(), x) == NamedTuple(x)
+    @test kw_fun(; x...) == 9
 end
 
 @testset "Get" begin

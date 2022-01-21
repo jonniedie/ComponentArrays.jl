@@ -16,3 +16,5 @@ Base.propertynames(x::ComponentVector) = propertynames(indexmap(getaxes(x)[1]))
 
 @inline Base.setproperty!(x::ComponentVector, s::Symbol, v) = _setindex!(x, v, Val(s))
 @inline Base.setproperty!(x::ComponentVector, s::Val, v) = _setindex!(x, v, s)
+
+Base.merge(a::NamedTuple, b::ComponentArray) = merge(a, NamedTuple(b))
