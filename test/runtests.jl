@@ -140,10 +140,10 @@ end
     @test ab == LVector(a = 1, b = 2)
 
     # Issue #117
-    kw_fun(; a, b) = a + b
-    x = ComponentArray(a=4, b=5)
+    kw_fun(; a, b) = a // b
+    x = ComponentArray(b=1, a=2)
     @test merge(NamedTuple(), x) == NamedTuple(x)
-    @test kw_fun(; x...) == 9
+    @test kw_fun(; x...) == 2
 end
 
 @testset "Get" begin
