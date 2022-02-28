@@ -338,6 +338,7 @@ end
     @test convert(typeof(cmat), cmat) == cmat
 
     @test convert(Array, ca) == getdata(ca)
+    @test convert(Matrix{Float32}, cmat) isa Matrix{Float32}
 end
 
 @testset "Broadcasting" begin

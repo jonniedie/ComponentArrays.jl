@@ -53,7 +53,7 @@ end
 function Base.convert(::Type{ComponentArray{T1,N,A1,Ax1}}, x::ComponentArray{T2,N,A2,Ax2}) where {T1,T2,N,A1,A2,Ax1,Ax2}
     return T1.(x)
 end
-Base.convert(::Type{<:Array}, x::ComponentArray) = convert(Array, getdata(x))
+Base.convert(T::Type{<:Array}, x::ComponentArray) = convert(T, getdata(x))
 
 Base.convert(::Type{Cholesky{T1,Matrix{T1}}}, x::Cholesky{T2,<:ComponentArray}) where {T1,T2} = Cholesky(Matrix{T1}(x.factors), x.uplo, x.info)
 
