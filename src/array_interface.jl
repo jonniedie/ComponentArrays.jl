@@ -2,6 +2,16 @@ Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
 ArrayInterface.size(A::ComponentArray) = ArrayInterface.size(parent(A))
+        
+## https://github.com/SciML/DifferentialEquations.jl/issues/849
+function ArrayInterface.lu_instance(x::ComponentMatrix)
+    T = eltype(x)
+    noUnitT = typeof(zero(T))
+    luT = LinearAlgebra.lutype(noUnitT)
+    ipiv = Vector{LinearAlgebra.BlasInt}(undef, 0)
+    info = zero(LinearAlgebra.BlasInt)
+    return LU{luT}(similar(x), ipiv, info)
+end
 
 Base.elsize(x::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = Base.elsize(A)
 
