@@ -6,11 +6,6 @@ using Test
 using Unitful
 
 
-import FastBroadcast
-FastBroadcast.use_fast_broadcast(::Type{<:ComponentArrays.CAStyle}) = true
-FastBroadcast.use_fast_broadcast(::Type{<:LabelledArrays.LAStyle}) = true
-
-
 @testset "Issue 31" begin
     function rober(vars, p, t)
         y₁, y₂, y₃ = vars

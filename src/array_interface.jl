@@ -20,6 +20,8 @@ Base.axes(x::ComponentArray) = CombinedAxis.(getaxes(x), axes(getdata(x)))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
+Base.reshape(A::AbstractArray, axs::Tuple{Vararg{<:CombinedAxis}}) = reshape(A, _array_axis.(axs))
+
 # Cats
 # TODO: Make this a little less copy-pastey
 function Base.hcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)

@@ -241,6 +241,9 @@ end
     # Issue #112: InvertedIndices
     @test ca[Not(3)] == getdata(ca)[Not(3)]
     @test ca[Not(2:3)] == getdata(ca)[Not(2:3)]
+
+    # Issue #123
+    @test reshape(a, axes(ca)) isa Vector{Float64}
 end
 
 @testset "Set" begin
