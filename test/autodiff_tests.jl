@@ -31,4 +31,8 @@ truth = [-400, 200]
     else
         @test zygote_full.x ≈ truth
     end
+
+    @test ComponentArray(x=4,) == Zygote.gradient(ComponentArray(x=2,)) do c
+        (;c...,).x^2
+    end[1]
 end

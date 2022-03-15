@@ -61,18 +61,9 @@ Base.convert(::Type{Cholesky{T1,Matrix{T1}}}, x::Cholesky{T2,<:ComponentArray}) 
 # Conversion to from ComponentArray to NamedTuple (note, does not preserve numeric types of
 # original NamedTuple)
 function _namedtuple(x::ComponentVector)
-    data = []
-    idxmap = indexmap(getaxes(x)[1])
-    for key in valkeys(x)
-        idx = idxmap[getval(key)]
-        # if idx isa AliasAxis
-        #     val = idx.f
-        # else
-            val = getproperty(x, key) |> _namedtuple
-        # end
-        push!(data, getval(key) => val)
-    end
-    return (; data...)
+    NamedTuple{keys(x)}(map(valkeys(x)) do key
+        _namedtuple(getproperty(x, key))
+    end)
 end
 _namedtuple(v::AbstractVector) = _namedtuple.(v)
 _namedtuple(x) = x
