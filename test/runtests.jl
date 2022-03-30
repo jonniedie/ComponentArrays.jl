@@ -482,7 +482,7 @@ end
         ab = ComponentArray(a = 1, b = 5)
         cd = ComponentArray(c = 3, d = 7)
         ab_ab = ab * ab'
-        ab_cd = ab * cd'
+        ab_cd = ab * cd' + I
         cd_ab = cd * ab'
         cd_cd = cd * cd'
         AB = Axis(a = 1, b = 2)
@@ -513,6 +513,10 @@ end
         @test getaxes(cd_ab' * cd_ab) == (AB, AB)
         @test getaxes(cd_ab' * ab_cd') == (AB, AB)
         @test getaxes(ab_cd * ab_cd') == (AB, AB)
+        @test getaxes(ab_cd \ ab) == (CD,)
+        @test getaxes(ab_cd' \ cd) == (AB,)
+        @test getaxes(cd' / ab_cd) == (FlatAxis(), AB)
+        @test getaxes(ab' / ab_cd') == (FlatAxis(), CD)
     end
 
     # Issue #33

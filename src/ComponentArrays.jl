@@ -26,7 +26,11 @@ export KeepIndex
 
 include("array_interface.jl")
 # Base methods: parent, size, elsize, axes, reinterpret, hcat, vcat, permutedims, IndexStyle, to_indices, to_index, getindex, setindex!, view, pointer, unsafe_convert, strides, stride
-# ArrayInterface methods: strides, size, lu_instance, parent_type
+# ArrayInterface methods: strides, size, parent_type
+
+include("linear_algebra.jl")
+# Base methods: *, \, /
+# ArrayInterface methods: lu_instance
 
 include("namedtuple_interface.jl")
 # Base methods: hash, ==, keys, haskey, propertynames, getproperty, setproperty!
