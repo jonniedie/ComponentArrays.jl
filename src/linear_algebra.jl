@@ -9,7 +9,6 @@ function ArrayInterface.lu_instance(x::ComponentMatrix)
 end
 
 # Helpers for dealing with adjoints and such
-_first_axis(x) = FlatAxis()
 _first_axis(x::AbstractComponentVecOrMat) = getaxes(x)[1]
 
 _second_axis(x::AbstractMatrix) = FlatAxis()
@@ -37,9 +36,6 @@ for op in [:*, :\, :/]
                 cᵀ = $op(getdata(aᵀ), getdata(B))
                 ax2 = _out_axes($op, aᵀ, B)[2]
                 return $adj(ComponentArray(cᵀ', ax2))
-            end
-            function Base.$op(A::$Adj{T,<:CV}, B::CV) where {T<:Number, CV<:ComponentVector{T}}
-                return $op(getdata(A), getdata(B))
             end
             function Base.$op(A::$Adj{T,<:CV}, B::CV) where {T<:Real, CV<:ComponentVector{T}}
                 return $op(getdata(A), getdata(B))

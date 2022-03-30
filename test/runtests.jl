@@ -517,6 +517,7 @@ end
         @test getaxes(ab_cd' \ cd) == (AB,)
         @test getaxes(cd' / ab_cd) == (FlatAxis(), AB)
         @test getaxes(ab' / ab_cd') == (FlatAxis(), CD)
+        @test getaxes(ab_cd \ ab_cd) == (CD, CD)
     end
 
     # Issue #33
@@ -536,6 +537,9 @@ end
     @test getaxes((s1_D * s2_D) * in2) == getaxes(s1_D * (s2_D * in2)) == (Axis(y1 = 1),)
     @test getaxes((s2_D * s1_D) * in1) == getaxes(s2_D * (s1_D * in1)) == (Axis(y2 = 1),)
     @test getaxes(out1' * (s1_D * s2_D)) == getaxes(transpose(out1) * (s1_D * s2_D)) == (FlatAxis(), Axis(u2 = 1))
+
+    @test ComponentArrays.ArrayInterface.lu_instance(cmat).factors isa ComponentMatrix
+    @test ComponentArrays.ArrayInterface.parent_type(cmat) === Matrix{Float64}
 end
 
 @testset "Plot Utilities" begin
