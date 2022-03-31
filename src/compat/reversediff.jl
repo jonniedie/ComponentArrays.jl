@@ -2,17 +2,18 @@ const TrackedComponentArray{V, D, N, DA, N, A, Ax} = ReverseDiff.TrackedArray{V,
 
 maybe_tracked_array(val::AbstractArray, der, tape, index, origin) = ReverseDiff.TrackedArray(val, der, tape)
 function maybe_tracked_array(val, der, tape, index, origin)
-    ax = only(getaxes(ReverseDiff.value(origin)))
+    ax = getaxes(ReverseDiff.value(origin))[1]
     i = ax[index].idx
     return ReverseDiff.TrackedReal(val, der, tape, i, origin)
 end
 
 for f in [:getindex, :view]
-    @eval function Base.$f(tca::TrackedComponentArray, inds::Union{Symbol, Val}...)
-            val = $f(ReverseDiff.value(tca), inds...)
-            der = Base.maybeview(ReverseDiff.deriv(tca), inds...)
+    # TODO: make this work for multidimensional ComponentArrays
+    @eval function Base.$f(tca::TrackedComponentArray, index::Union{Symbol, Val})
+            val = $f(ReverseDiff.value(tca), index)
+            der = Base.maybeview(ReverseDiff.deriv(tca), index)
             t = ReverseDiff.tape(tca)
-        return maybe_tracked_array(val, der, t, only(inds), tca)
+        return maybe_tracked_array(val, der, t, index, tca)
     end
 end
 
