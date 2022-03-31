@@ -156,7 +156,8 @@ reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
     ComponentIndex(getproperty(IdxMap, s))
-
+@inline Base.getindex(::AbstractAxis{IdxMap}, ::Val{s}) where {IdxMap, s} =
+    ComponentIndex(getproperty(IdxMap, s))
 
 struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
     component_axis::C

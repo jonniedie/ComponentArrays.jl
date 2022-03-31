@@ -1,14 +1,18 @@
 const TrackedComponentArray{V, D, N, DA, N, A, Ax} = ReverseDiff.TrackedArray{V,D,N,ComponentArray{V,N,A,Ax},DA}
 
-maybe_tracked_array(val::AbstractArray, der, t) = ReverseDiff.TrackedArray(val, der, t)
-maybe_tracked_array(val, der, t) = ReverseDiff.TrackedReal(val, der, t)
+maybe_tracked_array(val::AbstractArray, der, tape, index, origin) = ReverseDiff.TrackedArray(val, der, tape)
+function maybe_tracked_array(val, der, tape, index, origin)
+    ax = only(getaxes(ReverseDiff.value(origin)))
+    i = ax[index].idx
+    return ReverseDiff.TrackedReal(val, der, tape, i, origin)
+end
 
 for f in [:getindex, :view]
     @eval function Base.$f(tca::TrackedComponentArray, inds::Union{Symbol, Val}...)
             val = $f(ReverseDiff.value(tca), inds...)
             der = Base.maybeview(ReverseDiff.deriv(tca), inds...)
             t = ReverseDiff.tape(tca)
-        return maybe_tracked_array(val, der, t)
+        return maybe_tracked_array(val, der, t, only(inds), tca)
     end
 end
 
@@ -19,6 +23,6 @@ function Base.getproperty(tca::TrackedComponentArray, s::Symbol)
         val = getproperty(ReverseDiff.value(tca), s)
         der = getproperty(ReverseDiff.deriv(tca), s)
         t = ReverseDiff.tape(tca)
-        return maybe_tracked_array(val, der, t)
+        return maybe_tracked_array(val, der, t, s, tca)
     end
 end
