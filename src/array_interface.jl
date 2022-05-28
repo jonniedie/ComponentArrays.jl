@@ -10,7 +10,7 @@ Base.axes(x::ComponentArray) = CombinedAxis.(getaxes(x), axes(getdata(x)))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.reshape(A::AbstractArray, axs::Tuple{Vararg{<:CombinedAxis}}) = reshape(A, _array_axis.(axs))
+Base.reshape(A::AbstractArray, axs::NTuple{N,<:CombinedAxis}) where {N} = reshape(A, _array_axis.(axs))
 
 # Cats
 # TODO: Make this a little less copy-pastey
@@ -61,7 +61,7 @@ Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
 Base.vcat(x::ComponentVector, args::Union{Number, UniformScaling, AbstractVecOrMat}...) = vcat(getdata(x), getdata.(args)...)
 Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
 
-function Base.hvcat(row_lengths::Tuple{Vararg{Int}}, xs::AbstractComponentVecOrMat...)
+function Base.hvcat(row_lengths::NTuple{N,Int}, xs::AbstractComponentVecOrMat...) where {N}
     i = 1
     idxs = UnitRange{Int}[]
     for row_length in row_lengths
@@ -84,8 +84,8 @@ Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = I
 # Since we aren't really using the standard approach to indexing, this will forward things to
 # the correct methods
 Base.to_indices(x::ComponentArray, i::Tuple) = i
-Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Union{Integer, CartesianIndex}, N}}) where N = i
-Base.to_indices(x::ComponentArray, i::Tuple{Vararg{Int64}}) where N = i
+Base.to_indices(x::ComponentArray, i::NTuple{N,Union{Integer, CartesianIndex}}) where N = i
+Base.to_indices(x::ComponentArray, i::NTuple{N,Int64}) where N = i
 Base.to_index(x::ComponentArray, i) = i
 
 # Get ComponentArray index
@@ -120,13 +120,13 @@ Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(B
     inds = map(i -> i.idx, ci)
     axs = map(i -> i.ax, ci)
     axs = remove_nulls(axs...)
-    return :(Base.@_inline_meta; ComponentArray(index_fun(getdata(x), $inds...), $axs...))
+    return :(@inline; ComponentArray(index_fun(getdata(x), $inds...), $axs...))
 end
 
 @generated function _setindex!(x::ComponentArray, v, idx...)
     ci = getindex.(getaxes(x), getval.(idx))
     inds = map(i -> i.idx, ci)
-    return :(Base.@_inline_meta; setindex!(getdata(x), v, $inds...))
+    return :(@inline; setindex!(getdata(x), v, $inds...))
 end
 
 ## Linear Algebra
