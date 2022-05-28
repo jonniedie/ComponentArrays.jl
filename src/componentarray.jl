@@ -152,7 +152,7 @@ function make_idx(data, nt::NamedTuple, last_val)
     len = recursive_length(nt)
     kvs = []
     lv = 0
-    for (k,v) in zip(keys(nt), nt)
+    for (k,v) in zip(keys(nt), values(nt))
         (_,val) = make_idx(data, v, lv)
         push!(kvs, k => val)
         lv = val

@@ -44,3 +44,19 @@ truth = ComponentArray(a = [32, 48], x = 156)
         end[1]
     end
 end
+
+
+# # This is commented out because the gradient operation itself is broken due to Zygote's inability
+# # to support mutation and ComponentArray's use of mutation for contstuction from a NamedTuple.
+# # It would be nice to support this eventually, so I'll just leave this commented (because @test_broken
+# # wouldn't work here because the error happens before the test)
+# @testset "Issues" begin
+#     function mysum(x::AbstractVector)
+#         y = ComponentVector(x=x)
+#         return sum(y)
+#     end
+
+#     Δ = Zygote.gradient(mysum, rand(10))
+
+#     @test Δ isa Vector{Float64}
+# end

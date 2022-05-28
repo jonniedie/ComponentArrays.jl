@@ -73,6 +73,7 @@ end
     @test Axis([:a, :b, :c]) == Axis(a = 1, b = 2, c = 3)
     @test Axis((:a, :b, :c)) == Axis(a = 1, b = 2, c = 3)
     @test Axis(:a, :b, :c) == Axis(a = 1, b = 2, c = 3)
+    @test_throws ErrorException Axis(:a, :a)
 
     # Issue #24
     @test ComponentVector(a = 1, b = 2.0f0) == ComponentVector{Float32}(a = 1.0, b = 2.0)
