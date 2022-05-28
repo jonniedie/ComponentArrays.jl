@@ -120,13 +120,13 @@ Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(B
     inds = map(i -> i.idx, ci)
     axs = map(i -> i.ax, ci)
     axs = remove_nulls(axs...)
-    return :(@inline; ComponentArray(index_fun(getdata(x), $inds...), $axs...))
+    return :(@inline ComponentArray(index_fun(getdata(x), $inds...), $axs...))
 end
 
 @generated function _setindex!(x::ComponentArray, v, idx...)
     ci = getindex.(getaxes(x), getval.(idx))
     inds = map(i -> i.idx, ci)
-    return :(@inline; setindex!(getdata(x), v, $inds...))
+    return :(@inline setindex!(getdata(x), v, $inds...))
 end
 
 ## Linear Algebra
@@ -142,7 +142,5 @@ end
 
 Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
 Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
-
-ArrayInterface.lu_instance(jac_prototype::ComponentArray) = ArrayInterface.lu_instance(getdata(jac_prototype))
 
 ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A
