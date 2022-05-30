@@ -592,6 +592,32 @@ end
     @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
 end
 
+@testset "getindex_axis ComponentVector" begin
+    cv = ComponentVector(a=(a1=100,a2=(a21=210, a22=220)), b=2, c = (c1=reshape(1:4,(2,2)),))
+    cr = cv[cv]
+    @test  cr == cv
+    cr.a.a1 = 3100;  @test cv.a.a1 == 100 # does not modify original cv
+    # extract a single nested component
+    # construct Axis by template ComponentVector
+    cs = ComponentVector(a=(a2=(a22=1,),)) # the "," is important to make it a tuple
+    cr = cv[cs]
+    @test axes(cr) == axes(cs)
+    @test cr.a.a2.a22 == cv.a.a2.a22
+    # extract shaped component
+    @test cv[Axis(:c)].c == cv.c
+    # extract two upper-level components with structure
+    cs = ComponentVector(a=1, c=1) 
+    cr = cv[cs]
+    @test keys(cr) == (:a,:c)
+    @test first(axes(cr.a)) == first(axes(cv.a))
+    @test cr.a == cv.a
+    @test cr.a.a1 == cv.a.a1
+    # TODO: documentation do not forget comma for tuple
+    cv[ComponentVector(a=(a1=1,))] # the "," is important to make it a tuple
+    # wrongly extracts full a including a1 including a2, because there is no a1 in axis
+    cv[ComponentVector(a=(a1=1))] 
+end
+
 @testset "Autodiff" begin
     include("autodiff_tests.jl")
 end

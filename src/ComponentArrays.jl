@@ -49,6 +49,7 @@ export labels, label2index
 
 include("compat/chainrulescore.jl")
 
+include("getindex_axis.jl")
 
 required(filename) = include(joinpath("compat", filename))
 
