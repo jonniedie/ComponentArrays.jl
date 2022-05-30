@@ -606,8 +606,7 @@ end
     # extract shaped component
     @test cv[Axis(:c)].c == cv.c
     # extract two upper-level components with structure
-    cs = ComponentVector(a=1, c=1) 
-    cr = cv[cs]
+    cr = cv[Axis(:a,:c)] # :b not include
     @test keys(cr) == (:a,:c)
     @test first(axes(cr.a)) == first(axes(cv.a))
     @test cr.a == cv.a
