@@ -5,6 +5,7 @@
 toval(x::Val) = x
 toval(x) = Val(x)
 toval(x::String) = Val(Symbol(x))
+toval(x::AbstractArray{Symbol}) = Val((x...,))
 
 # Get value from Val type
 getval(::Val{x}) where x = x

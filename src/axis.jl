@@ -158,6 +158,23 @@ reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
     ComponentIndex(getproperty(IdxMap, s))
 @inline Base.getindex(::AbstractAxis{IdxMap}, ::Val{s}) where {IdxMap, s} =
     ComponentIndex(getproperty(IdxMap, s))
+function Base.getindex(ax::AbstractAxis, syms::Union{NTuple{N,Symbol}, <:AbstractArray{Symbol}}) where {N}
+    @assert allunique(syms) "Indexing symbols must all be unique. Got $syms"
+    c_inds = getindex.((ax,), syms)
+    inds = map(x->x.idx, c_inds)
+    axs = map(x->x.ax, c_inds)
+    last_index = 0
+    new_axs = map(inds, axs) do i, ax
+        first_index = last_index + 1
+        last_index = last_index + length(i)
+        _maybe_view_axis(first_index:last_index, ax)
+    end
+    new_ax = Axis(NamedTuple(syms .=> new_axs))
+    return ComponentIndex(reduce(vcat, inds), new_ax)
+end
+
+_maybe_view_axis(inds, ax::Axis) = ViewAxis(inds, ax)
+_maybe_view_axis(inds, ::NullAxis) = inds[1]
 
 struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
     component_axis::C

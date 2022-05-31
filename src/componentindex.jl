@@ -9,6 +9,8 @@ ComponentIndex(vax::ViewAxis{Inds,IdxMap,Ax}) where {Inds,IdxMap,Ax} = Component
 const FlatComponentIndex{Idx} = ComponentIndex{Idx, FlatAxis}
 const NullComponentIndex{Idx} = ComponentIndex{Idx, NullAxis}
 
+Base.:(==)(ci1::ComponentIndex, ci2::ComponentIndex) = ci1.idx == ci2.idx && ci1.ax == ci2.ax
+
 
 """
     KeepIndex(idx)

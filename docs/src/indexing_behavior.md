@@ -37,6 +37,26 @@ julia> ca
 ComponentVector{Int64}(a = 0, b = [0, 1])
 ```
 
+## Indexing with multiple symbols
+It is often useful to create a new `ComponentArray` with only select fields of an old one. For this reason, `ComponentArray`s can be indexed with multiple symbolic names:
+```julia
+julia> ca = ComponentArray(a=5, b=[4, 1], c=(a=2, b=[6, 30.0]))
+ComponentVector{Float64}(a = 5.0, b = [4.0, 1.0], c = (a = 2.0, b = [6.0, 30.0]))
+
+julia> ca[(:c, :a)]
+ComponentVector{Float64}(c = (a = 2.0, b = [6.0, 30.0]), a = 5.0)
+
+julia> @view ca[(:c, :a)]
+ComponentVector{Float64,SubArray...}(c = (a = 2.0, b = [6.0, 30.0]), a = 5.0)
+```
+We see here that the new `ComponentArray` has the order of the `a` and `c` fields switched according to the order they were indexed by.
+
+Multi-symbol indexing can be performed by passing either a `Tuple` or an `Array` of `Symbol`s.
+```julia
+julia> ca[[:c, :a]] == ca[(:c, :a)]
+true
+```
+
 ## Retaining component labels through index operations
 Sometimes you might want to index into a `ComponentArray` without dropping the component name. Let's look at a new example with a more deeply nested structure:
 ```julia

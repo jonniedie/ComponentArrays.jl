@@ -170,6 +170,11 @@ end
     @test ca[:b] == ca["b"] == ca.b
     @test ca[:c] == ca["c"] == ca.c
 
+    @test ca[(:a, :c)].c == ca[(:c, :a)].c == ca.c
+    @test ca[(:a, :c)].a isa Number
+    @test ca[[:a, :c]] == ca[(:a, :c)]
+    @test_throws AssertionError ca[(:a, :a)]
+
     @test cmat[:a, :a] == cmat["a", "a"] == 10000.0
     @test cmat[:a, :b] == cmat["a", "b"] == [400, 130]
     @test all(cmat[:c, :c] .== ComponentArray(a[4:10] .* a[4:10]', Axis(ax_c), Axis(ax_c)))
@@ -298,6 +303,7 @@ end
             @test ax[:a] == ax[1] == ComponentArrays.ComponentIndex(1, ComponentArrays.NullAxis())
             @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, FlatAxis())
             @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = 1:3, b = 4))
+            @test ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = 2:3))
         end
 
         @testset "KeepIndex" begin

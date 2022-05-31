@@ -1,7 +1,23 @@
 # ComponentArrays.jl NEWS
 Notes on new features (minor releases). For more details on bugfixes and non-feature-adding changes (patch releases), check out the [releases page](https://github.com/jonniedie/ComponentArrays.jl/releases).
 
+### v0.12.0
+- Multiple symbol indexing!
+  - Use either an `Array` or `Tuple` of `Symbol`s to extract multiple named components into a new `ComponentArray
+  - It's fast!
+```julia
+julia> ca = ComponentArray(a=5, b=[4, 1], c=(a=2, b=[6, 30.0]))
+ComponentVector{Float64}(a = 5.0, b = [4.0, 1.0], c = (a = 2.0, b = [6.0, 30.0]))
 
+julia> ca[(:c, :a)]
+ComponentVector{Float64}(c = (a = 2.0, b = [6.0, 30.0]), a = 5.0)
+
+julia> ca[[:c, :a]] == ca[(:c, :a)]
+true
+
+julia> @view ca[(:c, :a)]
+ComponentVector{Float64,SubArray...}(c = (a = 2.0, b = [6.0, 30.0]), a = 5.0)
+```
 ### v0.11.0
 - Calling `axes` on a `ComponentArray` returns a new `CombinedAxis` type!
   - Doing things The Right Way™!
