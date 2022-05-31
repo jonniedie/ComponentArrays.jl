@@ -1,9 +1,12 @@
 using ComponentArrays
 using DifferentialEquations
 using LabelledArrays
+using LinearSolve
+using SciMLNLSolve
 using Sundials
 using Test
 using Unitful
+using UnPack
 
 
 @testset "Issue 31" begin
@@ -35,6 +38,37 @@ end
     prob = ODEProblem(f!, x0, (0.0, 1.0), 0.0) 
     sol = solve(prob, Rodas4())
     @test sol[1] == x0
+end
+
+@testset "Issue 128" begin
+    
+    function f(resid,du,u,p,t)
+        @unpack a, b, c, d = p
+        @unpack x1, x2, x3 = u
+
+        resid.x1 = - a*x1 + b*x2*x3 - du.x1
+        resid.x2 = + a*x1 - c*x2^2 - b*x2*x3 - du.x2
+        resid.x3 = x1 + x2 + x3 - d
+        # resid[1] = - a*x1 + b*u[2]*u[3] - du[1]
+        # resid[2] = + a*x1 - c*u[2]^2 - b*u[2]*u[3] - du[2]
+        # resid[3] = x1 + x2 + u[3] - d
+    end
+    
+    p = ComponentArray(a=0.04, b=1e4, c=3e7, d=1.0)
+    u0 = ComponentArray(x1=1.0, x2=0.0, x3=0.0)
+    du0 = zero(u0)
+    tspan = (0.0, 1e5)
+    differential_vars = ComponentArray(x1=true, x2=true, x3=false)
+
+    # prob = DAEProblem(f, du0, u0, tspan, p, differential_vars=differential_vars)
+    # solvers = (
+    #     DFBDF(),
+    #     DFBDF(linsolve=NLSolveJL()),
+    #     DFBDF(linsolve=LUFactorization()),
+    # )
+    # sols = map(solvers) do solver
+    #     solve(prob, solve)
+    # end
 end
 
 # @testset "Unitful" begin
