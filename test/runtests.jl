@@ -590,6 +590,13 @@ end
     # Issue #100
     chol = cholesky(cmat + I)
     @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
+
+    # Issue #134
+    boid = ComponentArray(pos=zeros(2), vel=zeros(2))   
+    u0 = ComponentArray(boids=repeat([boid], 2))    
+    u0.boids
+    tmp = u0[KeepIndex(:boids)]
+    @test tmp.boids == u0.boids
 end
 
 @testset "Autodiff" begin
