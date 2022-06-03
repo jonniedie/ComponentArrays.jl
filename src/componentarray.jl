@@ -235,6 +235,10 @@ last_index(x) = last(x)
 last_index(x::ViewAxis) = last_index(viewindex(x))
 last_index(x::AbstractAxis) = last_index(last(indexmap(x)))
 
+# length information is in Axis, use it to make SVector creation type stable
+Base.length(ca::ComponentArray) = prod(length.(getaxes(ca)))
+Base.size(ca::ComponentArray) = map(length, getaxes(ca))
+
 # Reduce singleton dimensions
 remove_nulls() = ()
 remove_nulls(x1, args...) = (x1, remove_nulls(args...)...)
