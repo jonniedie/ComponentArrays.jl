@@ -7,6 +7,7 @@ using StaticArrays
 using OffsetArrays
 using Test
 using Unitful
+using NamedArrays
 
 
 ## Test setup
@@ -596,6 +597,29 @@ end
     # Issue #100
     chol = cholesky(cmat + I)
     @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
+end
+
+
+get_empty(cv::ComponentVector) = ComponentVector(similar(getdata(cv),0), (ComponentArrays.NullAxis(),))
+
+@testset "KeepIndices" begin
+    cv = ComponentVector(a=(a1=100,a2=(a21=210, a22=reshape(1:4,(2,2))),a3=300), b=3, c=4)
+    # test whether underlying array type is preerved by using a NamedArray
+    cvn = ComponentVector(NamedArray(getdata(cv),(labels(cv),)), getaxes(cv))
+    @test_throws ArgumentError cv[(3,)] # only allow symbols
+    @test_broken @test  == cv[Symbol[]] = get_empty(cv)
+    @test_broken @test  == cvn[Symbol[]] = get_empty(cvn)
+    @test_broken @test cv[(:b,)] == cv[[:b]] == cv[KeepIndex(:b)]
+    cv_sub = cv[(:a,:b)]
+    cv_subt = vcat(cv[KeepIndex(:a)],cv[KeepIndex(:b)])
+    @test cv_sub == cv_subt 
+    @test getdata(cvn[(:a,:b)]) isa NamedVector
+    @test_broken ca2[(:a,:b)] # PartitionedAyis
+    cv = ComponentArray(a=1, b=[1,2]) # array axis
+    @test cv[(:a,:b)] == vcat(cv[KeepIndex(:a)],cv[KeepIndex(:b)])
+    #
+    cvn_sub = cvn[KeepIndices(:a,:b, :c)] # 3 comp to test proper reduce rather than vcat
+    @test getdata(cvn_sub) isa NamedArray
 end
 
 @testset "Autodiff" begin
