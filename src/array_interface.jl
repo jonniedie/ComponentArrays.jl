@@ -100,6 +100,9 @@ Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon...) = x
 @inline Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
 @inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(getindex, x, idx...)
+Base.@propagate_inbounds function Base.getindex(x::ComponentArray, ax::CombinedAxis)
+    return ComponentArray(x[ax.array_axis], ax.component_axis)
+end
 
 # Set ComponentArray index
 Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx::FlatOrColonIdx...) = setindex!(getdata(x), v, idx...)
@@ -110,9 +113,15 @@ Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, ::Colon) = setinde
 # Explicitly view
 Base.@propagate_inbounds Base.view(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = view(getdata(x), idx...)
 Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = _getindex(view, x, toval.(idx)...)
+Base.@propagate_inbounds function Base.view(x::ComponentArray, ax::CombinedAxis)
+    return ComponentArray(view(x, ax.array_axis), ax.component_axis)
+end
 
 Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = Base.maybeview(getdata(x), idx...)
 Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(Base.maybeview, x, toval.(idx)...)
+Base.@propagate_inbounds function Base.maybeview(x::ComponentArray, ax::CombinedAxis)
+    return ComponentArray(Base.maybeview(x, ax.array_axis), ax.component_axis)
+end
 
 # Generated get and set index methods to do all of the heavy lifting in the type domain
 @generated function _getindex(index_fun, x::ComponentArray, idx...)

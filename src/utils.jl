@@ -37,7 +37,7 @@ filter_by_type(::Type{T}, part::Tuple, ax, args...) where T = filter_by_type(T, 
 filter_by_type(::Type{T}, part::Tuple, ax::T, args...) where T = filter_by_type(T, (part..., ax), args...)
 
 # Flat length of an arbitrarily nested named tuple
-recursive_length(x) = length(x)
+recursive_length(x) = 1
 recursive_length(a::AbstractArray{T,N}) where {T<:Number,N} = length(a)
 recursive_length(a::AbstractArray) = recursive_length.(a) |> sum
 recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
