@@ -12,6 +12,9 @@ Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray
 
 Base.reshape(A::AbstractArray, axs::NTuple{N,<:CombinedAxis}) where {N} = reshape(A, _array_axis.(axs))
 
+ArrayInterfaceCore.indices_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterfaceCore.indices_do_not_alias(A)
+ArrayInterfaceCore.instances_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterfaceCore.instances_do_not_alias(A)
+
 # Cats
 # TODO: Make this a little less copy-pastey
 function Base.hcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
@@ -135,7 +138,7 @@ Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = poi
 Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
 
 Base.strides(x::ComponentArray) = strides(getdata(x))
-ArrayInterface.strides(A::ComponentArray) = ArrayInterface.strides(parent(A))
+ArrayInterfaceCore.strides(A::ComponentArray) = ArrayInterfaceCore.strides(parent(A))
 for f in [:device, :stride_rank, :contiguous_axis, :contiguous_batch_size, :dense_dims] 
     @eval ArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.$f(A)
 end
@@ -143,4 +146,4 @@ end
 Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
 Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
 
-ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A
+ArrayInterfaceCore.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A

@@ -1,8 +1,9 @@
 module ComponentArrays
 
 import ChainRulesCore
+import ArrayInterface
+import ArrayInterface.ArrayInterfaceCore
 
-using ArrayInterface
 using LinearAlgebra
 using Requires
 
