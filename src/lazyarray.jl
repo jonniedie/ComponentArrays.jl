@@ -15,6 +15,10 @@ const LazyMatrix{T,G} = LazyArray{T,2,G}
 
 Base.getindex(a::LazyArray, i...) =  _un_iter(getfield(a, :gen), i)
 
+function Base.setindex!(a::LazyArray, val, i...)
+    a[i...] .= val
+end
+
 _un_iter(iter, idxs) = _un_iter(iter.f, iter.iter, idxs)
 _un_iter(f, iter::Base.Generator, idxs) = f(_un_iter(iter.f, iter.iter, idxs))
 _un_iter(f, iter::Base.Iterators.ProductIterator, idxs) = f(getindex.(iter.iterators, idxs))
