@@ -138,7 +138,6 @@ Base.pointer(x::ComponentArray{T,N,A,Axes}) where {T,N,A<:DenseArray,Axes} = poi
 Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A,Axes} = Base.unsafe_convert(Ptr{T}, getdata(x))
 
 Base.strides(x::ComponentArray) = strides(getdata(x))
-ArrayInterfaceCore.strides(A::ComponentArray) = ArrayInterfaceCore.strides(parent(A))
 for f in [:device, :stride_rank, :contiguous_axis, :contiguous_batch_size, :dense_dims] 
     @eval ArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.$f(A)
 end
