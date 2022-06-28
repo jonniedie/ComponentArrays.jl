@@ -266,6 +266,10 @@ end
     @test tempmat["b", "b"][1, 1]["a", :a][:a, :a] == 100000
     @test tempmat[:b, :a][2].b == 1000
 
+    temp_b = deepcopy(temp.b)
+    temp.b .= temp.b .* 100
+    @test temp.b[1] == temp_b[1] .* 100
+
     temp2 = deepcopy(ca)
     temp3 = deepcopy(ca_MVector)
     @test (temp2 .= ca .* 1) isa ComponentArray
