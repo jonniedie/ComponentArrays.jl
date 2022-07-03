@@ -143,48 +143,46 @@ function make_carray_args(nt)
 end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
-    data, idx = make_idx([], nt, 0)
+    data, idx = build_data!([], nt, 0)
     return (A(data), Axis(idx))
 end
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
-function make_idx(data, nt::NamedTuple, last_val)
+function build_data!(data, nt::NamedTuple, last_val)
     len = recursive_length(nt)
-    kvs = []
     lv = 0
-    for (k,v) in zip(keys(nt), values(nt))
-        (_,val) = make_idx(data, v, lv)
-        push!(kvs, k => val)
-        lv = val
+    kvs = map(nt) do v
+        (_, lv) = build_data!(data, v, lv)
+        lv
     end
-    return (data, ViewAxis(last_index(last_val) .+ (1:len), (;kvs...)))
+    return (data, ViewAxis(last_index(last_val) .+ (1:len), kvs))
 end
-function make_idx(data, pair::Pair, last_val)
-    data, ax = make_idx(data, pair.second, last_val)
+function build_data!(data, pair::Pair, last_val)
+    data, ax = build_data!(data, pair.second, last_val)
     return (data, ViewAxis(last_val:(last_val+len-1), Axis(pair.second)))
 end
-make_idx(data, x, last_val) = (
+build_data!(data, x, last_val) = (
     push!(data, x),
     ViewAxis(last_index(last_val) + 1)
 )
-make_idx(data, x::ComponentVector, last_val) = (
-    pushcat!(data, x),
+build_data!(data, x::ComponentVector, last_val) = (
+    append!(data, x),
     ViewAxis(
         last_index(last_val) .+ (1:length(x)),
         getaxes(x)[1]
     )
 )
-function make_idx(data, x::AbstractArray, last_val)
-    pushcat!(data, x)
+function build_data!(data, x::AbstractArray, last_val)
+    append!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
-function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}}
+function build_data!(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}}
     len = recursive_length(x)
     if eltype(x) |> isconcretetype
         out = ()
         for elem in x
-            (_,out) = make_idx(data, elem, last_val)
+            (_,out) = build_data!(data, elem, last_val)
         end
         return (
             data,
@@ -200,7 +198,7 @@ function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTup
         error("Only homogeneous arrays of inner ComponentArrays are allowed.")
     end
 end
-function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:AbstractArray}}
+function build_data!(data, x::A, last_val) where {A<:AbstractArray{<:AbstractArray}}
     error("ComponentArrays cannot currently contain arrays of arrays as elements. This one contains: \n $x\n")
 end
 
@@ -209,7 +207,7 @@ end
 _maybe_add_field(x, pair) = haskey(x, pair.first) ? _update_field(x, pair) : _add_field(x, pair)
 function _add_field(x, pair)
     data = copy(getdata(x))
-    new_data, new_ax = make_idx(data, pair.second, length(data))
+    new_data, new_ax = build_data!(data, pair.second, length(data))
     new_ax = Axis(NamedTuple{tuple(pair.first)}(tuple(new_ax)))
     new_ax = merge(getaxes(x)[1], new_ax)
     return ComponentArray(new_data, new_ax)
@@ -219,8 +217,6 @@ function _update_field(x, pair)
     x_copy[pair.first] = pair.second
     return x_copy
 end
-
-pushcat!(a, b) = reduce((x1,x2) -> push!(x1,x2), b; init=a)
 
 # Reshape ComponentArrays with ShapedAxis axes
 maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data
