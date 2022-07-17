@@ -43,6 +43,11 @@ truth = ComponentArray(a = [32, 48], x = 156)
             (;c...,).x^2
         end[1]
     end
+
+    # Issue #148
+    ps = ComponentArray(;bias = rand(4))
+    out = Zygote.gradient(x -> sum(x.^3 .+ ps.bias), Zygote.seed(rand(4),Val(12)))[1]
+    @test out isa Vector{<:ForwardDiff.Dual}
 end
 
 
