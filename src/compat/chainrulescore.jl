@@ -1,6 +1,6 @@
 function ChainRulesCore.rrule(::typeof(getproperty), x::ComponentArray, s::Union{Symbol, Val})
     function getproperty_adjoint(Δ)
-        zero_x = zero(x)
+        zero_x = ComponentArray(zeros(eltype(Δ), size(x)), getaxes(x))
         setproperty!(zero_x, s, Δ)
         return (ChainRulesCore.NoTangent(), zero_x, ChainRulesCore.NoTangent())
     end
