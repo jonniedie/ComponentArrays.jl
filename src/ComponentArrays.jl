@@ -59,6 +59,7 @@ function __init__()
     @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
     @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
     @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" required("reversediff.jl")
+    @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" required("forwarddiff.jl")
 end
 
 end
