@@ -33,7 +33,7 @@ Base.copy(x::ComponentArray) = ComponentArray(copy(getdata(x)), getaxes(x))
 
 Base.copyto!(dest::AbstractArray, src::ComponentArray) = copyto!(dest, getdata(src))
 function Base.copyto!(dest::ComponentArray, src::AbstractArray)
-    copyto!(getdata(dest), src)
+    copyto!(getdata(dest), collect(src))
     return dest
 end
 function Base.copyto!(dest::ComponentArray, src::ComponentArray)
