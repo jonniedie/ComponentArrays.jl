@@ -36,7 +36,6 @@ function Base.copyto!(dest::ComponentArray, src::AbstractArray)
     copyto!(getdata(dest), src)
     return dest
 end
-
 function Base.copyto!(dest::ComponentArray, src::ComponentArray)
     copyto!(getdata(dest), getdata(src))
     return dest
