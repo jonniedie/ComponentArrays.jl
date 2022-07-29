@@ -609,3 +609,7 @@ end
 @testset "Autodiff" begin
     include("autodiff_tests.jl")
 end
+
+@testset "GPU" begin
+    include("gpu_tests.jl")
+end
