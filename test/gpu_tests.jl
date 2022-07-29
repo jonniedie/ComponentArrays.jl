@@ -1,5 +1,5 @@
 using JLArrays
-using ForwardDiff
+import ForwardDiff
 
 JLArrays.allowscalar(false)
 

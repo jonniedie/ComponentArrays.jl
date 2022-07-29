@@ -1,4 +1,4 @@
-const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
+const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax<:Tuple{Vararg{AbstractAxis}}}
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
 
