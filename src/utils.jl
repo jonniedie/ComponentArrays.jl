@@ -42,3 +42,9 @@ recursive_length(a::AbstractArray{T,N}) where {T<:Number,N} = length(a)
 recursive_length(a::AbstractArray) = recursive_length.(a) |> sum
 recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
 recursive_length(::Union{Nothing, Missing}) = 1
+
+# Find the highest element type
+recursive_type(nt::NamedTuple) = mapreduce(recursive_type, promote_type, nt)
+recursive_type(x::Vector{Any}) = mapreduce(recursive_type, promote_type, x)
+recursive_type(x::Number) = typeof(x)
+recursive_type(::AbstractArray{T,N})  where {T<:Number, N}= T
