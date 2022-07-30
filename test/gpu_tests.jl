@@ -25,5 +25,5 @@ jlca = ComponentArray(jla, Axis(a=1:2, b=3:4))
 end
 
 @testset "ForwardDiff" begin
-    ForwardDiff.gradient(sum, jlca) == one.(jlca)
+    @test ForwardDiff.jacobian(identity, jlca) == ForwardDiff.jacobian(identity, jla)
 end
