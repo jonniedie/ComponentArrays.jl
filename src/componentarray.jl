@@ -145,7 +145,7 @@ make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     init = try
         T = recursive_type(nt)
-        isa(T, Type) ? T[] : []
+        isprimitivetype(T) ? T[] : []
     catch
         []
     end
