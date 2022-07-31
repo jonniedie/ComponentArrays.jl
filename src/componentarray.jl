@@ -62,7 +62,6 @@ ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, n
 ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
 ComponentArray(nt::Union{NamedTuple, AbstractDict}) = ComponentArray(make_carray_args(nt)...)
 ComponentArray(::NamedTuple{(), Tuple{}}) = ComponentArray(Any[], (FlatAxis(),))
-#ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
