@@ -138,20 +138,19 @@ make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
 make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
 function make_carray_args(nt)
     data, ax = make_carray_args(Vector, nt)
-    data = length(data)==1 ? [data[1]] : eltype(data) == Any ? reduce(vcat, data) : data
+    data = length(data)==1 ? [data[1]] : data
     return (data, ax)
 end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
-    init = try
-        T = recursive_type(nt)
-        isprimitivetype(T) ? T[] : []
-    catch
-        []
-    end
+    T = recursive_eltype(nt)
+    init = _isprimitivetype(T) ? T[] : []
     data, idx = make_idx(init, nt, 0)
     return (A(data), Axis(idx))
 end
+
+_isprimitivetype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isprimitivetype(T)
+_isprimitivetype(T) = isprimitivetype(T)
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
 function make_idx(data, nt::NamedTuple, last_val)

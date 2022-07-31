@@ -44,7 +44,9 @@ recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
 recursive_length(::Union{Nothing, Missing}) = 1
 
 # Find the highest element type
-recursive_type(nt::NamedTuple) = mapreduce(recursive_type, promote_type, nt)
-recursive_type(x::Vector{Any}) = mapreduce(recursive_type, promote_type, x)
-recursive_type(x::Number) = typeof(x)
-recursive_type(::AbstractArray{T,N})  where {T<:Number, N}= T
+recursive_eltype(nt::NamedTuple) = mapreduce(recursive_eltype, promote_type, nt)
+recursive_eltype(x::Vector) = mapreduce(recursive_eltype, promote_type, x)
+recursive_eltype(x::Dict) = mapreduce(recursive_eltype, promote_type, values(x))
+recursive_eltype(::AbstractArray{T,N})  where {T<:Number, N}= T
+recursive_eltype(x::Number) = typeof(x)
+recursive_eltype(x) = Base.eltypeof(x)
