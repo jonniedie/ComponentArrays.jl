@@ -153,7 +153,7 @@ _isprimitivetype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isprimitivety
 _isprimitivetype(T) = isprimitivetype(T)
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
-function make_idx(data, nt::Union{NamedTuple, Dict}, last_val)
+function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
     len = recursive_length(nt)
     kvs = []
     lv = 0
