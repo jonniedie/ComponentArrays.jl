@@ -60,9 +60,9 @@ end
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
 ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
-ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
+ComponentArray(nt::Union{NamedTuple, AbstractDict}) = ComponentArray(make_carray_args(nt)...)
 ComponentArray(::NamedTuple{(), Tuple{}}) = ComponentArray(Any[], (FlatAxis(),))
-ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
+#ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
@@ -138,7 +138,7 @@ make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
 make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
 function make_carray_args(nt)
     data, ax = make_carray_args(Vector, nt)
-    data = length(data)==1 ? [data[1]] : data
+    data = length(data)==1 ? [data[1]] : map(identity, data)
     return (data, ax)
 end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
@@ -153,7 +153,7 @@ _isprimitivetype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isprimitivety
 _isprimitivetype(T) = isprimitivetype(T)
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
-function make_idx(data, nt::NamedTuple, last_val)
+function make_idx(data, nt::Union{NamedTuple, Dict}, last_val)
     len = recursive_length(nt)
     kvs = []
     lv = 0
