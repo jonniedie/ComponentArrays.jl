@@ -143,13 +143,13 @@ end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     T = recursive_eltype(nt)
-    init = _isprimitivetype(T) ? T[] : []
+    init = _isbitstype(T) ? T[] : []
     data, idx = make_idx(init, nt, 0)
     return (A(data), Axis(idx))
 end
 
-_isprimitivetype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isprimitivetype(T)
-_isprimitivetype(T) = isprimitivetype(T)
+_isbitstype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isbitstype(T)
+_isbitstype(T) = isbitstype(T)
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
 function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
