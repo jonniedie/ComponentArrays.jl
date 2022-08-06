@@ -112,6 +112,13 @@ end
     # Issue #116
     # Part 2: Arrays of arrays
     @test_throws Exception ComponentVector(a = [[3], [4, 5]], b = 1)
+
+    # empty components
+    for T in [Int64, Int32, Float64, Float32, ComplexF64, ComplexF32]
+        @test ComponentArray(a = T[]) == ComponentVector{T}(a = T[])
+        @test ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
+    end
+    @test ComponentArray(NamedTuple()) == ComponentVector{Any}()
 end
 
 @testset "Attributes" begin
