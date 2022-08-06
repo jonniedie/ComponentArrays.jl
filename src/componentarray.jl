@@ -143,13 +143,10 @@ end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     T = recursive_eltype(nt)
-    init = _isbitstype(T) ? T[] : []
+    init = isbitstype(T) ? T[] : []
     data, idx = make_idx(init, nt, 0)
     return (A(data), Axis(idx))
 end
-
-_isbitstype(::Type{<:Union{T, Nothing, Missing}}) where {T} = isbitstype(T)
-_isbitstype(T) = isbitstype(T)
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
 function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
@@ -238,6 +235,11 @@ end
 last_index(x) = last(x)
 last_index(x::ViewAxis) = last_index(viewindex(x))
 last_index(x::AbstractAxis) = last_index(last(indexmap(x)))
+function last_index(f::FlatAxis)
+    nt = indexmap(f)
+    length(nt) == 0 && return 0
+    return last_index(last(nt))
+end
 
 # Reduce singleton dimensions
 remove_nulls() = ()
