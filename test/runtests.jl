@@ -208,6 +208,7 @@ end
 
     @test ca[CartesianIndex(1)] == ca[1]
     @test cmat[CartesianIndex(1, 2)] == cmat[1, 2]
+    @test cmat[CartesianIndices(cmat)] == getdata(cmat)
 
     @test getproperty(ca, Val(:a)) == ca.a
 

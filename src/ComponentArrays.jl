@@ -7,7 +7,7 @@ import ArrayInterface.ArrayInterfaceCore
 using LinearAlgebra
 using Requires
 
-const FlatIdx = Union{Integer, CartesianIndex, AbstractArray{<:Integer}}
+const FlatIdx = Union{Integer, CartesianIndex, CartesianIndices, AbstractArray{<:Integer}}
 const FlatOrColonIdx = Union{FlatIdx, Colon}
 
 
