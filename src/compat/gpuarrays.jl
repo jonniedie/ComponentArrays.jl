@@ -7,6 +7,9 @@ function GPUArrays.Adapt.adapt_structure(to, x::ComponentArray)
     return ComponentArray(data, getaxes(x))
 end
 
+GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
+    GPUArrays.Adapt.adapt_storage(A, xs)
+
 function Base.map(f, x::GPUComponentArray, args...)
     data = map(f, getdata(x), getdata.(args)...)
     return ComponentArray(data, getaxes(x))
