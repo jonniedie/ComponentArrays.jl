@@ -112,6 +112,16 @@ end
     # Issue #116
     # Part 2: Arrays of arrays
     @test_throws Exception ComponentVector(a = [[3], [4, 5]], b = 1)
+
+    # empty components
+    for T in [Int64, Int32, Float64, Float32, ComplexF64, ComplexF32]
+        @test ComponentArray(a = T[]) == ComponentVector{T}(a = T[])
+        @test ComponentArray(a = T[], b = T[]) == ComponentVector{T}(a = T[], b = T[])
+        @test ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
+        @test ComponentArray(a = Any[one(Int32)], b=T[]) == ComponentVector{T}(a = [one(T)], b = T[])
+    end
+    @test ComponentArray(NamedTuple()) == ComponentVector{Any}()
+    @test_broken  ComponentArray(a=[])
 end
 
 @testset "Attributes" begin
@@ -198,6 +208,7 @@ end
 
     @test ca[CartesianIndex(1)] == ca[1]
     @test cmat[CartesianIndex(1, 2)] == cmat[1, 2]
+    @test cmat[CartesianIndices(cmat)] == getdata(cmat)
 
     @test getproperty(ca, Val(:a)) == ca.a
 

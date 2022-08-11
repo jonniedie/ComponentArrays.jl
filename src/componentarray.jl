@@ -60,9 +60,8 @@ end
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
 ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
-ComponentArray(nt::NamedTuple) = ComponentArray(make_carray_args(nt)...)
+ComponentArray(nt::Union{NamedTuple, AbstractDict}) = ComponentArray(make_carray_args(nt)...)
 ComponentArray(::NamedTuple{(), Tuple{}}) = ComponentArray(Any[], (FlatAxis(),))
-ComponentArray(d::AbstractDict) = ComponentArray(NamedTuple{Tuple(keys(d))}(values(d)))
 ComponentArray{T}(;kwargs...) where T = ComponentArray{T}((;kwargs...))
 ComponentArray(;kwargs...) = ComponentArray((;kwargs...))
 
@@ -138,17 +137,19 @@ make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
 make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
 function make_carray_args(nt)
     data, ax = make_carray_args(Vector, nt)
-    data = length(data)==1 ? [data[1]] : reduce(vcat, data)
+    data = length(data)==1 ? [data[1]] : map(identity, data)
     return (data, ax)
 end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
-    data, idx = make_idx([], nt, 0)
+    T = recursive_eltype(nt)
+    init = isbitstype(T) ? T[] : []
+    data, idx = make_idx(init, nt, 0)
     return (A(data), Axis(idx))
 end
 
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
-function make_idx(data, nt::NamedTuple, last_val)
+function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
     len = recursive_length(nt)
     kvs = []
     lv = 0
@@ -234,6 +235,11 @@ end
 last_index(x) = last(x)
 last_index(x::ViewAxis) = last_index(viewindex(x))
 last_index(x::AbstractAxis) = last_index(last(indexmap(x)))
+function last_index(f::FlatAxis)
+    nt = indexmap(f)
+    length(nt) == 0 && return 0
+    return last_index(last(nt))
+end
 
 # Reduce singleton dimensions
 remove_nulls() = ()
