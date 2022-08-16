@@ -28,3 +28,21 @@ end
     jlx = JLArrays.Adapt.adapt(typeof(jlca), x)
     @test jlx isa JLArray
 end
+
+@testset "Linear Algebra" begin
+    @testset "fill!" begin
+        jlca2 = deepcopy(jlca)
+        jlca2 = fill!(jlca2, 2)
+        @test jlca2 == ComponentArray(jl([2,2,2,2]), Axis(a=1:2, b=3:4))
+    end
+
+    @testset "norm" begin
+        @test norm(jlca, 2) == norm(jla,2)
+        @test norm(jlca, Inf) == norm(jla,Inf)
+    end
+
+    @testset "rmul!" begin
+        jlca3 = deepcopy(jlca)
+        @test rmul!(jlca3, 2) == ComponentArray(jla .* 2, Axis(a=1:2, b=3:4))
+    end
+end
