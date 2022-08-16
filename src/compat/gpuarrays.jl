@@ -10,7 +10,7 @@ end
 GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
     GPUArrays.Adapt.adapt_storage(A, xs)
 
-function Base.fill!(A::ComponentArrays.GPUComponentArray{T}, x) where {T}
+function Base.fill!(A::GPUComponentArray{T}, x) where {T}
     length(A) == 0 && return A
     GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
         idx = GPUArrays.@linearidx(a)
