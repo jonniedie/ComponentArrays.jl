@@ -7,6 +7,23 @@ function GPUArrays.Adapt.adapt_structure(to, x::ComponentArray)
     return ComponentArray(data, getaxes(x))
 end
 
+GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
+    GPUArrays.Adapt.adapt_storage(A, xs)
+
+function Base.fill!(A::GPUComponentArray{T}, x) where {T}
+    length(A) == 0 && return A
+    GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
+        idx = GPUArrays.@linearidx(a)
+        @inbounds a[idx] = val
+        return
+    end
+    A
+end
+
+LinearAlgebra.dot(x::GPUComponentArray, y::GPUComponentArray) = dot(getdata(x), getdata(y))
+LinearAlgebra.norm(ca::GPUComponentArray, p::Real) = norm(getdata(ca), p)
+LinearAlgebra.rmul!(ca::GPUComponentArray, b::Number) = GPUArrays.generic_rmul!(ca, b)
+
 function Base.map(f, x::GPUComponentArray, args...)
     data = map(f, getdata(x), getdata.(args)...)
     return ComponentArray(data, getaxes(x))
