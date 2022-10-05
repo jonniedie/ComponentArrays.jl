@@ -64,3 +64,10 @@ for (fname, op) in [(:sum, :(Base.add_sum)), (:prod, :(Base.mul_prod)),
             GPUArrays.mapreducedim!(f, $(op), getdata(r), getdata(A); init=neutral_element($(op), T))
     end
 end
+
+function ComponentArray(nt::NamedTuple{names,<:Tuple{Vararg{GPUArrays.AbstractGPUArray}}}) where {names}
+    T = promote_type(map(eltype, nt)...)
+    nt = map(Base.Fix1(broadcast, T), nt)
+    G = typeof(first(nt))
+    return GPUArrays.adapt(G, ComponentArray(NamedTuple{names}(map(collect, nt))))
+end
