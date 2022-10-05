@@ -65,9 +65,9 @@ for (fname, op) in [(:sum, :(Base.add_sum)), (:prod, :(Base.mul_prod)),
     end
 end
 
-function ComponentArray(nt::NamedTuple{names,<:Tuple{Vararg{GPUArrays.AbstractGPUArray}}}) where {names}
+function ComponentArray(nt::NamedTuple{names,<:Tuple{Vararg{Union{GPUArrays.AbstractGPUArray,GPUComponentArray}}}}) where {names}
     T = recursive_eltype(nt)
     nt = map(Base.Fix1(broadcast, T), nt)
     G = typeof(first(nt))
-    return GPUArrays.adapt(G, ComponentArray(NamedTuple{names}(map(collect, nt))))
+    return GPUArrays.adapt(G, ComponentArray(NamedTuple{names}(map(GPUArrays.adapt(Array), nt))))
 end
