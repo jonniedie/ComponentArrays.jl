@@ -67,6 +67,7 @@ end
 
 function ComponentArray(nt::NamedTuple{names,<:Tuple{Vararg{Union{GPUArrays.AbstractGPUArray,GPUComponentArray}}}}) where {names}
     T = recursive_eltype(nt)
-    G = Base.typename(typeof(getdata(first(nt))))
+    gpuarray = getdata(first(nt))
+    G = Base.typename(typeof(gpuarray)).wrapper  # SciMLBase.parameterless_type(gpuarray)
     return GPUArrays.adapt(G, ComponentArray(NamedTuple{names}(map(GPUArrays.adapt(Array{T}), nt))))
 end
