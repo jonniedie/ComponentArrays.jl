@@ -1,6 +1,6 @@
 const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
-const GPUComponentVector{T,Ax} = ComponentArray{T,1,<:GPUArraysCore.AbstractGPUVector,Ax}
-const GPUComponentMatrix{T,Ax} = ComponentArray{T,2,<:GPUArraysCore.AbstractGPUMatrix,Ax}
+const GPUComponentVector{T,Ax} = ComponentArray{T,1,<:GPUArrays.AbstractGPUVector,Ax}
+const GPUComponentMatrix{T,Ax} = ComponentArray{T,2,<:GPUArrays.AbstractGPUMatrix,Ax}
 const GPUComponentVecorMat{T,Ax} = Union{GPUComponentVector{T,Ax},GPUComponentMatrix{T,Ax}}
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
