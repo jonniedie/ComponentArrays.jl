@@ -45,4 +45,15 @@ end
         jlca3 = deepcopy(jlca)
         @test rmul!(jlca3, 2) == ComponentArray(jla .* 2, Axis(a=1:2, b=3:4))
     end
+    @testset "mul!" begin
+        jlca3 = deepcopy(jlca)
+        @test_nowarn mul!(deepcopy(jlca), jlca3', jlca3')
+        @test_nowarn mul!(deepcopy(jlca), jlca3', jlca3)
+        @test_nowarn mul!(deepcopy(jlca), jlca3, jlca3')
+        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), jlca3)
+        @test_nowarn mul!(deepcopy(jlca), jlca3, transpose(jlca3))
+        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), transpose(jlca3))
+        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), jlca3')
+        @test_nowarn mul!(deepcopy(jlca), jlca3', transpose(jlca3))
+    end
 end
