@@ -31,7 +31,7 @@ function Base.map(f, x::GPUComponentArray, args...)
     data = map(f, getdata(x), getdata.(args)...)
     return ComponentArray(data, getaxes(x))
 end
-function Base.map(f, x::GPUComponentArray, args::Vararg{Union{Base.AbstractBroadcasted,AbstractArray}})
+function Base.map(f, x::GPUComponentArray, args::Vararg{Union{Base.AbstractBroadcasted, AbstractArray}})
     data = map(f, getdata(x), map(getdata, args)...)
     return ComponentArray(data, getaxes(x))
 end
@@ -43,7 +43,7 @@ end
 function Base.mapreduce(f, op, x::GPUComponentArray, args...; kwargs...)
     return mapreduce(f, op, getdata(x), map(getdata, args)...; kwargs...)
 end
-function Base.mapreduce(f, op, x::GPUComponentArray, args::Vararg{Union{Base.AbstractBroadcasted,AbstractArray}}; kwargs...)
+function Base.mapreduce(f, op, x::GPUComponentArray, args::Vararg{Union{Base.AbstractBroadcasted, AbstractArray}}; kwargs...)
     return mapreduce(f, op, getdata(x), map(getdata, args)...; kwargs...)
 end
 
@@ -59,11 +59,11 @@ Base.count(pred::Function, A::GPUComponentArray; dims=:, init=0) =
 
 # avoid calling into `initarray!`
 for (fname, op) in [(:sum, :(Base.add_sum)), (:prod, :(Base.mul_prod)),
-    (:maximum, :(Base.max)), (:minimum, :(Base.min)),
-    (:all, :&), (:any, :|)]
+                    (:maximum, :(Base.max)), (:minimum, :(Base.min)),
+                    (:all, :&),              (:any, :|)]
     fname! = Symbol(fname, '!')
     @eval begin
-        Base.$(fname!)(f::Function, r::GPUComponentArray, A::GPUComponentArray{T}) where {T} =
+        Base.$(fname!)(f::Function, r::GPUComponentArray, A::GPUComponentArray{T}) where T =
             GPUArrays.mapreducedim!(f, $(op), getdata(r), getdata(A); init=neutral_element($(op), T))
     end
 end
