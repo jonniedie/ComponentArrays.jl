@@ -47,12 +47,30 @@ end
     end
     @testset "mul!" begin
         A = jlca .* jlca';
+        @test_nowarn mul!(deepcopy(A), A, A, 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A), A, 1, 2);
+        @test_nowarn mul!(deepcopy(A), A, getdata(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A), getdata(A), 1, 2);
         @test_nowarn mul!(deepcopy(A), A', A', 1, 2);
         @test_nowarn mul!(deepcopy(A), A', A, 1, 2);
         @test_nowarn mul!(deepcopy(A), A, A', 1, 2);
+        @test_nowarn mul!(deepcopy(A), A', getdata(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A), A', 1, 2);
+        @test_nowarn mul!(deepcopy(A), A, getdata(A'), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A'), A, 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A'), getdata(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A), getdata(A'), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A'), getdata(A'), 1, 2);
         @test_nowarn mul!(deepcopy(A), transpose(A), A, 1, 2);
         @test_nowarn mul!(deepcopy(A), A, transpose(A), 1, 2);
         @test_nowarn mul!(deepcopy(A), transpose(A), transpose(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), transpose(A), getdata(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), getdata(A), transpose(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), transpose(getdata(A)), A, 1, 2);
+        @test_nowarn mul!(deepcopy(A), A, transpose(getdata(A)), 1, 2);
+        @test_nowarn mul!(deepcopy(A), transpose(getdata(A)), transpose(A), 1, 2);
+        @test_nowarn mul!(deepcopy(A), transpose(A), transpose(getdata(A)), 1, 2);
+        @test_nowarn mul!(deepcopy(A), transpose(getdata(A)), transpose(getdata(A)), 1, 2);
         @test_nowarn mul!(deepcopy(A), transpose(A), A', 1, 2);
         @test_nowarn mul!(deepcopy(A), A', transpose(A), 1, 2);
     end
