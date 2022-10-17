@@ -31,7 +31,7 @@ end
 
 @testset "Linear Algebra" begin
     @testset "fill!" begin
-        jlca2 = deepcopy(A)
+        jlca2 = deepcopy(jlca)
         jlca2 = fill!(jlca2, 2)
         @test jlca2 == ComponentArray(jl([2,2,2,2]), Axis(a=1:2, b=3:4))
     end
