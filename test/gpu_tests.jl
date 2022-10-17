@@ -31,7 +31,7 @@ end
 
 @testset "Linear Algebra" begin
     @testset "fill!" begin
-        jlca2 = deepcopy(jlca)
+        jlca2 = deepcopy(A)
         jlca2 = fill!(jlca2, 2)
         @test jlca2 == ComponentArray(jl([2,2,2,2]), Axis(a=1:2, b=3:4))
     end
@@ -42,18 +42,18 @@ end
     end
 
     @testset "rmul!" begin
-        jlca3 = deepcopy(jlca)
-        @test rmul!(jlca3, 2) == ComponentArray(jla .* 2, Axis(a=1:2, b=3:4))
+        A = deepcopy(A)
+        @test rmul!(A, 2) == ComponentArray(jla .* 2, Axis(a=1:2, b=3:4))
     end
     @testset "mul!" begin
-        jlca3 = deepcopy(jlca)
-        @test_nowarn mul!(deepcopy(jlca), jlca3', jlca3', 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), jlca3', jlca3, 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), jlca3, jlca3', 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), jlca3, 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), jlca3, transpose(jlca3), 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), transpose(jlca3), 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), transpose(jlca3), jlca3', 1, 2)
-        @test_nowarn mul!(deepcopy(jlca), jlca3', transpose(jlca3), 1, 2)
+        A = jlca .* jlca';
+        @test_nowarn mul!(deepcopy(A), A', A', 1, 2)
+        @test_nowarn mul!(deepcopy(A), A', A, 1, 2)
+        @test_nowarn mul!(deepcopy(A), A, A', 1, 2)
+        @test_nowarn mul!(deepcopy(A), transpose(A), A, 1, 2)
+        @test_nowarn mul!(deepcopy(A), A, transpose(A), 1, 2)
+        @test_nowarn mul!(deepcopy(A), transpose(A), transpose(A), 1, 2)
+        @test_nowarn mul!(deepcopy(A), transpose(A), A', 1, 2)
+        @test_nowarn mul!(deepcopy(A), A', transpose(A), 1, 2)
     end
 end
