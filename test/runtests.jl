@@ -482,14 +482,25 @@ end
     @test ldiv!(tempmat, lu(cmat + I), cmat) isa ComponentMatrix
     @test ldiv!(getdata(tempmat), lu(cmat + I), cmat) isa AbstractMatrix
 
-    vca2 = vcat(ca2', ca2')
-    hca2 = hcat(ca2, ca2)
+    for n in 1:3  # Issue 168 cats (on more than one) ComponentArrays
+        vca2 = vcat(repeat([ca2'], n)...)
+        hca2 = hcat(repeat([ca2], n)...)
+        hca2_reduced = reduce(hcat, repeat([ca2], n))  # Issue 113: reduce cats should match non-reduced ones
+        vca2_reduced = reduce(vcat, repeat([ca2'], n))
+        @test hca2 == hca2_reduced
+        @test typeof(hca2) == typeof(hca2_reduced)
+        @test vca2 == vca2_reduced
+        @test typeof(vca2) == typeof(vca2_reduced)
+        @test hca2 isa ComponentMatrix
+        @test vca2 isa ComponentMatrix
+        @test all(vca2[1, :] .== ca2)
+        @test all(hca2[:, 1] .== ca2)
+        @test all(vca2' .== hca2)
+        @test hca2[:a, :] == vca2[:, :a]
+    end
+
     temp = ComponentVector(q = 100, r = rand(3, 3, 3))
     vtempca = [temp; ca]
-    @test all(vca2[1, :] .== ca2)
-    @test all(hca2[:, 1] .== ca2)
-    @test all(vca2' .== hca2)
-    @test hca2[:a, :] == vca2[:, :a]
     @test vtempca isa ComponentVector
     @test vtempca.r == temp.r
     @test vtempca.c == ca.c
