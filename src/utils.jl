@@ -63,3 +63,8 @@ function reorder_as(prototype::ComponentArray, input::ComponentArray)
     end
     return result
 end
+
+function reorder_as(prototype::ComponentArray{Any,Any,Ax}, input::ComponentArray{Any,Any,Ax}) where {Ax}
+    # Fast method for ComponentArrays that have identical axes
+    return input
+end
