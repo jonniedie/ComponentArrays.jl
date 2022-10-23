@@ -43,3 +43,17 @@ for op in [:*, :\, :/]
         end
     end
 end
+
+
+for op in [:adjoint, :transpose]
+    @eval begin
+        function LinearAlgebra.$op(M::ComponentMatrix{T,A,Tuple{Ax1,Ax2}}) where {T,A,Ax1,Ax2}
+            data = $op(getdata(M))
+            return ComponentArray(data, (Ax2(), Ax1())[1:ndims(data)]...)
+        end
+
+        function LinearAlgebra.$op(M::ComponentVector{T,A,Tuple{Ax1}}) where {T,A,Ax1}
+            return ComponentMatrix($op(getdata(M)), FlatAxis(), Ax1())
+        end
+    end
+end
