@@ -50,3 +50,16 @@ recursive_eltype(x::Vector{Any}) = isempty(x) ? Base.Bottom : mapreduce(recursiv
 recursive_eltype(x::Dict) = isempty(x) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, values(x))
 recursive_eltype(::AbstractArray{T,N}) where {T<:Number, N} = T
 recursive_eltype(x) = typeof(x)
+
+
+function reorder_as(prototype::ComponentArray, input::ComponentArray)
+    @assert size(prototype) == size(input) "Incompatible sizes: $(size(prototype)) and $(size(input))"
+    @inline getslice(::AbstractAxis{nothing}) = (:,)
+    @inline getslice(::AbstractAxis{:}) = (:,)
+    @inline getslice(::AbstractAxis{IdxMap}) where {IdxMap} = IdxMap
+    result = ComponentArray(getdata(input), getaxes(prototype)...)
+    for slices in Base.product(getslice.(getaxes(prototype))...)
+        result[slices...] = input[slices...]
+    end
+    return result
+end
