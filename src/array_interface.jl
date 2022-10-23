@@ -16,52 +16,27 @@ ArrayInterfaceCore.indices_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) wher
 ArrayInterfaceCore.instances_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterfaceCore.instances_do_not_alias(A)
 
 # Cats
-# TODO: Make this a little less copy-pastey
-function Base.hcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
-    ax_x, ax_y = second_axis.((x,y))
-    if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[1] != getaxes(y)[1]
-        return hcat(getdata(x), getdata(y))
+function Base.cat(inputs::ComponentArray...; dims::Int)
+    combined_data = cat(getdata.(inputs)...; dims=dims)
+    axes_to_merge = [(getaxes(i)..., FlatAxis())[dims] for i in inputs]
+    rest_axes = [getaxes(i)[1:end .!= dims] for i in inputs]
+    no_duplicate_keys = (length(inputs) == 1 || isempty(intersect(keys.(axes_to_merge)...)))
+    if no_duplicate_keys && length(Set(rest_axes)) == 1
+        offsets = cumsum(size.(inputs, 1) .- size(first(inputs), 1))
+        merged_axis = Axis(merge(indexmap.(reindex.(axes_to_merge, offsets))...))
+        result_axes = (first(rest_axes)[1:(dims - 1)]..., merged_axis, first(rest_axes)[dims:end]...)
+        return ComponentArray(combined_data, result_axes...)
     else
-        data_x, data_y = getdata.((x, y))
-        ax_y = reindex(ax_y, size(x,2))
-        idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
-        axs = getaxes(x)
-        return ComponentArray(hcat(data_x, data_y), axs[1], Axis((;idxmap_x..., idxmap_y...)), axs[3:end]...)
+        return combined_data
     end
 end
 
-second_axis(ca::AbstractComponentVecOrMat) = getaxes(ca)[2]
-second_axis(::ComponentVector) = FlatAxis()
-
-# Are all these methods necessary?
-# TODO: See what we can reduce down to without getting ambiguity errors
-Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
-Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
-function Base.vcat(x::ComponentVector, y::ComponentVector)
-    if reduce((accum, key) -> accum || (key in keys(x)), keys(y); init=false)
-        return vcat(getdata(x), getdata(y))
-    else
-        data_x, data_y = getdata.((x, y))
-        ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
-        ax_y = reindex(ax_y, length(x))
-        idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
-        return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)))
-    end
+function Base._typed_hcat(::Type{T}, inputs::Base.AbstractVecOrTuple{ComponentArray}) where {T}
+    return Base.cat(map(i -> T.(i), inputs)...; dims=2)
 end
-function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
-    ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
-    if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[2:end] != getaxes(y)[2:end]
-        return vcat(getdata(x), getdata(y))
-    else
-        data_x, data_y = getdata.((x, y))
-        ax_y = reindex(ax_y, size(x,1))
-        idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
-        return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)), getaxes(x)[2:end]...)
-    end
+function Base._typed_vcat(::Type{T}, inputs::Base.AbstractVecOrTuple{ComponentArray}) where {T}
+    return Base.cat(map(i -> T.(i), inputs)...; dims=1)
 end
-Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
-Base.vcat(x::ComponentVector, args::Union{Number, UniformScaling, AbstractVecOrMat}...) = vcat(getdata(x), getdata.(args)...)
-Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
 
 function Base.hvcat(row_lengths::NTuple{N,Int}, xs::AbstractComponentVecOrMat...) where {N}
     i = 1
