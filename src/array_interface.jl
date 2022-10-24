@@ -22,7 +22,7 @@ function Base.cat(inputs::ComponentArray...; dims::Int)
     rest_axes = [getaxes(i)[1:end .!= dims] for i in inputs]
     no_duplicate_keys = (length(inputs) == 1 || isempty(intersect(keys.(axes_to_merge)...)))
     if no_duplicate_keys && length(Set(rest_axes)) == 1
-        offsets = cumsum(size.(inputs, 1) .- size(first(inputs), 1))
+        offsets = (0, cumsum(size.(inputs, dims))[1:(end - 1)]...)
         merged_axis = Axis(merge(indexmap.(reindex.(axes_to_merge, offsets))...))
         result_axes = (first(rest_axes)[1:(dims - 1)]..., merged_axis, first(rest_axes)[dims:end]...)
         return ComponentArray(combined_data, result_axes...)
