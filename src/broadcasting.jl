@@ -1,9 +1,5 @@
 Base.BroadcastStyle(::Type{<:ComponentArray{T, N, A, Axes}}) where {T, N, A, Axes} = Broadcast.BroadcastStyle(A)
 
-# Need special case here for adjoint vectors in order to avoid type instability in axistype
-Broadcast.combine_axes(a::ComponentArray, b::AdjOrTransComponentVector) = (axes(a)[1], axes(b)[2])
-Broadcast.combine_axes(a::AdjOrTransComponentVector, b::ComponentArray) = (axes(b)[2], axes(a)[1])
-
 Broadcast.axistype(a::CombinedAxis, b::AbstractUnitRange) = a
 Broadcast.axistype(a::AbstractUnitRange, b::CombinedAxis) = b
 Broadcast.axistype(a::CombinedAxis, b::CombinedAxis) = CombinedAxis(FlatAxis(), Base.Broadcast.axistype(_array_axis(a), _array_axis(b)))
