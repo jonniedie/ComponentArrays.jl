@@ -148,7 +148,7 @@ Base.keys(ax::AbstractAxis) = keys(indexmap(ax))
 reindex(i, offset) = i .+ offset
 reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
-reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
+reindex(ax::ViewAxis{Inds,IdxMap,Ax}, offset) where {Inds, IdxMap, Ax} = ViewAxis(viewindex(ax) .+ offset, Ax())
 
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)

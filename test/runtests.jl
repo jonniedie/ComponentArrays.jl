@@ -507,7 +507,7 @@ end
     @test length(vtempca) == length(temp) + length(ca)
     @test [ca; ca; ca] isa Vector
     @test vcat(ca, 100) isa Vector
-    @test [ca' ca']' isa Vector
+    @test [ca' ca']' isa Adjoint{T, Matrix{T}} where T
     @test keys(getaxes([ca' temp']')[1]) == (:a, :b, :c, :q, :r)
 
     # Getting serious about axes

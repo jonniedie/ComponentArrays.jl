@@ -31,6 +31,8 @@ function Base.cat(inputs::ComponentArray...; dims::Int)
     end
 end
 
+Base.hcat(inputs::ComponentArray...) = Base.cat(inputs...; dims=2)
+Base.vcat(inputs::ComponentArray...) = Base.cat(inputs...; dims=1)
 function Base._typed_hcat(::Type{T}, inputs::Base.AbstractVecOrTuple{ComponentArray}) where {T}
     return Base.cat(map(i -> T.(i), inputs)...; dims=2)
 end
