@@ -20,7 +20,7 @@ function Base.cat(inputs::ComponentArray...; dims::Int)
     combined_data = cat(getdata.(inputs)...; dims=dims)
     axes_to_merge = [(getaxes(i)..., FlatAxis())[dims] for i in inputs]
     rest_axes = [getaxes(i)[1:end .!= dims] for i in inputs]
-    no_duplicate_keys = (length(inputs) == 1 || isempty(intersect(keys.(axes_to_merge)...)))
+    no_duplicate_keys = (length(inputs) == 1 || allunique(vcat(collect.(keys.(axes_to_merge))...)))
     if no_duplicate_keys && length(Set(rest_axes)) == 1
         offsets = (0, cumsum(size.(inputs, dims))[1:(end - 1)]...)
         merged_axis = Axis(merge(indexmap.(reindex.(axes_to_merge, offsets))...))

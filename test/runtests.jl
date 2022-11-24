@@ -482,6 +482,7 @@ end
     @test ldiv!(tempmat, lu(cmat + I), cmat) isa ComponentMatrix
     @test ldiv!(getdata(tempmat), lu(cmat + I), cmat) isa AbstractMatrix
 
+    @test !(vcat(ca, ca2, ca) isa ComponentVector)
     for n in 1:3  # Issue 168 cats (on more than one) ComponentArrays
         vca2 = vcat(repeat([ca2'], n)...)
         hca2 = hcat(repeat([ca2], n)...)
