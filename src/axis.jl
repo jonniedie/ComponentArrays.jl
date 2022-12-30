@@ -84,7 +84,7 @@ Axis for creating arrays of `ComponentArray`s
 """
 struct PartitionedAxis{PartSz, IdxMap, Ax<:AbstractAxis{IdxMap}} <: AbstractAxis{IdxMap}
     ax::Ax
-    
+
     function PartitionedAxis(PartSz, ax::AbstractAxis{IdxMap}) where IdxMap
         return new{PartSz,IdxMap,typeof(ax)}(ax)
     end
@@ -202,4 +202,4 @@ Base.getindex(ax::CombinedAxis, i::AbstractArray) = _array_axis(ax)[i]
 
 Base.length(ax::CombinedAxis) = lastindex(ax) - firstindex(ax) + 1
 
-Base.CartesianIndices(ax::Tuple{Vararg{CombinedAxis}}) = CartesianIndices(_array_axis.(ax))
+Base.CartesianIndices(ax::Tuple{CombinedAxis, Vararg{CombinedAxis}}) = CartesianIndices(_array_axis.(ax))
