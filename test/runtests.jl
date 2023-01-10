@@ -344,10 +344,13 @@ end
 end
 
 @testset "Similar" begin
-    @test typeof(similar(ca)) == typeof(ca)
-    @test typeof(similar(ca2)) == typeof(ca2)
-    @test typeof(similar(ca, Float32)) == typeof(ca_Float32)
+    @test similar(ca) isa typeof(ca)
+    @test similar(ca2) isa typeof(ca2)
+    @test similar(ca, Float32) isa typeof(ca_Float32)
     @test eltype(similar(ca, ForwardDiff.Dual)) == ForwardDiff.Dual
+    @test similar(ca, 5) isa typeof(getdata(ca))
+    @test similar(ca, Float32, 5) isa typeof(getdata(ca_Float32))
+    @test similar(cmat, 5, 5) isa typeof(getdata(cmat))
 end
 
 @testset "Copy" begin

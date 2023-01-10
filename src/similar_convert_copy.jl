@@ -4,7 +4,9 @@ const CombinedCombinedAnyDims = Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{<:C
 
 # Similar
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
-Base.similar(x::ComponentArray, ::Type{T}) where T = ComponentArray(similar(getdata(x), T), getaxes(x)...)
+Base.similar(x::ComponentArray, ::Type{T}) where {T} = ComponentArray(similar(getdata(x), T), getaxes(x)...)
+Base.similar(x::ComponentArray, dims::Vararg{Int}) = similar(getdata(x), dims...)
+Base.similar(x::ComponentArray, ::Type{T}, dims::Vararg{Int}) where {T} = similar(getdata(x), T, dims...)
 Base.similar(x::AbstractArray, dims::CombinedAnyDims) = _similar(x, dims)
 Base.similar(x::AbstractArray, dims::AnyCombinedAnyDims) = _similar(x, dims)
 Base.similar(x::AbstractArray, dims::CombinedCombinedAnyDims) = _similar(x, dims)
