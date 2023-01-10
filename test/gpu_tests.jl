@@ -21,6 +21,9 @@ jlca = ComponentArray(jla, Axis(a=1:2, b=3:4))
     @test mapreduce(abs2, +, jlca) == 30
 
     @test all(map(sin, jlca) .== sin.(jlca) .== sin.(jla) .≈ sin.(1:4))
+
+    # Issue #179
+    @test similar(jlca, 5) isa typeof(jla)
 end
 
 @testset "adapt" begin
