@@ -28,8 +28,8 @@ ca_composed = ComponentArray(a = 1, b = ca)
 
 ca2 = ComponentArray(nt2)
 
-cmat = ComponentArray(a .* a', ax, ax)
-cmat2 = ca2 .* ca2'
+cmat = ComponentArray(a * a', ax, ax)
+cmat2 = ca2 * ca2'
 
 caa = ComponentArray(a = ca, b = sq_mat)
 
@@ -142,13 +142,13 @@ end
     @test hash(ca) != hash(getdata(ca))
     @test hash(ca, zero(UInt)) != hash(getdata(ca), zero(UInt))
 
-    ab = ComponentArray(a = 1, b = 2)
-    xy = ComponentArray(x = 1, y = 2)
+    ab = ComponentArray(a=1, b=2)
+    xy = ComponentArray(x=1, y=2)
     @test ab != xy
     @test hash(ab) != hash(xy)
     @test hash(ab, zero(UInt)) != hash(xy, zero(UInt))
 
-    @test ab == LVector(a = 1, b = 2)
+    @test ab == LVector(a=1, b=2)
 
     # Issue #117
     kw_fun(; a, b) = a // b
@@ -372,11 +372,11 @@ end
 @testset "Broadcasting" begin
     temp = deepcopy(ca)
     @test eltype(Float32.(ca)) == Float32
-    @test ca .* ca' == cmat
+    @test ca * ca' == cmat
     @test 1 .* (ca .+ ca) == ComponentArray(a .+ a, getaxes(ca))
     @test typeof(ca .+ cmat) == typeof(cmat)
-    @test getaxes(false .* ca .* ca') == (ax, ax)
-    @test getaxes(false .* ca' .* ca) == (ax, ax)
+    @test getaxes(false .* ca * ca') == (ax, ax)
+    @test isa(ca' * ca, Float64)
     @test (vec(temp) .= vec(ca_Float32)) isa ComponentArray
 
     @test_broken getdata(ca_MVector .* ca_MVector) isa MArray
@@ -396,8 +396,8 @@ end
     x1 = ComponentArray(a = [1.1, 2.1], b = [0.1])
     x2 = ComponentArray(a = [1.1, 2.1], b = 0.1)
     x3 = ComponentArray(a = [1.1, 2.1], c = [0.1])
-    xmat = x1 .* x2'
-    x1mat = x1 .* x1'
+    xmat = x1 * x2'
+    x1mat = x1 * x1'
     @test x1 + x2 isa Vector
     @test x1 + x3 isa Vector
     @test x2 + x3 isa Vector
@@ -462,7 +462,7 @@ end
     @test ca * transpose(ca) == collect(cmat)
     @test ca * transpose(ca) == a * transpose(a)
     @test transpose(ca) * ca == transpose(a) * a
-    @test ca' * cmat == ComponentArray(a' * getdata(cmat), getaxes(ca))
+    @test ca' * cmat == ComponentArray(a' * getdata(cmat), FlatAxis(), getaxes(ca)...)
     @test transpose(transpose(cmat)) == cmat
     @test transpose(transpose(ca)) == ca
     @test transpose(ca.c) * cmat[:c, :c] * ca.c isa Number
@@ -485,21 +485,33 @@ end
     @test ldiv!(tempmat, lu(cmat + I), cmat) isa ComponentMatrix
     @test ldiv!(getdata(tempmat), lu(cmat + I), cmat) isa AbstractMatrix
 
-    vca2 = vcat(ca2', ca2')
-    hca2 = hcat(ca2, ca2)
+    @test !(vcat(ca, ca2, ca) isa ComponentVector)
+    for n in 1:3  # Issue 168 cats (on more than one) ComponentArrays
+        vca2 = vcat(repeat([ca2'], n)...)
+        hca2 = hcat(repeat([ca2], n)...)
+        hca2_reduced = reduce(hcat, repeat([ca2], n))  # Issue 113: reduce cats should match non-reduced ones
+        vca2_reduced = reduce(vcat, repeat([ca2'], n))
+        @test hca2 == hca2_reduced
+        @test typeof(hca2) == typeof(hca2_reduced)
+        @test vca2 == vca2_reduced
+        @test typeof(vca2) == typeof(vca2_reduced)
+        @test hca2 isa ComponentMatrix
+        @test vca2 isa ComponentMatrix
+        @test all(vca2[1, :] .== ca2)
+        @test all(hca2[:, 1] .== ca2)
+        @test all(vca2' .== hca2)
+        @test hca2[:a, :] == vca2[:, :a]
+    end
+
     temp = ComponentVector(q = 100, r = rand(3, 3, 3))
     vtempca = [temp; ca]
-    @test all(vca2[1, :] .== ca2)
-    @test all(hca2[:, 1] .== ca2)
-    @test all(vca2' .== hca2)
-    @test hca2[:a, :] == vca2[:, :a]
     @test vtempca isa ComponentVector
     @test vtempca.r == temp.r
     @test vtempca.c == ca.c
     @test length(vtempca) == length(temp) + length(ca)
     @test [ca; ca; ca] isa Vector
     @test vcat(ca, 100) isa Vector
-    @test [ca' ca']' isa Vector
+    @test [ca' ca']' isa Adjoint{T, Matrix{T}} where T
     @test keys(getaxes([ca' temp']')[1]) == (:a, :b, :c, :q, :r)
 
     # Getting serious about axes

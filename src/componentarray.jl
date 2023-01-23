@@ -118,17 +118,11 @@ const CArray = ComponentArray
 const CVector = ComponentVector
 const CMatrix = ComponentMatrix
 
-const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
-const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
-const AdjOrTransComponentVector{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentVector
-const AdjOrTransComponentMatrix{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentMatrix
-
 const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
-const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T
-const AbstractComponentArray = Union{ComponentArray, AdjOrTransComponentArray}
-const AbstractComponentVecOrMat = Union{ComponentVecOrMat, AdjOrTransComponentVecOrMat}
-const AbstractComponentVector = Union{ComponentVector, AdjOrTransComponentVector}
-const AbstractComponentMatrix = Union{ComponentMatrix, AdjOrTransComponentMatrix}
+const AbstractComponentArray = ComponentArray
+const AbstractComponentVecOrMat = ComponentVecOrMat
+const AbstractComponentVector = ComponentVector
+const AbstractComponentMatrix = ComponentMatrix
 
 
 ## Constructor helpers
@@ -288,12 +282,8 @@ julia> getaxes(ca)
 ```
 """
 @inline getaxes(x::ComponentArray) = getfield(x, :axes)
-@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
-@inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
 @inline getaxes(::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
-@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
 ## Field access through these functions to reserve dot-getting for keys
 @inline getaxes(x::VarAxes) = getaxes(typeof(x))
