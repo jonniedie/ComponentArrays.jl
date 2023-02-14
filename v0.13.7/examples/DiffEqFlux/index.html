@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural ODEs with DiffEqFlux · ComponentArrays.jl</title><link rel="canonical" href="https://jonniedie.github.io/ComponentArrays.jl/stable/examples/DiffEqFlux/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ComponentArrays.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../quickstart/">Quick Start</a></li><li><a class="tocitem" href="../../indexing_behavior/">Indexing Behavior</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Neural ODEs with DiffEqFlux</a></li><li><a class="tocitem" href="../adaptive_control/">Model Reference Adaptive Control</a></li><li><a class="tocitem" href="../ODE_jac/">ODE with Jacobian</a></li></ul></li><li><a class="tocitem" href="../../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Neural ODEs with DiffEqFlux</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural ODEs with DiffEqFlux</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/DiffEqFlux.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-ODEs-with-DiffEqFlux-1"><a class="docs-heading-anchor" href="#Neural-ODEs-with-DiffEqFlux-1">Neural ODEs with DiffEqFlux</a><a class="docs-heading-anchor-permalink" href="#Neural-ODEs-with-DiffEqFlux-1" title="Permalink"></a></h1><p>Let&#39;s see how easy it is to make dense neural ODE layers from scratch. Flux is used here just for the <code>glorot_uniform</code> function and the <code>ADAM</code> optimizer.</p><p>This example is taken from <a href="https://diffeqflux.sciml.ai/dev/Flux/">the DiffEqFlux documentation</a>. </p><pre><code class="language-julia">using ComponentArrays
+using OrdinaryDiffEq
+using Plots
+using UnPack
+
+using DiffEqFlux: sciml_train
+using Flux: glorot_uniform, ADAM
+using Optim: LBFGS</code></pre><p>First, let&#39;s set up the problem and create the truth data.</p><pre><code class="language-julia">u0 = Float32[2.; 0.]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)&#39;true_A)&#39;
+end
+
+t = range(tspan[1], tspan[2], length = datasize)
+prob = ODEProblem(trueODEfunc, u0, tspan)
+ode_data = Array(solve(prob, Tsit5(), saveat = t))</code></pre><p>Next we&#39;ll make a function that creates dense neural layer components. It is similar to <code>Flux.Dense</code>, except it doesn&#39;t handle the activation function. We&#39;ll do that separately.</p><pre><code class="language-julia">dense_layer(in, out) = ComponentArray{Float32}(W=glorot_uniform(out, in), b=zeros(out))</code></pre><p>Our parameter vector will be a <code>ComponentArray</code> that holds the ODE initial conditions and the dense neural layers.</p><pre><code class="language-julia">layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
+θ = ComponentArray(u=u0, p=layers)</code></pre><p>We now have convenient struct-like access to the weights and biases of the layers for our neural ODE function while giving our optimizer something that acts like a flat array.</p><pre><code class="language-julia">function dudt(u, p, t)
+    @unpack L1, L2 = p
+    return L2.W * tanh.(L1.W * u.^3 .+ L1.b) .+ L2.b
+end
+
+prob = ODEProblem(dudt, u0, tspan)</code></pre><pre><code class="language-julia">predict_n_ode(θ) = Array(solve(prob, Tsit5(), u0=θ.u, p=θ.p, saveat=t))
+
+function loss_n_ode(θ)
+    pred = predict_n_ode(θ)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+loss_n_ode(θ)</code></pre><p>Let&#39;s set up a training observation callback and train!</p><pre><code class="language-julia">cb = function (θ, loss, pred; doplot=false)
+    display(loss)
+    # plot current prediction against data
+    pl = scatter(t, ode_data[1,:], label = &quot;data&quot;)
+    scatter!(pl, t, pred[1,:], label = &quot;prediction&quot;)
+    display(plot(pl))
+    return false
+end
+cb(θ, loss_n_ode(θ)...)
+
+data = Iterators.repeated((), 1000)
+
+res1 = sciml_train(loss_n_ode, θ, ADAM(0.05); cb=cb, maxiters=100)
+cb(res1.minimizer, loss_n_ode(res1.minimizer)...; doplot=true)
+
+res2 = sciml_train(loss_n_ode, res1.minimizer, LBFGS(); cb=cb)
+cb(res2.minimizer, loss_n_ode(res2.minimizer)...; doplot=true)</code></pre><p><img src="../../assets/DiffEqFlux.gif" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../indexing_behavior/">« Indexing Behavior</a><a class="docs-footer-nextpage" href="../adaptive_control/">Model Reference Adaptive Control »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 14 February 2023 03:47">Tuesday 14 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

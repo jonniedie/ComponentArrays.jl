@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ODE with Jacobian · ComponentArrays.jl</title><link rel="canonical" href="https://jonniedie.github.io/ComponentArrays.jl/stable/examples/ODE_jac/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ComponentArrays.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../quickstart/">Quick Start</a></li><li><a class="tocitem" href="../../indexing_behavior/">Indexing Behavior</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../DiffEqFlux/">Neural ODEs with DiffEqFlux</a></li><li><a class="tocitem" href="../adaptive_control/">Model Reference Adaptive Control</a></li><li class="is-active"><a class="tocitem" href>ODE with Jacobian</a></li></ul></li><li><a class="tocitem" href="../../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>ODE with Jacobian</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>ODE with Jacobian</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jonniedie/ComponentArrays.jl/blob/master/docs/src/examples/ODE_jac.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="ODE-with-Jacobian-1"><a class="docs-heading-anchor" href="#ODE-with-Jacobian-1">ODE with Jacobian</a><a class="docs-heading-anchor-permalink" href="#ODE-with-Jacobian-1" title="Permalink"></a></h1><p>This example shows how to use ComponentArrays for composing Jacobian update functions as well as ODE functions. For most practical purposes, it is generally easier to use automatic differentiation libraries like ForwardDiff.jl, ReverseDiff.jl, or Zygote.jl for calculating Jacobians. Although those libraries all work with ComponentArrays, this is a nice way to handle it if you already have derived analytical Jacobians.</p><p>Note using plain symbols to index into <code>ComponentArrays</code> is still pretty slow. For speed, all symbolic indices should be wrapped in a <code>Val</code> like <code>D[Val(:x), Val(:y)]</code>.</p><pre><code class="language-julia">using ComponentArrays
+using DifferentialEquations
+using Parameters: @unpack
+
+
+tspan = (0.0, 20.0)
+
+
+## Lorenz system
+function lorenz!(D, u, p, t; f=0.0)
+    @unpack σ, ρ, β = p
+    @unpack x, y, z = u
+    
+    D.x = σ*(y - x)
+    D.y = x*(ρ - z) - y - f
+    D.z = x*y - β*z
+    return nothing
+end
+function lorenz_jac!(D, u, p, t)
+    @unpack σ, ρ, β = p
+    @unpack x, y, z = u
+    
+    D[:x,:x] = -σ
+    D[:x,:y] = σ
+
+    D[:y,:x] = ρ
+    D[:y,:y] = -1
+    D[:y,:z] = -x
+
+    D[:z,:x] = y
+    D[:z,:y] = x
+    D[:z,:z] = -β
+    return nothing
+end
+
+lorenz_p = (σ=10.0, ρ=28.0, β=8/3)
+lorenz_ic = ComponentArray(x=0.0, y=0.0, z=0.0)
+lorenz_fun = ODEFunction(lorenz!, jac=lorenz_jac!)
+lorenz_prob = ODEProblem(lorenz_fun, lorenz_ic, tspan, lorenz_p)
+
+
+## Lotka-Volterra system
+function lotka!(D, u, p, t; f=0.0)
+    @unpack α, β, γ, δ = p
+    @unpack x, y = u
+    
+    D.x =  α*x - β*x*y + f
+    D.y = -γ*y + δ*x*y
+    return nothing
+end
+function lotka_jac!(D, u, p, t)
+    @unpack α, β, γ, δ = p
+    @unpack x, y = u
+    
+    D[:x,:x] = α - β*y
+    D[:x,:y] = -β*x
+
+    D[:y,:x] = δ*y
+    D[:y,:y] = -γ + δ*x
+    return nothing
+end
+
+lotka_p = (α=2/3, β=4/3, γ=1.0, δ=1.0)
+lotka_ic = ComponentArray(x=1.0, y=1.0)
+lotka_fun = ODEFunction(lotka!, jac=lotka_jac!)
+lotka_prob = ODEProblem(lotka_fun, lotka_ic, tspan, lotka_p)
+
+
+## Composed Lorenz and Lotka-Volterra system
+function composed!(D, u, p, t)
+    c = p.c #coupling parameter
+    @unpack lorenz, lotka = u
+    
+    lorenz!(D.lorenz, lorenz, p.lorenz, t, f=c*lotka.x)
+    lotka!(D.lotka, lotka, p.lotka, t, f=c*lorenz.x)
+    return nothing
+end
+function composed_jac!(D, u, p, t)
+    c = p.c
+    @unpack lorenz, lotka = u
+    
+    lorenz_jac!(@view(D[:lorenz,:lorenz]), lorenz, p.lorenz, t)
+    lotka_jac!(@view(D[:lotka,:lotka]), lotka, p.lotka, t)
+
+    @view(D[:lorenz,:lotka])[:y,:x] = -c
+    @view(D[:lotka,:lorenz])[:x,:x] = c
+    return nothing
+end
+
+comp_p = (lorenz=lorenz_p, lotka=lotka_p, c=0.01)
+comp_ic = ComponentArray(lorenz=lorenz_ic, lotka=lotka_ic)
+comp_fun = ODEFunction(composed!, jac=composed_jac!)
+comp_prob = ODEProblem(comp_fun, comp_ic, tspan, comp_p)
+
+
+## Solve problem
+# We can solve the composed system...
+comp_sol = solve(comp_prob, Rodas5())
+
+# ...or we can unit test one of the component systems
+lotka_sol = solve(lotka_prob, Rodas5())</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../adaptive_control/">« Model Reference Adaptive Control</a><a class="docs-footer-nextpage" href="../../api/">API »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 14 February 2023 03:47">Tuesday 14 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
