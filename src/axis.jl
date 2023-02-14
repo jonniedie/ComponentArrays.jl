@@ -170,7 +170,7 @@ function Base.getindex(ax::AbstractAxis, syms::Union{NTuple{N,Symbol}, <:Abstrac
         _maybe_view_axis(first_index:last_index, ax)
     end
     new_ax = Axis(NamedTuple(syms .=> new_axs))
-    return ComponentIndex(reduce(vcat, inds), new_ax)
+    return ComponentIndex(vcat(inds...), new_ax)
 end
 
 _maybe_view_axis(inds, ax::Axis) = ViewAxis(inds, ax)

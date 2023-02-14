@@ -176,7 +176,10 @@ end
     @test ca.c == ComponentArray(c)
     @test ca2.b[1].a.a == 20.0
 
-    @test ca[:a] == ca["a"] == ca.a
+    @test ca[:a] == ca["a"] == ca.a == ca[[:a]][1]
+    @test ca[[:a]] isa ComponentVector  # Issue 175
+    @test ca[Symbol[]] == Float64[]  # Issue 174
+    @test length(ca[()]) == 0  # Issue #174
     @test ca[:b] == ca["b"] == ca.b
     @test ca[:c] == ca["c"] == ca.c
 
