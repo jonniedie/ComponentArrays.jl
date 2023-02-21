@@ -619,8 +619,8 @@ end
     @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
 
     # Issue #140
-    @test ComponentArrays.StaticArrayInterface.indices_do_not_alias(typeof(ca)) == true
-    @test ComponentArrays.StaticArrayInterface.instances_do_not_alias(typeof(ca)) == false
+    @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true
+    @test ComponentArrays.ArrayInterface.instances_do_not_alias(typeof(ca)) == false
 end
 
 @testset "Autodiff" begin
