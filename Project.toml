@@ -11,7 +11,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 
 [compat]
-ArrayInterface = "7"
+ArrayInterface = "6, 7"
 ChainRulesCore = "0.8, 0.9, 0.10, 1"
 Requires = "1"
 StaticArrayInterface = "1"
