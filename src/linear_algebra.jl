@@ -1,5 +1,5 @@
 ## https://github.com/SciML/DifferentialEquations.jl/issues/849
-function ArrayInterfaceCore.lu_instance(x::ComponentMatrix)
+function ArrayInterface.lu_instance(x::ComponentMatrix)
     T = eltype(x)
     noUnitT = typeof(zero(T))
     luT = LinearAlgebra.lutype(noUnitT)
