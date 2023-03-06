@@ -52,7 +52,7 @@ end
 
 
 # # This is commented out because the gradient operation itself is broken due to Zygote's inability
-# # to support mutation and ComponentArray's use of mutation for contstuction from a NamedTuple.
+# # to support mutation and ComponentArray's use of mutation for construction from a NamedTuple.
 # # It would be nice to support this eventually, so I'll just leave this commented (because @test_broken
 # # wouldn't work here because the error happens before the test)
 # @testset "Issues" begin
