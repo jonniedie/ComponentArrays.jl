@@ -22,7 +22,7 @@ ComponentVector{Float64,SubArray...}(c = (a = 2.0, b = [6.0, 30.0]), a = 5.0)
 - Calling `axes` on a `ComponentArray` returns a new `CombinedAxis` type!
   - Doing things The Right Way™!
   - No more complicated and error-prone custom broadcasting machinery!
-  - No more wierd special cases!
+  - No more weird special cases!
 ### v0.10.0
 - All indexing now slices rather than sometimes viewing and sometimes slicing!
 - Property access methods (i.e. "dot-access") still use views!
