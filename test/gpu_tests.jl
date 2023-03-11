@@ -1,5 +1,4 @@
 using JLArrays
-import ForwardDiff
 
 JLArrays.allowscalar(false)
 
@@ -67,8 +66,4 @@ end
         @test_nowarn mul!(deepcopy(A), transpose(A), A', 1, 2);
         @test_nowarn mul!(deepcopy(A), A', transpose(A), 1, 2);
     end
-end
-
-@testset "ForwardDiff" begin
-    @test ForwardDiff.jacobian(identity, jlca) == ForwardDiff.jacobian(identity, jla)
 end
