@@ -1,3 +1,8 @@
+module GPUArraysExt
+
+using ComponentArrays
+isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
+
 const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax<:Tuple{Vararg{AbstractAxis}}}
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
@@ -46,4 +51,6 @@ for (fname, op) in [(:sum, :(Base.add_sum)), (:prod, :(Base.mul_prod)),
         Base.$(fname!)(f::Function, r::GPUComponentArray, A::GPUComponentArray{T}) where T =
             GPUArrays.mapreducedim!(f, $(op), getdata(r), getdata(A); init=neutral_element($(op), T))
     end
+end
+
 end

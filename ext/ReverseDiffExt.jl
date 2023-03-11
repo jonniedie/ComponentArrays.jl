@@ -1,3 +1,8 @@
+module ReverseDiffExt
+
+using ComponentArrays
+isdefined(Base, :get_extension) ? (using ReverseDiff) : (using ..ReverseDiff)
+
 const TrackedComponentArray{V, D, N, DA, A, Ax} = ReverseDiff.TrackedArray{V,D,N,ComponentArray{V,N,A,Ax},DA}
 
 maybe_tracked_array(val::AbstractArray, der, tape, inds, origin) = ReverseDiff.TrackedArray(val, der, tape)
@@ -25,4 +30,6 @@ function Base.getproperty(tca::TrackedComponentArray, s::Symbol)
         t = ReverseDiff.tape(tca)
         return maybe_tracked_array(val, der, t, (s,), tca)
     end
+end
+
 end
