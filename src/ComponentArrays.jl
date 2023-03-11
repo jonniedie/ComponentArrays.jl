@@ -52,8 +52,6 @@ export labels, label2index
 
 include("compat/chainrulescore.jl")
 
-
-
 function __init__()
     @static if !isdefined(Base, :get_extension)
         @require ConstructionBase="187b0558-2788-49d3-abe0-74a17ed4e7c9" include("../ext/ConstructionBaseExt.jl")
