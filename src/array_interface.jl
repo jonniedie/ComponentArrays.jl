@@ -1,7 +1,7 @@
 Base.parent(x::ComponentArray) = getfield(x, :data)
 
 Base.size(x::ComponentArray) = size(getdata(x))
-ArrayInterface.size(A::ComponentArray) = ArrayInterface.size(parent(A))
+StaticArrayInterface.static_size(A::ComponentArray) = StaticArrayInterface.static_size(parent(A))
 
 Base.elsize(x::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = Base.elsize(A)
 
@@ -12,8 +12,8 @@ Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray
 
 Base.reshape(A::AbstractArray, axs::NTuple{N,<:CombinedAxis}) where {N} = reshape(A, _array_axis.(axs))
 
-ArrayInterfaceCore.indices_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterfaceCore.indices_do_not_alias(A)
-ArrayInterfaceCore.instances_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterfaceCore.instances_do_not_alias(A)
+ArrayInterface.indices_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.indices_do_not_alias(A)
+ArrayInterface.instances_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.instances_do_not_alias(A)
 
 # Cats
 # TODO: Make this a little less copy-pastey
@@ -123,7 +123,11 @@ Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(B
     inds = map(i -> i.idx, ci)
     axs = map(i -> i.ax, ci)
     axs = remove_nulls(axs...)
-    return :(ComponentArray(index_fun(getdata(x), $inds...), $axs...))
+    if isa(axs, Tuple{})
+        return :(index_fun(getdata(x), $inds...))
+    else
+        return :(ComponentArray(index_fun(getdata(x), $inds...), $axs...))
+    end
 end
 
 @generated function _setindex!(x::ComponentArray, v, idx...)
@@ -139,10 +143,10 @@ Base.unsafe_convert(::Type{Ptr{T}}, x::ComponentArray{T,N,A,Axes}) where {T,N,A,
 
 Base.strides(x::ComponentArray) = strides(getdata(x))
 for f in [:device, :stride_rank, :contiguous_axis, :contiguous_batch_size, :dense_dims] 
-    @eval ArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.$f(A)
+    @eval StaticArrayInterface.$f(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = StaticArrayInterface.$f(A)
 end
 
 Base.stride(x::ComponentArray, k) = stride(getdata(x), k)
 Base.stride(x::ComponentArray, k::Int64) = stride(getdata(x), k)
 
-ArrayInterfaceCore.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A
+ArrayInterface.parent_type(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = A

@@ -12,8 +12,8 @@
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://jonniedie.github.io/ComponentArrays.jl/stable
 
-[build-img]: https://img.shields.io/github/workflow/status/jonniedie/ComponentArrays.jl/CI
-[build-url]: https://github.com/jonniedie/ComponentArrays.jl/actions/workflows/ci.yml
+[build-img]: https://img.shields.io/github/actions/workflow/status/jonniedie/ComponentArrays.jl/ci.yml
+[build-url]: https://github.com/jonniedie/docs/ComponentArrays.jl/workflows/ci.yml
 
 [codecov-img]: https://img.shields.io/codecov/c/github/jonniedie/ComponentArrays.jl
 [codecov-url]: https://codecov.io/gh/jonniedie/ComponentArrays.jl

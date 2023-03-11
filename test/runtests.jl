@@ -176,7 +176,10 @@ end
     @test ca.c == ComponentArray(c)
     @test ca2.b[1].a.a == 20.0
 
-    @test ca[:a] == ca["a"] == ca.a
+    @test ca[:a] == ca["a"] == ca.a == ca[[:a]][1]
+    @test ca[[:a]] isa ComponentVector  # Issue 175
+    @test ca[Symbol[]] == Float64[]  # Issue 174
+    @test length(ca[()]) == 0  # Issue #174
     @test ca[:b] == ca["b"] == ca.b
     @test ca[:c] == ca["c"] == ca.c
 
@@ -344,10 +347,13 @@ end
 end
 
 @testset "Similar" begin
-    @test typeof(similar(ca)) == typeof(ca)
-    @test typeof(similar(ca2)) == typeof(ca2)
-    @test typeof(similar(ca, Float32)) == typeof(ca_Float32)
+    @test similar(ca) isa typeof(ca)
+    @test similar(ca2) isa typeof(ca2)
+    @test similar(ca, Float32) isa typeof(ca_Float32)
     @test eltype(similar(ca, ForwardDiff.Dual)) == ForwardDiff.Dual
+    @test similar(ca, 5) isa typeof(getdata(ca))
+    @test similar(ca, Float32, 5) isa typeof(getdata(ca_Float32))
+    @test similar(cmat, 5, 5) isa typeof(getdata(cmat))
 end
 
 @testset "Copy" begin
@@ -613,8 +619,8 @@ end
     @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
 
     # Issue #140
-    @test ComponentArrays.ArrayInterfaceCore.indices_do_not_alias(typeof(ca)) == true
-    @test ComponentArrays.ArrayInterfaceCore.instances_do_not_alias(typeof(ca)) == false
+    @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true
+    @test ComponentArrays.ArrayInterface.instances_do_not_alias(typeof(ca)) == false
 end
 
 @testset "Autodiff" begin

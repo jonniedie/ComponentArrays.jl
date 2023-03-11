@@ -3,7 +3,10 @@ module GPUArraysExt
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
 
-const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax<:Tuple{Vararg{AbstractAxis}}}
+const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
+const GPUComponentVector{T,Ax} = ComponentArray{T,1,<:GPUArrays.AbstractGPUVector,Ax}
+const GPUComponentMatrix{T,Ax} = ComponentArray{T,2,<:GPUArrays.AbstractGPUMatrix,Ax}
+const GPUComponentVecorMat{T,Ax} = Union{GPUComponentVector{T,Ax},GPUComponentMatrix{T,Ax}}
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
 
@@ -11,6 +14,23 @@ function GPUArrays.Adapt.adapt_structure(to, x::ComponentArray)
     data = GPUArrays.Adapt.adapt_structure(to, getdata(x))
     return ComponentArray(data, getaxes(x))
 end
+
+GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
+    GPUArrays.Adapt.adapt_storage(A, xs)
+
+function Base.fill!(A::GPUComponentArray{T}, x) where {T}
+    length(A) == 0 && return A
+    GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
+        idx = GPUArrays.@linearidx(a)
+        @inbounds a[idx] = val
+        return
+    end
+    A
+end
+
+LinearAlgebra.dot(x::GPUComponentArray, y::GPUComponentArray) = dot(getdata(x), getdata(y))
+LinearAlgebra.norm(ca::GPUComponentArray, p::Real) = norm(getdata(ca), p)
+LinearAlgebra.rmul!(ca::GPUComponentArray, b::Number) = GPUArrays.generic_rmul!(ca, b)
 
 function Base.map(f, x::GPUComponentArray, args...)
     data = map(f, getdata(x), getdata.(args)...)
@@ -51,6 +71,210 @@ for (fname, op) in [(:sum, :(Base.add_sum)), (:prod, :(Base.mul_prod)),
         Base.$(fname!)(f::Function, r::GPUComponentArray, A::GPUComponentArray{T}) where T =
             GPUArrays.mapreducedim!(f, $(op), getdata(r), getdata(A); init=neutral_element($(op), T))
     end
+end
+
+function ComponentArray(nt::NamedTuple{names,<:Tuple{Vararg{Union{GPUArrays.AbstractGPUArray,GPUComponentArray}}}}) where {names}
+    T = recursive_eltype(nt)
+    gpuarray = getdata(first(nt))
+    G = Base.typename(typeof(gpuarray)).wrapper  # SciMLBase.parameterless_type(gpuarray)
+    return GPUArrays.adapt(G, ComponentArray(NamedTuple{names}(map(GPUArrays.adapt(Array{T}), nt))))
+end
+
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::GPUComponentVecorMat, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::GPUComponentVecorMat, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::GPUComponentVecorMat, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::GPUComponentVecorMat, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, B::GPUComponentVecorMat,
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    },
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    },
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Number, b::Number)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::GPUComponentVecorMat, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat}, a::Real,
+    b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::GPUComponentVecorMat,
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::GPUComponentVecorMat, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::GPUComponentVecorMat, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::GPUComponentVecorMat, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, B::GPUComponentVecorMat,
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat}, a::Real,
+    b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    },
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUArrays.AbstractGPUVecOrMat}, a::Real,
+    b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    B::LinearAlgebra.Adjoint{<:Any,<:GPUComponentVecorMat},
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    B::LinearAlgebra.Transpose{<:Any,<:GPUArrays.AbstractGPUVecOrMat},
+    a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
+end
+function LinearAlgebra.mul!(C::GPUComponentVecorMat,
+    A::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    },
+    B::LinearAlgebra.Transpose{<:Any,<:GPUComponentVecorMat
+    }, a::Real, b::Real)
+    return GPUArrays.generic_matmatmul!(C, A, B, a, b)
 end
 
 end
