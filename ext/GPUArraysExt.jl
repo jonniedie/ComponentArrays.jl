@@ -1,6 +1,6 @@
 module GPUArraysExt
 
-using ComponentArrays
+using ComponentArrays, LinearAlgebra
 isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
 
 const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
