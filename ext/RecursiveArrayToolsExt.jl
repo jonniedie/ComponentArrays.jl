@@ -1,6 +1,6 @@
 module RecursiveArrayToolsExt
 
-using CompoentArrays
+using ComponentArrays
 isdefined(Base, :get_extension) ? (using RecursiveArrayTools) : (using ..RecursiveArrayTools)
 
 AVOA = RecursiveArrayTools.AbstractVectorOfArray
