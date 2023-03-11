@@ -25,6 +25,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [extensions]
 ConstructionBaseExt = "ConstructionBase"
