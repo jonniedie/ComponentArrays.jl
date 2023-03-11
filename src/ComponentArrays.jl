@@ -4,7 +4,10 @@ import ChainRulesCore
 import StaticArrayInterface, ArrayInterface
 
 using LinearAlgebra
-using Requires
+
+if !isdefined(Base, :get_extension)
+    using Requires
+end
 
 const FlatIdx = Union{Integer, CartesianIndex, CartesianIndices, AbstractArray{<:Integer}}
 const FlatOrColonIdx = Union{FlatIdx, Colon}
@@ -49,16 +52,16 @@ export labels, label2index
 
 include("compat/chainrulescore.jl")
 
-
-required(filename) = include(joinpath("compat", filename))
-
 function __init__()
-    @require ConstructionBase="187b0558-2788-49d3-abe0-74a17ed4e7c9" required("constructionbase.jl")
-    @require SciMLBase="0bca4576-84f4-4d90-8ffe-ffa030f20462" required("scimlbase.jl")
-    @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" required("recursivearraytools.jl")
-    @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" required("staticarrays.jl")
-    @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" required("reversediff.jl")
-    @require GPUArrays="0c68f7d7-f131-5f86-a1c3-88cf8149b2d7" required("gpuarrays.jl")
+    @static if !isdefined(Base, :get_extension)
+        @require ConstructionBase="187b0558-2788-49d3-abe0-74a17ed4e7c9" include("../ext/ConstructionBaseExt.jl")
+        @require SciMLBase="0bca4576-84f4-4d90-8ffe-ffa030f20462" include("../ext/SciMLBaseExt.jl")
+        @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" include("../ext/RecursiveArrayToolsExt.jl")
+        @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" include("../ext/StaticArraysExt.jl")
+        @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" include("../ext/ReverseDiffExt.jl")
+        @require GPUArrays="0c68f7d7-f131-5f86-a1c3-88cf8149b2d7" include("../ext/GPUArraysExt.jl")
+        @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" include("../ext/ForwardDiffExt.jl")
+    end
 end
 
 end
