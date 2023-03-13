@@ -13,7 +13,6 @@ _first_axis(x::AbstractComponentVecOrMat) = getaxes(x)[1]
 
 _second_axis(x::AbstractMatrix) = FlatAxis()
 _second_axis(x::ComponentMatrix) = getaxes(x)[2]
-_second_axis(x::AdjOrTransComponentVecOrMat) = getaxes(x)[2]
 
 _out_axes(::typeof(*), a, b::AbstractVector) = (_first_axis(a), )
 _out_axes(::typeof(*), a, b::AbstractMatrix) = (_first_axis(a), _second_axis(b))
@@ -27,19 +26,21 @@ for op in [:*, :\, :/]
         function Base.$op(A::AbstractComponentVecOrMat, B::AbstractComponentVecOrMat)
             C = $op(getdata(A), getdata(B))
             ax = _out_axes($op, A, B)
-            return ComponentArray(C, ax)
+            return ComponentArray(C, ax...)
         end
     end
-    for (adj, Adj) in zip([:adjoint, :transpose], [:Adjoint, :Transpose])
-        @eval begin
-            function Base.$op(aᵀ::$Adj{T,<:ComponentVector}, B::AbstractComponentMatrix) where {T}
-                cᵀ = $op(getdata(aᵀ), getdata(B))
-                ax2 = _out_axes($op, aᵀ, B)[2]
-                return $adj(ComponentArray(cᵀ', ax2))
-            end
-            function Base.$op(A::$Adj{T,<:CV}, B::CV) where {T<:Real, CV<:ComponentVector{T}}
-                return $op(getdata(A), getdata(B))
-            end
+end
+
+
+for op in [:adjoint, :transpose]
+    @eval begin
+        function LinearAlgebra.$op(M::ComponentMatrix{T,A,Tuple{Ax1,Ax2}}) where {T,A,Ax1,Ax2}
+            data = $op(getdata(M))
+            return ComponentArray(data, (Ax2(), Ax1())[1:ndims(data)]...)
+        end
+
+        function LinearAlgebra.$op(M::ComponentVector{T,A,Tuple{Ax1}}) where {T,A,Ax1}
+            return ComponentMatrix($op(getdata(M)), FlatAxis(), Ax1())
         end
     end
 end
