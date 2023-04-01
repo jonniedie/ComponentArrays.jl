@@ -6,9 +6,32 @@ version = "0.13.9"
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[weakdeps]
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
+RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[extensions]
+ConstructionBaseExt = "ConstructionBase"
+GPUArraysExt = "GPUArrays"
+RecursiveArrayToolsExt = "RecursiveArrayTools"
+ReverseDiffExt = "ReverseDiff"
+SciMLBaseExt = "SciMLBase"
+StaticArraysExt = "StaticArrays"
 
 [compat]
 ArrayInterface = "6, 7"
@@ -18,7 +41,13 @@ StaticArrayInterface = "1"
 julia = "1.6"
 
 [extras]
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
+RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
