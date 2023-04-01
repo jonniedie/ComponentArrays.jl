@@ -162,6 +162,7 @@ function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
 end
 function make_idx(data, pair::Pair, last_val)
     data, ax = make_idx(data, pair.second, last_val)
+    len = recursive_length(data)
     return (data, ViewAxis(last_val:(last_val+len-1), Axis(pair.second)))
 end
 make_idx(data, x, last_val) = (
