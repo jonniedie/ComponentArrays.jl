@@ -263,7 +263,10 @@ end
     @test ca[Not(2:3)] == getdata(ca)[Not(2:3)]
 
     # Issue #123
-    @test reshape(a, axes(ca)) isa Vector{Float64}
+    # We had to revert this because there is no way to work around
+    # OffsetArrays' type piracy without introducing type piracy
+    # ourselves because `() isa Tuple{N, <:CombinedAxis} where {N}`
+    # @test reshape(a, axes(ca)...) isa Vector{Float64}
 end
 
 @testset "Set" begin
@@ -621,6 +624,10 @@ end
     # Issue #140
     @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true
     @test ComponentArrays.ArrayInterface.instances_do_not_alias(typeof(ca)) == false
+
+    # Issue #193
+    # Make sure we aren't doing type piracy on `reshape`
+    @test ndims(dropdims(ones(1,1), dims=(1,2))) == 0
 end
 
 @testset "Autodiff" begin
