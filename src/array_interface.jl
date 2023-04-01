@@ -10,8 +10,6 @@ Base.axes(x::ComponentArray) = CombinedAxis.(getaxes(x), axes(getdata(x)))
 
 Base.reinterpret(::Type{T}, x::ComponentArray, args...) where T = ComponentArray(reinterpret(T, getdata(x), args...), getaxes(x))
 
-Base.reshape(A::AbstractArray, ax::CombinedAxis, axs::Vararg{CombinedAxis}) = reshape(A, last.(_array_axis.((ax, axs...)))...)
-
 ArrayInterface.indices_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.indices_do_not_alias(A)
 ArrayInterface.instances_do_not_alias(::Type{ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = ArrayInterface.instances_do_not_alias(A)
 
