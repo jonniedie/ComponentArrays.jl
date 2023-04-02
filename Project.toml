@@ -17,13 +17,13 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
-[weakdeps]
-ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
-RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
-ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
-SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+[compat]
+ArrayInterface = "6, 7"
+ChainRulesCore = "0.8, 0.9, 0.10, 1"
+GPUArrays = "8"
+Requires = "1"
+StaticArrayInterface = "1"
+julia = "1.6"
 
 [extensions]
 ConstructionBaseExt = "ConstructionBase"
@@ -32,13 +32,6 @@ RecursiveArrayToolsExt = "RecursiveArrayTools"
 ReverseDiffExt = "ReverseDiff"
 SciMLBaseExt = "SciMLBase"
 StaticArraysExt = "StaticArrays"
-
-[compat]
-ArrayInterface = "6, 7"
-ChainRulesCore = "0.8, 0.9, 0.10, 1"
-Requires = "1"
-StaticArrayInterface = "1"
-julia = "1.6"
 
 [extras]
 ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
@@ -52,3 +45,11 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
+[weakdeps]
+ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
+RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
