@@ -50,6 +50,12 @@ truth = ComponentArray(a = [32, 48], x = 156)
     @test out isa Vector{<:ForwardDiff.Dual}
 end
 
+@testset "Projection" begin
+    gs_ca = Zygote.gradient(sum, ca)[1]
+
+    @test gs_ca isa ComponentArray
+end
+
 
 # # This is commented out because the gradient operation itself is broken due to Zygote's inability
 # # to support mutation and ComponentArray's use of mutation for construction from a NamedTuple.
