@@ -20,9 +20,14 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 ArrayInterface = "6, 7"
 ChainRulesCore = "0.8, 0.9, 0.10, 1"
+ConstructionBase = "1"
 ForwardDiff = "0.10"
 Requires = "1"
+ReverseDiff = "1"
+RecursiveArrayTools = "2"
+SciMLBase = "1"
 StaticArrayInterface = "1"
+StaticArrays = "1"
 julia = "1.6"
 
 [extensions]
