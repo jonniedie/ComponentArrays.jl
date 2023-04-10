@@ -32,22 +32,20 @@ truth = ComponentArray(a = [32, 48], x = 156)
         @test zygote_full ≈ truth
     end
 
-    # Not sure why this doesn't work in v1.2, but I don't want to drop the tests for that just
-    # for this to work
-    if VERSION ≥ v"1.6"
-        @test ComponentArray(x=4,) == Zygote.gradient(ComponentArray(x=2,)) do c
-            (;c...,).x^2
-        end[1]
-    else
-        @test_skip ComponentArray(x=4,) == Zygote.gradient(ComponentArray(x=2,)) do c
-            (;c...,).x^2
-        end[1]
-    end
+    @test ComponentArray(x=4.0,) ≈ Zygote.gradient(ComponentArray(x=2,)) do c
+        (;c...,).x^2
+    end[1]
 
     # Issue #148
     ps = ComponentArray(;bias = rand(4))
     out = Zygote.gradient(x -> sum(x.^3 .+ ps.bias), Zygote.seed(rand(4),Val(12)))[1]
     @test out isa Vector{<:ForwardDiff.Dual}
+end
+
+@testset "Projection" begin
+    gs_ca = Zygote.gradient(sum, ca)[1]
+
+    @test gs_ca isa ComponentArray
 end
 
 
