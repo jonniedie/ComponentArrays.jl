@@ -1,4 +1,4 @@
-module RecursiveArrayToolsExt
+module ComponentArraysRecursiveArrayToolsExt
 
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using RecursiveArrayTools) : (using ..RecursiveArrayTools)

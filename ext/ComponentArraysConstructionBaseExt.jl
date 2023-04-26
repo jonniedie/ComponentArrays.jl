@@ -1,4 +1,4 @@
-module ConstructionBaseExt
+module ComponentArraysConstructionBaseExt
 
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using ConstructionBase) : (using ..ConstructionBase)

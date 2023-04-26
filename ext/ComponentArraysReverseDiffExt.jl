@@ -1,4 +1,4 @@
-module ReverseDiffExt
+module ComponentArraysReverseDiffExt
 
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using ReverseDiff) : (using ..ReverseDiff)
