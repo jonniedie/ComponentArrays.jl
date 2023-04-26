@@ -1,5 +1,5 @@
 # Plotting stuff
-module SciMLBaseExt
+module ComponentArraysSciMLBaseExt
 
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using SciMLBase) : (using ..SciMLBase)

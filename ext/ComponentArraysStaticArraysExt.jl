@@ -1,4 +1,4 @@
-module StaticArraysExt
+module ComponentArraysStaticArraysExt
 
 using ComponentArrays
 isdefined(Base, :get_extension) ? (using StaticArrays) : (using ..StaticArrays)

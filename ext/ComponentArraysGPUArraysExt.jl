@@ -1,4 +1,4 @@
-module GPUArraysExt
+module ComponentArraysGPUArraysExt
 
 using ComponentArrays, LinearAlgebra
 isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
