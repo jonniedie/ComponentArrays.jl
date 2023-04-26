@@ -2,6 +2,7 @@
 ArrayInterfaceCore = "30b0a656-2188-435a-8636-2ec0e6a096e2"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
 JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"

@@ -17,3 +17,8 @@ function ChainRulesCore.ProjectTo(ca::ComponentArray)
 end
 
 (p::ChainRulesCore.ProjectTo{ComponentArray})(dx::AbstractArray) = ComponentArray(p.project(dx), p.axes)
+
+function (p::ChainRulesCore.ProjectTo{ComponentArray})(t::ChainRulesCore.Tangent{A, <:NamedTuple}) where {A}
+    nt = Functors.fmap(ChainRulesCore.backing, ChainRulesCore.backing(t))
+    return ComponentArray(nt)
+end

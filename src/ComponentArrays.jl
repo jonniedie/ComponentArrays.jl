@@ -1,7 +1,7 @@
 module ComponentArrays
 
 import ChainRulesCore
-import StaticArrayInterface, ArrayInterface
+import StaticArrayInterface, ArrayInterface, Functors
 
 using LinearAlgebra
 
