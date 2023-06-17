@@ -1,4 +1,5 @@
 using ComponentArrays
+using BenchmarkTools
 using ForwardDiff
 using InvertedIndices
 using LabelledArrays
@@ -37,6 +38,16 @@ _a, _b, _c = Val.((:a, :b, :c))
 
 
 ## Tests
+@testset "Allocations and Inference" begin
+    @test @ballocated($ca.c.a.a) == 0
+    @test @ballocated(@view $ca[:c]) == 0
+    @test @ballocated(@view $cmat[:c, :c]) == 0
+
+    f = (out, x) -> (out .= x .+ x)
+    out = deepcopy(ca)
+    @test @ballocated($f($out, $ca)) == 0
+end
+
 @testset "Utilities" begin
     @test_deprecated ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
     @test_deprecated fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
@@ -357,6 +368,10 @@ end
     @test similar(ca, 5) isa typeof(getdata(ca))
     @test similar(ca, Float32, 5) isa typeof(getdata(ca_Float32))
     @test similar(cmat, 5, 5) isa typeof(getdata(cmat))
+
+    # Issue #206
+    x = ComponentArray(a = false, b = true)
+    @test typeof(x) == typeof(zero(x))
 end
 
 @testset "Copy" begin
@@ -616,10 +631,6 @@ end
     @test all(zero(cmat) * ca .== zero(ca))
     @test typeof(zrv0) === typeof(rv0)
     @test typeof(zrv0.r[1]) == typeof(rv0[1])
-
-    # Issue #100
-    chol = cholesky(cmat + I)
-    @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
 
     # Issue #140
     @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true

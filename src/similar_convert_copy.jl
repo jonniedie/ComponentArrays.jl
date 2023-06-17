@@ -1,6 +1,6 @@
-const CombinedAnyDims = Tuple{<:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
-const AnyCombinedAnyDims = Tuple{<:CombinedOrRegularAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
-const CombinedCombinedAnyDims = Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
+const CombinedAnyDims = Tuple{<:CombinedAxis, Vararg{CombinedOrRegularAxis}}
+const AnyCombinedAnyDims = Tuple{<:CombinedOrRegularAxis, <:CombinedAxis, Vararg{CombinedOrRegularAxis}}
+const CombinedCombinedAnyDims = Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{CombinedOrRegularAxis}}
 
 # Similar
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
@@ -22,7 +22,7 @@ _similar(x::Type, dims) = ComponentArray(similar(x, length.(_array_axis.(dims)))
 _similar(x, T, dims) = ComponentArray(similar(getdata(x), T, length.(_array_axis.(dims))), _component_axis.(dims)...)
 
 
-Base.zero(x::ComponentArray) = zero.(x)
+Base.zero(x::ComponentArray) = ComponentArray(zero(getdata(x)), getaxes(x)...)
 
 ## FIXME: waiting on similar(::Type{<:ComponentArray})
 # Base.zeros(CA::Type{<:ComponentArray}) = (similar(CA) .= 0)
