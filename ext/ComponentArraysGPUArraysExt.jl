@@ -1,6 +1,7 @@
 module ComponentArraysGPUArraysExt
 
 using ComponentArrays, LinearAlgebra
+using ComponentArrays: recursive_eltype
 isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
 
 const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
