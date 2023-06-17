@@ -22,7 +22,7 @@ _similar(x::Type, dims) = ComponentArray(similar(x, length.(_array_axis.(dims)))
 _similar(x, T, dims) = ComponentArray(similar(getdata(x), T, length.(_array_axis.(dims))), _component_axis.(dims)...)
 
 
-Base.zero(x::ComponentArray) = zero.(x)
+Base.zero(x::ComponentArray) = ComponentArray(zero(getdata(x)), getaxes(x)...)
 
 ## FIXME: waiting on similar(::Type{<:ComponentArray})
 # Base.zeros(CA::Type{<:ComponentArray}) = (similar(CA) .= 0)
