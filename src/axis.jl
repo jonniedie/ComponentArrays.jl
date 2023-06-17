@@ -7,7 +7,7 @@ abstract type AbstractAxis{IdxMap} end
 # struct FlatAxis <: AbstractAxis{NamedTuple()} end
 
 struct NullAxis <: AbstractAxis{nothing} end
-const VarAxes = Tuple{Vararg{<:AbstractAxis}}
+const VarAxes = Tuple{Vararg{AbstractAxis}}
 
 
 """
@@ -50,7 +50,7 @@ Axis(;kwargs...) = Axis((;kwargs...))
 function Axis(symbols::Union{AbstractVector{Symbol}, NTuple{N,Symbol}}) where {N}
     return Axis(NamedTuple{(symbols...,)}((eachindex(symbols)...,)))
 end
-Axis(symbols::Symbol...) = Axis(symbols)
+Axis(symbols::Vararg{Symbol}) = Axis(symbols)
 
 const FlatAxis = Axis{NamedTuple()}
 const NullorFlatAxis = Union{NullAxis, FlatAxis}
@@ -138,7 +138,7 @@ const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Sh
 const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
 
 
-Base.merge(axs::Axis...) = Axis(merge(indexmap.(axs)...))
+Base.merge(axs::Vararg{Axis}) = Axis(merge(indexmap.(axs)...))
 
 Base.firstindex(ax::AbstractAxis) = first(viewindex(first(indexmap(ax))))
 Base.lastindex(ax::AbstractAxis) = last(viewindex(last(indexmap(ax))))

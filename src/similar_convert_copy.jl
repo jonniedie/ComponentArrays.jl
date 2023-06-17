@@ -1,6 +1,6 @@
-const CombinedAnyDims = Tuple{<:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
-const AnyCombinedAnyDims = Tuple{<:CombinedOrRegularAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
-const CombinedCombinedAnyDims = Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{<:CombinedOrRegularAxis}}
+const CombinedAnyDims = Tuple{<:CombinedAxis, Vararg{CombinedOrRegularAxis}}
+const AnyCombinedAnyDims = Tuple{<:CombinedOrRegularAxis, <:CombinedAxis, Vararg{CombinedOrRegularAxis}}
+const CombinedCombinedAnyDims = Tuple{<:CombinedAxis, <:CombinedAxis, Vararg{CombinedOrRegularAxis}}
 
 # Similar
 Base.similar(x::ComponentArray) = ComponentArray(similar(getdata(x)), getaxes(x)...)
