@@ -368,6 +368,10 @@ end
     @test similar(ca, 5) isa typeof(getdata(ca))
     @test similar(ca, Float32, 5) isa typeof(getdata(ca_Float32))
     @test similar(cmat, 5, 5) isa typeof(getdata(cmat))
+
+    # Issue #206
+    x = ComponentArray(a = false, b = true)
+    @test typeof(x) == typeof(zero(x))
 end
 
 @testset "Copy" begin
