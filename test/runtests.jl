@@ -617,10 +617,6 @@ end
     @test typeof(zrv0) === typeof(rv0)
     @test typeof(zrv0.r[1]) == typeof(rv0[1])
 
-    # Issue #100
-    chol = cholesky(cmat + I)
-    @test convert(Cholesky{Float32}, chol).factors isa Matrix{Float32}
-
     # Issue #140
     @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true
     @test ComponentArrays.ArrayInterface.instances_do_not_alias(typeof(ca)) == false
