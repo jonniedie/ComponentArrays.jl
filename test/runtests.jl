@@ -619,7 +619,7 @@ end
 
     # Issue #100
     chol = cholesky(cmat + I)
-    @test convert(Cholesky{Float32,Matrix{Float32}}, chol).factors isa Matrix{Float32}
+    @test convert(Cholesky{Float32}, chol).factors isa Matrix{Float32}
 
     # Issue #140
     @test ComponentArrays.ArrayInterface.indices_do_not_alias(typeof(ca)) == true
