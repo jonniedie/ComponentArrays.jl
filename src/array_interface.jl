@@ -59,10 +59,10 @@ function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
 end
 Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
 Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
-Base.vcat(x::ComponentVector, args::Union{Number, UniformScaling, AbstractVecOrMat}...) = vcat(getdata(x), getdata.(args)...)
+Base.vcat(x::ComponentVector, args::Vararg{Union{Number, UniformScaling, AbstractVecOrMat}}) = vcat(getdata(x), getdata.(args)...)
 Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
 
-function Base.hvcat(row_lengths::NTuple{N,Int}, xs::AbstractComponentVecOrMat...) where {N}
+function Base.hvcat(row_lengths::NTuple{N,Int}, xs::Vararg{AbstractComponentVecOrMat}) where {N}
     i = 1
     idxs = UnitRange{Int}[]
     for row_length in row_lengths
@@ -91,28 +91,28 @@ Base.to_index(x::ComponentArray, i) = i
 
 # Get ComponentArray index
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::CartesianIndex) = getdata(x)[idx]
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::FlatIdx...) = getdata(x)[idx...]
-Base.@propagate_inbounds function Base.getindex(x::ComponentArray, idx::FlatOrColonIdx...)
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, idx::Vararg{FlatIdx}) = getdata(x)[idx...]
+Base.@propagate_inbounds function Base.getindex(x::ComponentArray, idx::Vararg{FlatOrColonIdx})
     axs = map((ax, i) -> getindex(ax, i).ax, getaxes(x), idx)
     axs = remove_nulls(axs...)
     return ComponentArray(getdata(x)[idx...], axs...)
 end
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[:]
-Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon...) = x
+Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon, ::Vararg{Colon}) = x
 @inline Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
-@inline Base.getindex(x::ComponentArray, idx::Val...) = _getindex(getindex, x, idx...)
+@inline Base.getindex(x::ComponentArray, idx::Vararg{Val}) = _getindex(getindex, x, idx...)
 
 # Set ComponentArray index
 Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, idx::FlatOrColonIdx...) = setindex!(getdata(x), v, idx...)
 Base.@propagate_inbounds Base.setindex!(x::ComponentArray, v, ::Colon) = setindex!(getdata(x), v, :)
 @inline Base.setindex!(x::ComponentArray, v, idx...) = setindex!(x, v, toval.(idx)...)
-@inline Base.setindex!(x::ComponentArray, v, idx::Val...) = _setindex!(x, v, idx...)
+@inline Base.setindex!(x::ComponentArray, v, idx::Vararg{Val}) = _setindex!(x, v, idx...)
 
 # Explicitly view
-Base.@propagate_inbounds Base.view(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = view(getdata(x), idx...)
+Base.@propagate_inbounds Base.view(x::ComponentArray, idx::Vararg{ComponentArrays.FlatIdx}) = view(getdata(x), idx...)
 Base.@propagate_inbounds Base.view(x::ComponentArray, idx...) = _getindex(view, x, toval.(idx)...)
 
-Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx::ComponentArrays.FlatIdx...) = Base.maybeview(getdata(x), idx...)
+Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx::Vararg{ComponentArrays.FlatIdx}) = Base.maybeview(getdata(x), idx...)
 Base.@propagate_inbounds Base.maybeview(x::ComponentArray, idx...) = _getindex(Base.maybeview, x, toval.(idx)...)
 
 # Generated get and set index methods to do all of the heavy lifting in the type domain

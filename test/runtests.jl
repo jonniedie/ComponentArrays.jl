@@ -1,4 +1,5 @@
 using ComponentArrays
+using BenchmarkTools
 using ForwardDiff
 using InvertedIndices
 using LabelledArrays
@@ -37,6 +38,16 @@ _a, _b, _c = Val.((:a, :b, :c))
 
 
 ## Tests
+@testset "Allocations and Inference" begin
+    @test @ballocated($ca.c.a.a) == 0
+    @test @ballocated(@view $ca[:c]) == 0
+    @test @ballocated(@view $cmat[:c, :c]) == 0
+
+    f = (out, x) -> (out .= x .+ x)
+    out = deepcopy(ca)
+    @test @ballocated($f($out, $ca)) == 0
+end
+
 @testset "Utilities" begin
     @test_deprecated ComponentArrays.getval.(fastindices(:a, :b, :c)) == (:a, :b, :c)
     @test_deprecated fastindices(:a, Val(:b)) == (Val(:a), Val(:b))
