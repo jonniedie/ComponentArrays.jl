@@ -132,6 +132,10 @@ const AbstractComponentMatrix = Union{ComponentMatrix, AdjOrTransComponentMatrix
 
 
 ## Constructor helpers
+allocate_numeric_container(x) = allocate_numeric_container(recursive_eltype(x))
+allocate_numeric_container(::Type{T}) where {T<:Number} = T[]
+allocate_numeric_container(::Type) = []
+
 # For making ComponentArrays from named tuples
 make_carray_args(::NamedTuple{(), Tuple{}}) = (Any[], FlatAxis())
 make_carray_args(::Type{T}, ::NamedTuple{(), Tuple{}}) where {T} = (T[], FlatAxis())
@@ -142,8 +146,7 @@ function make_carray_args(nt)
 end
 make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
-    T = recursive_eltype(nt)
-    init = isbitstype(T) ? T[] : []
+    init = allocate_numeric_container(nt)
     data, idx = make_idx(init, nt, 0)
     return (A(data), Axis(idx))
 end
@@ -153,8 +156,8 @@ function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
     len = recursive_length(nt)
     kvs = []
     lv = 0
-    for (k,v) in zip(keys(nt), values(nt))
-        (_,val) = make_idx(data, v, lv)
+    for (k, v) in pairs(nt)
+        (_, val) = make_idx(data, v, lv)
         push!(kvs, k => val)
         lv = val
     end
@@ -170,14 +173,14 @@ make_idx(data, x, last_val) = (
     ViewAxis(last_index(last_val) + 1)
 )
 make_idx(data, x::ComponentVector, last_val) = (
-    pushcat!(data, x),
+    append!(data, x),
     ViewAxis(
         last_index(last_val) .+ (1:length(x)),
         getaxes(x)[1]
     )
 )
 function make_idx(data, x::AbstractArray, last_val)
-    pushcat!(data, x)
+    append!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
@@ -186,7 +189,7 @@ function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTup
     if eltype(x) |> isconcretetype
         out = ()
         for elem in x
-            (_,out) = make_idx(data, elem, last_val)
+            _, out = make_idx(data, elem, last_val)
         end
         return (
             data,
@@ -221,8 +224,6 @@ function _update_field(x, pair)
     x_copy[pair.first] = pair.second
     return x_copy
 end
-
-pushcat!(a, b) = reduce((x1,x2) -> push!(x1,x2), b; init=a)
 
 # Reshape ComponentArrays with ShapedAxis axes
 maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data

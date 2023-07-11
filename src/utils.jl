@@ -39,14 +39,14 @@ filter_by_type(::Type{T}, part::Tuple, ax::T, args...) where T = filter_by_type(
 # Flat length of an arbitrarily nested named tuple
 recursive_length(x) = length(x)
 recursive_length(a::AbstractArray{T,N}) where {T<:Number,N} = length(a)
-recursive_length(a::AbstractArray) = recursive_length.(a) |> sum
-recursive_length(nt::NamedTuple) = values(nt) .|> recursive_length |> sum
+recursive_length(a::AbstractArray) = mapreduce(recursive_length, +, a; init=0)
+recursive_length(nt::NamedTuple) = mapreduce(recursive_length, +, values(nt); init=0)
 recursive_length(::Union{Nothing, Missing}) = 1
 recursive_length(nt::NamedTuple{(), Tuple{}}) = 0
 
 # Find the highest element type
 recursive_eltype(nt::NamedTuple) = isempty(nt) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, nt)
-recursive_eltype(x::Vector{Any}) = isempty(x) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, x)
+recursive_eltype(x::AbstractArray{<:Any}) = isempty(x) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, x)
 recursive_eltype(x::Dict) = isempty(x) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, values(x))
 recursive_eltype(::AbstractArray{T,N}) where {T<:Number, N} = T
 recursive_eltype(x) = typeof(x)
