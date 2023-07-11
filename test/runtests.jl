@@ -132,7 +132,10 @@ end
         @test ComponentArray(a = Any[one(Int32)], b=T[]) == ComponentVector{T}(a = [one(T)], b = T[])
     end
     @test ComponentArray(NamedTuple()) == ComponentVector{Any}()
-    @test_broken  ComponentArray(a=[])
+    @test ComponentArray(a=[]).a == []
+
+    # Make sure type promotion works correctly with StaticArrays of NamedTuples
+    @test ComponentVector(a=SA[(a=2, b=true)], b=false) isa ComponentVector{Int}
 end
 
 @testset "Attributes" begin
