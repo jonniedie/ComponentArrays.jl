@@ -1,6 +1,7 @@
 abstract type AbstractAxis{IdxMap} end
 
 @inline indexmap(::AbstractAxis{IdxMap}) where IdxMap = IdxMap
+@inline indexmap(ax::AbstractUnitRange) = ax
 @inline indexmap(::Type{<:AbstractAxis{IdxMap}}) where IdxMap = IdxMap
 
 

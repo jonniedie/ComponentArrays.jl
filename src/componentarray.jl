@@ -54,7 +54,8 @@ function ComponentArray(data, ax::AbstractAxis...)
     part_axs = filter_by_type(PartitionedAxis, ax...)
     part_data = partition(data, size.(part_axs)...)
     axs = Axis.(ax)
-    return LazyArray(ComponentArray(x, axs) for x in part_data)
+    # return [ComponentArray(x, axs...) for x in part_data]
+    return LazyArray(ComponentArray(x, axs...) for x in part_data)
 end
 
 # Entry from NamedTuple, Dict, or kwargs
@@ -184,9 +185,10 @@ function make_idx(data, x::AbstractArray, last_val)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
-function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, ComponentArray}}}
+function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, AbstractArray}}}
     len = recursive_length(x)
-    if eltype(x) |> isconcretetype
+    elem_len = len ÷ length(x)
+    if eltype(x) |> isconcretetype && all(elem -> recursive_length(elem) == elem_len, x)
         out = ()
         for elem in x
             _, out = make_idx(data, elem, last_val)
@@ -196,18 +198,18 @@ function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTup
             ViewAxis(
                 last_index(last_val) .+ (1:len),
                 PartitionedAxis(
-                    len ÷ length(x),
-                    indexmap(out)
+                    elem_len,
+                    indexmap(out),
                 )
             )
         )
     else
-        error("Only homogeneous arrays of inner ComponentArrays are allowed.")
+        error("Only homogeneous arrays are allowed.")
     end
 end
-function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:AbstractArray}}
-    error("ComponentArrays cannot currently contain arrays of arrays as elements. This one contains: \n $x\n")
-end
+# function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:AbstractArray}}
+#     error("ComponentArrays cannot currently contain arrays of arrays as elements. This one contains: \n $x\n")
+# end
 
 
 #TODO: Make all internal function names start with underscores
