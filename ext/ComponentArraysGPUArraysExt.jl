@@ -1,8 +1,7 @@
 module ComponentArraysGPUArraysExt
 
-using ComponentArrays, LinearAlgebra
+using ComponentArrays, LinearAlgebra, GPUArrays
 using ComponentArrays: recursive_eltype
-isdefined(Base, :get_extension) ? (using GPUArrays) : (using ..GPUArrays)
 
 const GPUComponentArray = ComponentArray{T,N,<:GPUArrays.AbstractGPUArray,Ax} where {T,N,Ax}
 const GPUComponentVector{T,Ax} = ComponentArray{T,1,<:GPUArrays.AbstractGPUVector,Ax}
@@ -10,14 +9,6 @@ const GPUComponentMatrix{T,Ax} = ComponentArray{T,2,<:GPUArrays.AbstractGPUMatri
 const GPUComponentVecorMat{T,Ax} = Union{GPUComponentVector{T,Ax},GPUComponentMatrix{T,Ax}}
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
-
-function GPUArrays.Adapt.adapt_structure(to, x::ComponentArray)
-    data = GPUArrays.Adapt.adapt_structure(to, getdata(x))
-    return ComponentArray(data, getaxes(x))
-end
-
-GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
-    GPUArrays.Adapt.adapt_storage(A, xs)
 
 function Base.fill!(A::GPUComponentArray{T}, x) where {T}
     length(A) == 0 && return A
