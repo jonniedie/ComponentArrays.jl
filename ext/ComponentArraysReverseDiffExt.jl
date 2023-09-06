@@ -1,7 +1,6 @@
 module ComponentArraysReverseDiffExt
 
-using ComponentArrays
-isdefined(Base, :get_extension) ? (using ReverseDiff) : (using ..ReverseDiff)
+using ComponentArrays, ReverseDiff
 
 const TrackedComponentArray{V, D, N, DA, A, Ax} = ReverseDiff.TrackedArray{V,D,N,ComponentArray{V,N,A,Ax},DA}
 

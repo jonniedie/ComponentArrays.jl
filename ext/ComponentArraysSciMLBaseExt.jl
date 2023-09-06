@@ -1,8 +1,7 @@
 # Plotting stuff
 module ComponentArraysSciMLBaseExt
 
-using ComponentArrays
-isdefined(Base, :get_extension) ? (using SciMLBase) : (using ..SciMLBase)
+using ComponentArrays, SciMLBase
 
 function SciMLBase.getsyms(sol::SciMLBase.AbstractODESolution{T,N,C}) where {T,N,C<:AbstractVector{<:ComponentArray}}
     if SciMLBase.has_syms(sol.prob.f)

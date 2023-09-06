@@ -1,7 +1,6 @@
 module ComponentArraysAdaptExt
 
-using ComponentArrays
-isdefined(Base, :get_extension) ? (using Adapt) : (using ..Adapt)
+using ComponentArrays, Adapt
 
 function Adapt.adapt_structure(to, x::ComponentArray)
     data = Adapt.adapt_structure(to, getdata(x))
