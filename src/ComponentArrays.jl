@@ -54,7 +54,7 @@ include("compat/chainrulescore.jl")
 
 function __init__()
     @static if !isdefined(Base, :get_extension)
-        @require ConstructionBase="187b0558-2788-49d3-abe0-74a17ed4e7c9" include("../ext/ComponentArraysAdaptExt.jl")
+        @require Adapt="79e6a3ab-5dfb-504d-930d-738a2a938a0e" include("../ext/ComponentArraysAdaptExt.jl")
         @require ConstructionBase="187b0558-2788-49d3-abe0-74a17ed4e7c9" include("../ext/ComponentArraysConstructionBaseExt.jl")
         @require SciMLBase="0bca4576-84f4-4d90-8ffe-ffa030f20462" include("../ext/ComponentArraysSciMLBaseExt.jl")
         @require RecursiveArrayTools="731186ca-8d62-57ce-b412-fbd966d074cd" include("../ext/ComponentArraysRecursiveArrayToolsExt.jl")
