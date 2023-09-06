@@ -314,7 +314,7 @@ directly on an `AbstractAxis`.
 
 # Examples
 
-```julia-repl
+```jldoctest
 julia> using ComponentArrays
 
 julia> ca = ComponentArray(a=1, b=[1,2,3], c=(a=4,))
@@ -337,6 +337,29 @@ julia> sum(prod(ca[k]) for k in valkeys(ca))
 end
 valkeys(ca::ComponentVector) = valkeys(getaxes(ca)[1])
 
+"""
+    merge(cvec1::ComponentVector, cvecs::ComponentVector...)
+
+Construct a new ComponentVector by merging two or more existing ones, in a left-associative
+manner. If a key is present in two or more CVectors, the right-most CVector takes priority.
+The type of the resulting CVector will be promoted to accomodate all the types of the merged
+CVectors
+
+# Examples
+```jldoctest
+julia> c1 = ComponentArray(a=1.2, b=2.3)
+ComponentVector{Float64}(a = 1.2, b = 2.3)
+
+julia> c2 = ComponentArray(a=1,h=4)
+ComponentVector{Int64}(a = 1, h = 4)
+
+julia> merge(c1,c2)
+ComponentVector{Float64}(a = 1.0, b = 2.3, h = 4.0)
+
+julia> merge(c2,c1)
+ComponentVector{Float64}(a = 1.2, h = 4.0, b = 2.3)
+```
+"""
 function merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1, T2}
     typed_dict = ComponentVector{promote_type(T1, T2)}(cvec1)
     for key in valkeys(cvec2)
