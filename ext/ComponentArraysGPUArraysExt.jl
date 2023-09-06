@@ -11,14 +11,6 @@ const GPUComponentVecorMat{T,Ax} = Union{GPUComponentVector{T,Ax},GPUComponentMa
 
 GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
 
-function GPUArrays.Adapt.adapt_structure(to, x::ComponentArray)
-    data = GPUArrays.Adapt.adapt_structure(to, getdata(x))
-    return ComponentArray(data, getaxes(x))
-end
-
-GPUArrays.Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
-    GPUArrays.Adapt.adapt_storage(A, xs)
-
 function Base.fill!(A::GPUComponentArray{T}, x) where {T}
     length(A) == 0 && return A
     GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
