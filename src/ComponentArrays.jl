@@ -23,7 +23,7 @@ include("axis.jl")
 export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
 
 include("componentarray.jl")
-export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys, merge
+export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys
 
 include("componentindex.jl")
 export KeepIndex

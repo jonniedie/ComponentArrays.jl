@@ -360,7 +360,7 @@ julia> merge(c2,c1)
 ComponentVector{Float64}(a = 1.2, h = 4.0, b = 2.3)
 ```
 """
-function merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1, T2}
+function Base.merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1, T2}
     typed_dict = ComponentVector{promote_type(T1, T2)}(cvec1)
     for key in valkeys(cvec2)
         keyname = getval(key)
@@ -370,4 +370,4 @@ function merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1
     typed_dict
 end
 
-merge(a::ComponentVector, b::ComponentVector, cs::ComponentVector) = merge(merge(a,b), cs...)
+Base.merge(a::ComponentVector, b::ComponentVector, cs::ComponentVector) = merge(merge(a,b), cs...)
