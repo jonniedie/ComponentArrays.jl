@@ -336,3 +336,15 @@ julia> sum(prod(ca[k]) for k in valkeys(ca))
     return :($k)
 end
 valkeys(ca::ComponentVector) = valkeys(getaxes(ca)[1])
+
+function merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1, T2}
+    typed_dict = ComponentVector{promote_type(T1, T2)}(cvec1)
+    for key in valkeys(cvec2)
+        keyname = getval(key)
+        val = cvec2[key]
+        typed_dict = eval(:( ComponentArray($typed_dict, $keyname = $val) ))
+    end
+    typed_dict
+end
+
+merge(a::ComponentVector, b::ComponentVector, cs::ComponentVector) = merge(merge(a,b), cs...)

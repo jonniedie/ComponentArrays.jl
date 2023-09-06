@@ -2,6 +2,7 @@ module ComponentArrays
 
 import ChainRulesCore
 import StaticArrayInterface, ArrayInterface, Functors
+import Base.merge
 
 using LinearAlgebra
 
@@ -22,7 +23,7 @@ include("axis.jl")
 export AbstractAxis, Axis, PartitionedAxis, ShapedAxis, ViewAxis, FlatAxis
 
 include("componentarray.jl")
-export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys
+export ComponentArray, ComponentVector, ComponentMatrix, getaxes, getdata, valkeys, merge
 
 include("componentindex.jl")
 export KeepIndex
