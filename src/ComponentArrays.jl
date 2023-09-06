@@ -5,10 +5,6 @@ import StaticArrayInterface, ArrayInterface, Functors
 
 using LinearAlgebra
 
-if !isdefined(Base, :get_extension)
-    using Requires
-end
-
 const FlatIdx = Union{Integer, CartesianIndex, CartesianIndices, AbstractArray{<:Integer}}
 const FlatOrColonIdx = Union{FlatIdx, Colon}
 
