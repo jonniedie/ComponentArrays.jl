@@ -365,7 +365,7 @@ function Base.merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) wher
     for key in valkeys(cvec2)
         keyname = getval(key)
         val = cvec2[key]
-        typed_dict = eval(:( ComponentArray($typed_dict, $keyname = $val) ))
+        typed_dict = ComponentArray(typed_dict; keyname=>val)
     end
     typed_dict
 end
