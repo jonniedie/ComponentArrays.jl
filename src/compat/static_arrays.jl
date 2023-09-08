@@ -7,8 +7,8 @@ _maybe_SArray(x::Base.ReshapedArray, ::Val, ::ShapedAxis{Sz}) where {Sz} = SArra
 _maybe_SArray(x, vals...) = x
 
 @generated function static_getproperty(ca::ComponentVector, ::Val{s}) where {s}
-    (; idx, ax) = getaxes(ca)[1][s]
-    return :(_maybe_SArray(ca.$s, $(Val(length(idx))), $ax))
+    comp_ind = getaxes(ca)[1][s]
+    return :(maybe_SArray(ca.$s, $(Val(length(comp_ind.idx))), $(comp_ind.ax)))
 end
 
 macro static_unpack(expr)
