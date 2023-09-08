@@ -4,6 +4,7 @@ import ChainRulesCore
 import StaticArrayInterface, ArrayInterface, Functors
 
 using LinearAlgebra
+using StaticArraysCore: StaticArray, SArray, SVector, SMatrix
 
 const FlatIdx = Union{Integer, CartesianIndex, CartesianIndices, AbstractArray{<:Integer}}
 const FlatOrColonIdx = Union{FlatIdx, Colon}
@@ -47,6 +48,9 @@ include("plot_utils.jl")
 export labels, label2index
 
 include("compat/chainrulescore.jl")
+
+include("compat/static_arrays.jl")
+export @static_unpack
 
 import PackageExtensionCompat: @require_extensions
 function __init__()
