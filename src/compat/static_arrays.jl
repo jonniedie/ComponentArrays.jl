@@ -8,7 +8,7 @@ _maybe_SArray(x, vals...) = x
 
 @generated function static_getproperty(ca::ComponentVector, ::Val{s}) where {s}
     comp_ind = getaxes(ca)[1][s]
-    return :(maybe_SArray(ca.$s, $(Val(length(comp_ind.idx))), $(comp_ind.ax)))
+    return :(_maybe_SArray(ca.$s, $(Val(length(comp_ind.idx))), $(comp_ind.ax)))
 end
 
 macro static_unpack(expr)
