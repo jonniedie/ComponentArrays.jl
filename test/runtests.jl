@@ -606,6 +606,13 @@ end
     @test d isa ComponentArray
     @test e isa Float64
     @test f isa SVector{2, Float64}
+
+    @static_unpack a = x
+    @static_unpack (; b, c) = x
+
+    @test a isa Float64
+    @test b isa SVector{2, Float64}
+    @test c isa SMatrix{2, 2, Float64, 4}
 end
 
 @testset "Plot Utilities" begin
