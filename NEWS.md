@@ -1,6 +1,30 @@
 # ComponentArrays.jl NEWS
 Notes on new features (minor releases). For more details on bugfixes and non-feature-adding changes (patch releases), check out the [releases page](https://github.com/jonniedie/ComponentArrays.jl/releases).
 
+### v0.15.0
+- Unpack array components as `StaticArray`s!
+```julia
+julia> x = ComponentArray(a=5, b=[4, 1], c = [1 2; 3 4], d=(e=2, f=[6, 30.0]));
+
+julia> @static_unpack a, b, c, d = x;
+
+julia> a
+5.0
+
+julia> b
+2-element SVector{2, Float64} with indices SOneTo(2):
+ 4.0
+ 1.0
+
+julia> c
+2×2 SMatrix{2, 2, Float64, 4} with indices SOneTo(2)×SOneTo(2):
+ 1.0  2.0
+ 3.0  4.0
+
+julia> d
+ComponentVector{Float64,SubArray...}(e = 2.0, f = [6.0, 30.0])
+```
+
 ### v0.12.0
 - Multiple symbol indexing!
   - Use either an `Array` or `Tuple` of `Symbol`s to extract multiple named components into a new `ComponentArray
