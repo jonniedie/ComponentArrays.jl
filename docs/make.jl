@@ -9,6 +9,7 @@ makedocs(;
         "Home" => "index.md",
         "Quick Start" => "quickstart.md",
         "Indexing Behavior" => "indexing_behavior.md",
+        "Unpacking to StaticArrays" => "static_unpack.md",
         "Examples" => [
             "examples/DiffEqFlux.md",
             "examples/adaptive_control.md",
