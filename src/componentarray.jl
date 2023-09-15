@@ -361,5 +361,33 @@ ComponentVector{Float64}(a = 1.2, h = 4.0, b = 2.3)
 ```
 """
 Base.merge(ca::ComponentVector) = ca
-Base.merge(ca1::ComponentVector, ca2::ComponentVector) = ComponentVector(ca1; ca2...)
-Base.merge(ca1::ComponentVector, ca2::ComponentVector, cs::ComponentVector) = merge(merge(ca1,ca2), others...)
+function Base.merge(ca1::ComponentVector{T1}, ca2::ComponentVector{T2}) where {T1,T2}
+    ax = getaxes(ca1)
+    ax2 = getaxes(ca2)
+    vks = valkeys(ax[1])
+    vks2 = valkeys(ax2[1])
+    idxmap = indexmap(ax[1])
+    _p = Vector{promote_type(T1,T2)}()
+    sizehint!(_p, length(ca1)+length(ca2))
+    for vk in vks
+        if vk in vks2
+            _p = vcat(_p, ca2[vk])
+        else
+            _p = vcat(_p, ca1[vk])
+        end
+    end
+    new_idxmap = Vector{Pair{Symbol, Int64}}([])
+    sizehint!(new_idxmap, length(ca2))
+    max_val = maximum(idxmap)
+    for vk in vks2
+        if !(vk in vks)
+            _p = vcat(_p, ca2[vk])
+            new_idxmap = vcat(new_idxmap, [getval(vk)=>max_val+1])
+            max_val += 1
+        end
+    end
+    merged_ax = Axis(merge(idxmap, new_idxmap))
+    ComponentArray(_p, merged_ax)
+end
+
+Base.merge(ca1::ComponentVector, ca2::ComponentVector, cs::ComponentVector) = merge(merge(ca1,ca2), cs...)
