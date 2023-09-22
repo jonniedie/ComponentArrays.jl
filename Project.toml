@@ -1,7 +1,7 @@
 name = "ComponentArrays"
 uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 authors = ["Jonnie Diegelman <47193959+jonniedie@users.noreply.github.com>"]
-version = "0.15.0"
+version = "0.15.1"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -20,6 +20,7 @@ GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 
 [extensions]
 ComponentArraysAdaptExt = "Adapt"
@@ -28,6 +29,7 @@ ComponentArraysGPUArraysExt = "GPUArrays"
 ComponentArraysRecursiveArrayToolsExt = "RecursiveArrayTools"
 ComponentArraysReverseDiffExt = "ReverseDiff"
 ComponentArraysSciMLBaseExt = "SciMLBase"
+ComponentArraysTrackerExt = "Tracker"
 
 [compat]
 Adapt = "3"
@@ -43,6 +45,7 @@ ReverseDiff = "1"
 SciMLBase = "1"
 StaticArraysCore = "1"
 StaticArrayInterface = "1"
+Tracker = "0.2"
 julia = "1.6"
 
 [extras]
@@ -54,6 +57,4 @@ RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
+Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
