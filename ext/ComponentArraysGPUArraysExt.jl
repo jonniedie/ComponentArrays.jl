@@ -21,6 +21,9 @@ function Base.fill!(A::GPUComponentArray{T}, x) where {T}
 end
 
 LinearAlgebra.dot(x::GPUComponentArray, y::GPUComponentArray) = dot(getdata(x), getdata(y))
+LinearAlgebra.dot(x::GPUComponentArray, y::AbstractGPUArray) = dot(getdata(x), y)
+LinearAlgebra.dot(x::AbstractGPUArray, y::GPUComponentArray) = dot(x, getdata(y))
+
 LinearAlgebra.norm(ca::GPUComponentArray, p::Real) = norm(getdata(ca), p)
 LinearAlgebra.rmul!(ca::GPUComponentArray, b::Number) = GPUArrays.generic_rmul!(ca, b)
 
