@@ -43,3 +43,15 @@ for op in [:*, :\, :/]
         end
     end
 end
+
+# Common Accumulation Operations
+## Needed for CUDA to work properly
+function LinearAlgebra.axpy!(α::Number, x::ComponentArray, y::ComponentArray)
+    axpy!(α, getdata(x), getdata(y))
+    return ComponentArray(y, getaxes(y))
+end
+
+function LinearAlgebra.axpby!(α::Number, x::ComponentArray, β::Number, y::ComponentArray)
+    axpby!(α, getdata(x), β, getdata(y))
+    return ComponentArray(y, getaxes(y))
+end
