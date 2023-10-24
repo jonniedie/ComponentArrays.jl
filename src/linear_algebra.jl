@@ -47,11 +47,13 @@ end
 # Common Accumulation Operations
 ## Needed for CUDA to work properly
 function LinearAlgebra.axpy!(α::Number, x::ComponentArray, y::ComponentArray)
+    getaxes(x) != getaxes(y) && throw(ArgumentError("Axes of `x` and `y` must match"))
     axpy!(α, getdata(x), getdata(y))
     return ComponentArray(y, getaxes(y))
 end
 
 function LinearAlgebra.axpby!(α::Number, x::ComponentArray, β::Number, y::ComponentArray)
+    getaxes(x) != getaxes(y) && throw(ArgumentError("Axes of `x` and `y` must match"))
     axpby!(α, getdata(x), β, getdata(y))
     return ComponentArray(y, getaxes(y))
 end
