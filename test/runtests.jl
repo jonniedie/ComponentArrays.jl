@@ -123,7 +123,7 @@ end
     # Issue #116
     # Part 2: Arrays of arrays
     @test_throws Exception ComponentVector(a = [[3], [4, 5]], b = 1)
-    
+
     x = ComponentVector(a = [[3, 3], [4, 5]], b = 1)
     @test x.a[1] == [3, 3]
     @test x.b == 1
@@ -666,6 +666,28 @@ end
     # Issue #193
     # Make sure we aren't doing type piracy on `reshape`
     @test ndims(dropdims(ones(1,1), dims=(1,2))) == 0
+end
+
+@testset "axpy! / axpby!" begin
+    y = ComponentArray(a = rand(4), b = rand(4))
+    x = ComponentArray(a = rand(4), b = rand(4))
+    ydata = copy(getdata(y))
+
+    axpy!(2, x, y)
+    @test getdata(y) == 2 .* getdata(x) .+ ydata
+
+    x = ComponentArray(a = rand(4), c = rand(4))
+    @test_throws ArgumentError axpy!(2, x, y)
+
+    y = ComponentArray(a = rand(4), b = rand(4))
+    x = ComponentArray(a = rand(4), b = rand(4))
+    ydata = copy(getdata(y))
+
+    axpby!(2, x, 3, y)
+    @test getdata(y) == 2 .* getdata(x) .+ 3 .* ydata
+
+    x = ComponentArray(a = rand(4), c = rand(4))
+    @test_throws ArgumentError axpby!(2, x, 3, y)
 end
 
 @testset "Autodiff" begin
