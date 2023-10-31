@@ -33,8 +33,8 @@ second_axis(::ComponentVector) = FlatAxis()
 
 # Are all these methods necessary?
 # TODO: See what we can reduce down to without getting ambiguity errors
-Base.vcat(x::ComponentVector{<:Number}, y::AbstractVector{<:Number}) = vcat(getdata(x), y)
-Base.vcat(x::AbstractVector{<:Number}, y::ComponentVector{<:Number}) = vcat(x, getdata(y))
+Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
+Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
 function Base.vcat(x::ComponentVector, y::ComponentVector)
     if reduce((accum, key) -> accum || (key in keys(x)), keys(y); init=false)
         return vcat(getdata(x), getdata(y))
