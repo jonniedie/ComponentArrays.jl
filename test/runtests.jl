@@ -36,7 +36,6 @@ caa = ComponentArray(a = ca, b = sq_mat)
 
 _a, _b, _c = Val.((:a, :b, :c))
 
-
 ## Tests
 @testset "Allocations and Inference" begin
     @test @ballocated($ca.c.a.a) == 0
@@ -688,6 +687,19 @@ end
 
     x = ComponentArray(a = rand(4), c = rand(4))
     @test_throws ArgumentError axpby!(2, x, 3, y)
+end
+
+@testset "lmul!" begin
+    a = rand()
+    x = ComponentArray(a = rand(4), b = rand(4))
+
+    xdata = copy(getdata(x))
+    xaxes = getaxes(x)
+
+    y = lmul!(a, x)
+    @test y == x
+    @test getdata(x) ≈ a * xdata
+    @test getaxes(x) == xaxes
 end
 
 @testset "Autodiff" begin
