@@ -33,9 +33,9 @@ second_axis(::ComponentVector) = FlatAxis()
 
 # Are all these methods necessary?
 # TODO: See what we can reduce down to without getting ambiguity errors
-Base.vcat(x::ComponentVector, y::AbstractVector) = vcat(getdata(x), y)
-Base.vcat(x::AbstractVector, y::ComponentVector) = vcat(x, getdata(y))
-function Base.vcat(x::ComponentVector, y::ComponentVector)
+Base.vcat(x::ComponentVector{<:Number}, y::AbstractVector{<:Number}) = vcat(getdata(x), y)
+Base.vcat(x::AbstractVector{<:Number}, y::ComponentVector{<:Number}) = vcat(x, getdata(y))
+function Base.vcat(x::ComponentVector{<:Number}, y::ComponentVector{<:Number})
     if reduce((accum, key) -> accum || (key in keys(x)), keys(y); init=false)
         return vcat(getdata(x), getdata(y))
     else
@@ -46,7 +46,7 @@ function Base.vcat(x::ComponentVector, y::ComponentVector)
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)))
     end
 end
-function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
+function Base.vcat(x::AbstractComponentVecOrMat{<:Number}, y::AbstractComponentVecOrMat{<:Number})
     ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
     if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[2:end] != getaxes(y)[2:end]
         return vcat(getdata(x), getdata(y))
@@ -57,10 +57,10 @@ function Base.vcat(x::AbstractComponentVecOrMat, y::AbstractComponentVecOrMat)
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)), getaxes(x)[2:end]...)
     end
 end
-Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
-Base.vcat(x::ComponentVector, args...) = vcat(getdata(x), getdata.(args)...)
-Base.vcat(x::ComponentVector, args::Vararg{Union{Number, UniformScaling, AbstractVecOrMat}}) = vcat(getdata(x), getdata.(args)...)
-Base.vcat(x::ComponentVector, args::Vararg{AbstractVector{T}, N}) where {T,N} = vcat(getdata(x), getdata.(args)...)
+Base.vcat(x::CV...) where {CV<:AdjOrTransComponentArray{<:Number}} = ComponentArray(reduce(vcat, map(y->getdata(y.parent)', x)), getaxes(x[1]))
+Base.vcat(x::ComponentVector{<:Number}, args...) = vcat(getdata(x), getdata.(args)...)
+Base.vcat(x::ComponentVector{<:Number}, args::Vararg{Union{Number, UniformScaling, AbstractVecOrMat{<:Number}}}) = vcat(getdata(x), getdata.(args)...)
+Base.vcat(x::ComponentVector{<:Number}, args::Vararg{AbstractVector{T}, N}) where {T<:Number,N} = vcat(getdata(x), getdata.(args)...)
 
 function Base.hvcat(row_lengths::NTuple{N,Int}, xs::Vararg{AbstractComponentVecOrMat}) where {N}
     i = 1
