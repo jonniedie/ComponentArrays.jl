@@ -115,21 +115,21 @@ ComponentMatrix{T}(x::ComponentMatrix) where {T} = T.(x)
 ComponentMatrix() = ComponentMatrix(Array{Any}(undef, 0, 0), (FlatAxis(), FlatAxis()))
 ComponentMatrix{T}() where {T} = ComponentMatrix(Array{T}(undef, 0, 0), (FlatAxis(), FlatAxis()))
 
-const CArray = ComponentArray
-const CVector = ComponentVector
-const CMatrix = ComponentMatrix
+const CArray{T} = ComponentArray{T} where{T}
+const CVector{T} = ComponentVector{T} where{T}
+const CMatrix{T} = ComponentMatrix{T} where{T}
 
 const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
 const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
 const AdjOrTransComponentVector{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentVector
 const AdjOrTransComponentMatrix{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentMatrix
 
-const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
-const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T
-const AbstractComponentArray = Union{ComponentArray, AdjOrTransComponentArray}
-const AbstractComponentVecOrMat = Union{ComponentVecOrMat, AdjOrTransComponentVecOrMat}
-const AbstractComponentVector = Union{ComponentVector, AdjOrTransComponentVector}
-const AbstractComponentMatrix = Union{ComponentMatrix, AdjOrTransComponentMatrix}
+const ComponentVecOrMat{T} = Union{ComponentVector{T}, ComponentMatrix{T}} where{T}
+const AdjOrTransComponentVecOrMat{T} = AdjOrTrans{T, <:ComponentVecOrMat} where {T}
+const AbstractComponentArray{T} = Union{ComponentArray{T}, AdjOrTransComponentArray{T}} where{T}
+const AbstractComponentVecOrMat{T} = Union{ComponentVecOrMat{T}, AdjOrTransComponentVecOrMat{T}} where{T}
+const AbstractComponentVector{T} = Union{ComponentVector{T}, AdjOrTransComponentVector{T}} where{T}
+const AbstractComponentMatrix{T} = Union{ComponentMatrix{T}, AdjOrTransComponentMatrix{T}} where{T}
 
 
 ## Constructor helpers
