@@ -115,9 +115,9 @@ ComponentMatrix{T}(x::ComponentMatrix) where {T} = T.(x)
 ComponentMatrix() = ComponentMatrix(Array{Any}(undef, 0, 0), (FlatAxis(), FlatAxis()))
 ComponentMatrix{T}() where {T} = ComponentMatrix(Array{T}(undef, 0, 0), (FlatAxis(), FlatAxis()))
 
-const CArray{T} = ComponentArray{T} where{T}
-const CVector{T} = ComponentVector{T} where{T}
-const CMatrix{T} = ComponentMatrix{T} where{T}
+const CArray = ComponentArray
+const CVector = ComponentVector
+const CMatrix = ComponentMatrix
 
 const AdjOrTrans{T, A} = Union{Adjoint{T, A}, Transpose{T, A}}
 const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentArray
