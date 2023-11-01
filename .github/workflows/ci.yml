@@ -18,7 +18,7 @@ jobs:
           - '1.6'
           - '1.8'
           - '1' # Leave this line unchanged. '1' will automatically expand to the latest stable 1.x release of Julia.
-          - 'beta'
+          - '1.10.0-beta3'
         os:
           - ubuntu-latest
         arch:
