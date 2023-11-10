@@ -18,6 +18,9 @@ end
 
 (p::ChainRulesCore.ProjectTo{ComponentArray})(dx::AbstractArray) = ComponentArray(p.project(dx), p.axes)
 
+# Prevent double projection
+(p::ChainRulesCore.ProjectTo{ComponentArray})(dx::ComponentArray) = dx
+
 function (p::ChainRulesCore.ProjectTo{ComponentArray})(t::ChainRulesCore.Tangent{A, <:NamedTuple}) where {A}
     nt = Functors.fmap(ChainRulesCore.backing, ChainRulesCore.backing(t))
     return ComponentArray(nt)
