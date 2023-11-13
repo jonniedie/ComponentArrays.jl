@@ -84,7 +84,7 @@ Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = I
 
 # Since we aren't really using the standard approach to indexing, this will forward things to
 # the correct methods
-Base.to_indices(x::ComponentArray, i::Tuple) = i
+Base.to_indices(x::ComponentArray, i::Tuple{Any}) = i
 Base.to_indices(x::ComponentArray, i::NTuple{N,Union{Integer, CartesianIndex}}) where N = i
 Base.to_indices(x::ComponentArray, i::NTuple{N,Int64}) where N = i
 Base.to_index(x::ComponentArray, i) = i
