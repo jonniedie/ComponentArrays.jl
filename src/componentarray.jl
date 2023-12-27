@@ -124,12 +124,12 @@ const AdjOrTransComponentArray{T, A} = Union{Adjoint{T, A}, Transpose{T, A}} whe
 const AdjOrTransComponentVector{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentVector
 const AdjOrTransComponentMatrix{T} = Union{Adjoint{T, A}, Transpose{T, A}} where A<:ComponentMatrix
 
-const ComponentVecOrMat = Union{ComponentVector, ComponentMatrix}
-const AdjOrTransComponentVecOrMat = AdjOrTrans{T, <:ComponentVecOrMat} where T
-const AbstractComponentArray = Union{ComponentArray, AdjOrTransComponentArray}
-const AbstractComponentVecOrMat = Union{ComponentVecOrMat, AdjOrTransComponentVecOrMat}
-const AbstractComponentVector = Union{ComponentVector, AdjOrTransComponentVector}
-const AbstractComponentMatrix = Union{ComponentMatrix, AdjOrTransComponentMatrix}
+const ComponentVecOrMat{T} = Union{ComponentVector{T}, ComponentMatrix{T}} where{T}
+const AdjOrTransComponentVecOrMat{T} = AdjOrTrans{T, <:ComponentVecOrMat} where {T}
+const AbstractComponentArray{T} = Union{ComponentArray{T}, AdjOrTransComponentArray{T}} where{T}
+const AbstractComponentVecOrMat{T} = Union{ComponentVecOrMat{T}, AdjOrTransComponentVecOrMat{T}} where{T}
+const AbstractComponentVector{T} = Union{ComponentVector{T}, AdjOrTransComponentVector{T}} where{T}
+const AbstractComponentMatrix{T} = Union{ComponentMatrix{T}, AdjOrTransComponentMatrix{T}} where{T}
 
 
 ## Constructor helpers
