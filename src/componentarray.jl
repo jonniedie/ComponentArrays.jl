@@ -155,14 +155,16 @@ end
 # Builds up data vector and returns appropriate AbstractAxis type for each input type
 function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
     len = recursive_length(nt)
-    kvs = []
-    lv = 0
-    for (k, v) in pairs(nt)
-        (_, val) = make_idx(data, v, lv)
-        push!(kvs, k => val)
-        lv = val
-    end
-    return (data, ViewAxis(last_index(last_val) .+ (1:len), (;kvs...)))
+    lv = Ref(0) # workaround for https://github.com/JuliaLang/julia/issues/15276
+    kvs = (;(
+        k => begin
+            inds = make_idx(data, v, lv[])[2]
+            lv[] = last_index(inds)
+            inds
+        end
+        for (k, v) in pairs(nt)
+    )...)
+    return (data, ViewAxis(last_index(last_val) .+ (1:len), kvs))
 end
 function make_idx(data, pair::Pair, last_val)
     data, ax = make_idx(data, pair.second, last_val)
