@@ -40,4 +40,8 @@ function Base.NamedTuple(tca::TrackedComponentArray)
     return NamedTuple{props}(getproperty(tca, p) for p in props)
 end
 
+@inline ComponentArrays.__value(x::AbstractArray{<:ReverseDiff.TrackedReal}) = ReverseDiff.value.(x)
+@inline ComponentArrays.__value(x::ReverseDiff.TrackedArray) = ReverseDiff.value(x)
+@inline ComponentArrays.__value(x::TrackedComponentArray) = ComponentArray(ComponentArrays.__value(getdata(x)), getaxes(x))
+
 end
