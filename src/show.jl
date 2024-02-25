@@ -12,14 +12,14 @@ Base.show(io::IO, ::MIME"text/plain", ::PartitionedAxis{PartSz, IdxMap, Ax}) whe
 Base.show(io::IO, ::PartitionedAxis{PartSz, IdxMap, Ax}) where {PartSz, IdxMap, Ax} =
     print(io, "PartitionedAxis($PartSz, $(Ax()))")
 
-Base.show(io::IO, ::ShapedAxis{Shape, IdxMap}) where {Shape, IdxMap} =
-    print(io, "ShapedAxis($Shape, $IdxMap)")
+Base.show(io::IO, ::ShapedAxis{Shape}) where {Shape} =
+    print(io, "ShapedAxis($Shape)")
 
-Base.show(io::IO, ::MIME"text/plain", ::ViewAxis{Inds, IdxMap, Ax}) where {Inds, IdxMap, Ax} = 
+Base.show(io::IO, ::MIME"text/plain", ::ViewAxis{Inds, IdxMap, Ax}) where {Inds, IdxMap, Ax} =
     print(io, "ViewAxis($Inds, $(Ax()))")
-Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:Ax}) where {Inds, IdxMap, Ax} = 
+Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:Ax}) where {Inds, IdxMap, Ax} =
     print(io, "ViewAxis($Inds, $(Ax()))")
-Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:NullorFlatAxis}) where {Inds, IdxMap} = 
+Base.show(io::IO, ::ViewAxis{Inds, IdxMap, <:NullorFlatAxis}) where {Inds, IdxMap} =
     print(io, Inds)
 
 Base.show(io::IO, ci::ComponentIndex) = print(io, "ComponentIndex($(ci.idx), $(ci.ax))")

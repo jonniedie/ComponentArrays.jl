@@ -59,14 +59,13 @@ const NullorFlatAxis = Union{NullAxis, FlatAxis}
 
 
 """
-    sa = ShapedAxis(shape, index_map)
+    sa = ShapedAxis(shape)
 
 Preserves higher-dimensional array components in `ComponentArray`s (matrix components, for
 example)
 """
-struct ShapedAxis{Shape, IdxMap} <: AbstractAxis{IdxMap} end
-@inline ShapedAxis(Shape, IdxMap) = ShapedAxis{Shape, IdxMap}()
-ShapedAxis(Shape) = ShapedAxis(Shape, NamedTuple())
+struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
+@inline ShapedAxis(Shape) = ShapedAxis{Shape}()
 ShapedAxis(::Tuple{<:Int}) = FlatAxis()
 
 const Shape = ShapedAxis
@@ -74,7 +73,7 @@ const Shape = ShapedAxis
 unshape(ax) = ax
 unshape(ax::ShapedAxis) = Axis(indexmap(ax))
 
-Base.size(::ShapedAxis{Shape, IdxMap}) where {Shape, IdxMap} = Shape
+Base.size(::ShapedAxis{Shape}) where {Shape} = Shape
 
 
 
@@ -135,7 +134,7 @@ Axis(::NamedTuple{()}) = FlatAxis()
 Axis(x) = FlatAxis()
 
 const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
-const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape, IdxMap}} where {Shape, IdxMap}
+const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape}} where {Shape, IdxMap}
 const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
 
 
