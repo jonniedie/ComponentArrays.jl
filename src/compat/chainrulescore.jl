@@ -49,6 +49,15 @@ end
 function ChainRulesCore.rrule(::Type{CA}, nt::NamedTuple) where {CA<:ComponentArray}
     y = CA(nt)
 
+    function ∇NamedTupleToComponentArray(Δ::AbstractArray)
+        if length(Δ) == length(y)
+            return ∇NamedTupleToComponentArray(ComponentArray(vec(Δ), getaxes(y)))
+        end
+        error("Got pullback input of shape $(size(Δ)) & type $(typeof(Δ)) for output " *
+              "of shape $(size(y)) & type $(typeof(y))")
+        return nothing
+    end
+
     function ∇NamedTupleToComponentArray(Δ::ComponentArray)
         return ChainRulesCore.NoTangent(), NamedTuple(Δ)
     end
