@@ -48,12 +48,14 @@ function Base.vcat(x::ComponentVector{<:Number}, y::ComponentVector{<:Number})
 end
 function Base.vcat(x::AbstractComponentVecOrMat{<:Number}, y::AbstractComponentVecOrMat{<:Number})
     ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
+    @show ax_x ax_y
     if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[2:end] != getaxes(y)[2:end]
         return vcat(getdata(x), getdata(y))
     else
         data_x, data_y = getdata.((x, y))
         ax_y = reindex(ax_y, size(x,1))
         idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
+        @show idxmap_x idxmap_y
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)), getaxes(x)[2:end]...)
     end
 end
@@ -101,12 +103,12 @@ Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon) = getdata(x)[
 Base.@propagate_inbounds Base.getindex(x::ComponentArray, ::Colon, ::Vararg{Colon}) = x
 # @inline Base.getindex(x::ComponentArray, idx...) = getindex(x, toval.(idx)...)
 @inline function Base.getindex(x::ComponentArray, idx...)
-    @show toval.(idx)
+    # @show toval.(idx)
     return getindex(x, toval.(idx)...)
 end
 # @inline Base.getindex(x::ComponentArray, idx::Vararg{Val}) = _getindex(getindex, x, idx...)
 @inline function Base.getindex(x::ComponentArray, idx::Vararg{Val}) 
-    @show idx
+    # @show idx
     return _getindex(getindex, x, idx...)
 end
 

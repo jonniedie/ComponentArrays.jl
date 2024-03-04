@@ -67,6 +67,7 @@ example)
 struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
 @inline ShapedAxis(Shape) = ShapedAxis{Shape}()
 # ShapedAxis(::Tuple{<:Int}) = FlatAxis()
+Base.keys(::ShapedAxis) = ()
 
 const Shape = ShapedAxis
 
@@ -150,6 +151,8 @@ reindex(i, offset) = i .+ offset
 reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
+# reindex(ax::ShapedAxis{Shape}, offset) where{Shape} = Shape + offset
+reindex(ax::ShapedAxis, _) = ax
 
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)
