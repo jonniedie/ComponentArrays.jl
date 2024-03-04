@@ -12,7 +12,8 @@ end
 _first_axis(x::AbstractComponentVecOrMat) = getaxes(x)[1]
 
 # _second_axis(x::AbstractMatrix) = FlatAxis()
-_second_axis(x::AbstractMatrix) = ShapedAxis(size(x, 2))
+# _second_axis(x::AbstractMatrix) = ShapedAxis(size(x, 2))
+_second_axis(x::AbstractMatrix) = ViewAxis(1:size(x, 2), ShapedAxis((size(x, 2),)))
 _second_axis(x::ComponentMatrix) = getaxes(x)[2]
 _second_axis(x::AdjOrTransComponentVecOrMat) = getaxes(x)[2]
 

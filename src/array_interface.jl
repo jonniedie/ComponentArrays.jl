@@ -47,6 +47,7 @@ function Base.vcat(x::ComponentVector{<:Number}, y::ComponentVector{<:Number})
     end
 end
 function Base.vcat(x::AbstractComponentVecOrMat{<:Number}, y::AbstractComponentVecOrMat{<:Number})
+    @show x y
     ax_x, ax_y = getindex.(getaxes.((x, y)), 1)
     @show ax_x ax_y
     if reduce((accum, key) -> accum || (key in keys(ax_x)), keys(ax_y); init=false) || getaxes(x)[2:end] != getaxes(y)[2:end]
@@ -55,7 +56,7 @@ function Base.vcat(x::AbstractComponentVecOrMat{<:Number}, y::AbstractComponentV
         data_x, data_y = getdata.((x, y))
         ax_y = reindex(ax_y, size(x,1))
         idxmap_x, idxmap_y = indexmap.((ax_x, ax_y))
-        @show idxmap_x idxmap_y
+        @show ax_x ax_y idxmap_x idxmap_y
         return ComponentArray(vcat(data_x, data_y), Axis((;idxmap_x..., idxmap_y...)), getaxes(x)[2:end]...)
     end
 end

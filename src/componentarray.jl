@@ -305,7 +305,8 @@ julia> getaxes(ca)
 """
 @inline getaxes(x::ComponentArray) = getfield(x, :axes)
 # @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
-@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ShapedAxis((1,)), getaxes(x.parent)[1])
+# @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ShapedAxis((1,)), getaxes(x.parent)[1])
+@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ViewAxis(1:1, ShapedAxis((1,))), getaxes(x.parent)[1])
 @inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
 @inline getaxes(::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))

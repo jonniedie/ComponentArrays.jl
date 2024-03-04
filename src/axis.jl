@@ -116,6 +116,7 @@ end
 ViewAxis{Inds,IdxMap,Ax}() where {Inds,IdxMap,Ax} = ViewAxis(Inds, Ax())
 ViewAxis(Inds, IdxMap) = ViewAxis(Inds, Axis(IdxMap))
 ViewAxis(Inds) = Inds
+Base.keys(::ViewAxis{Inds, nothing, Ax}) where {Inds, Ax} = ()
 
 const View = ViewAxis
 const NullOrFlatView{Inds,IdxMap} = ViewAxis{Inds,IdxMap,<:NullorFlatAxis}
@@ -152,7 +153,7 @@ reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 # reindex(ax::ShapedAxis{Shape}, offset) where{Shape} = Shape + offset
-reindex(ax::ShapedAxis, _) = ax
+# reindex(ax::ShapedAxis, _) = ax
 
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)
