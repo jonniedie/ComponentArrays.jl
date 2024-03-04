@@ -9,14 +9,16 @@ using OffsetArrays
 using Test
 using Unitful
 
+# Convert abstract unit range to a ViewAxis with ShapeAxis.
+r2v(r::AbstractUnitRange) = ViewAxis(r, ShapedAxis(size(r)))
 
 ## Test setup
 c = (a = (a = 1, b = [1.0, 4.4]), b = [0.4, 2, 1, 45])
 nt = (a = 100, b = [4, 1.3], c = c)
 nt2 = (a = 5, b = [(a = (a = 20, b = 1), b = 0), (a = (a = 33, b = 1), b = 0)], c = (a = (a = 2, b = [1, 2]), b = [1.0 2.0; 5 6]))
 
-ax = Axis(a = 1, b = 2:3, c = ViewAxis(4:10, (a = ViewAxis(1:3, (a = 1, b = 2:3)), b = 4:7)))
-ax_c = (a = ViewAxis(1:3, (a = 1, b = 2:3)), b = 4:7)
+ax = Axis(a = 1, b = r2v(2:3), c = ViewAxis(4:10, (a = ViewAxis(1:3, (a = 1, b = r2v(2:3))), b = r2v(4:7))))
+ax_c = (a = ViewAxis(1:3, (a = 1, b = r2v(2:3))), b = r2v(4:7))
 
 a = Float64[100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
 sq_mat = collect(reshape(1:9, 3, 3))

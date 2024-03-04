@@ -149,6 +149,7 @@ make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     init = allocate_numeric_container(nt)
     data, idx = make_idx(init, nt, 0)
+    # @show init data idx
     return (A(data), Axis(idx))
 end
 
@@ -160,13 +161,17 @@ function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
         k => begin
             inds = make_idx(data, v, lv[])[2]
             lv[] = last_index(inds)
+            # @show data v lv[] inds
             inds
         end
         for (k, v) in pairs(nt)
     )...)
+    # @show kvs last_index(last_val)
+    # @show ViewAxis(last_index(last_val) .+ (1:len), kvs)
     return (data, ViewAxis(last_index(last_val) .+ (1:len), kvs))
 end
 function make_idx(data, pair::Pair, last_val)
+    # @show data pair last_val
     data, ax = make_idx(data, pair.second, last_val)
     len = recursive_length(data)
     return (data, ViewAxis(last_val:(last_val+len-1), Axis(pair.second)))
@@ -183,11 +188,13 @@ make_idx(data, x::ComponentVector, last_val) = (
     )
 )
 function make_idx(data, x::AbstractArray, last_val)
+    # @show data x last_val
     append!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
 function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, AbstractArray}}}
+    # @show data x last_val
     len = recursive_length(x)
     elem_len = len ÷ length(x)
     if eltype(x) |> isconcretetype && all(elem -> recursive_length(elem) == elem_len, x)
@@ -232,8 +239,11 @@ end
 # Reshape ComponentArrays with ShapedAxis axes
 maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data
 function maybe_reshape(data, axs::AbstractAxis...)
+    @show axs
     shapes = filter_by_type(ShapedAxis, axs...) .|> size
+    @show shapes
     shapes = reduce((tup, s) -> (tup..., s...), shapes)
+    @show shapes
     return reshape(data, shapes)
 end
 

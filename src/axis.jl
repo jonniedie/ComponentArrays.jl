@@ -66,7 +66,7 @@ example)
 """
 struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
 @inline ShapedAxis(Shape) = ShapedAxis{Shape}()
-ShapedAxis(::Tuple{<:Int}) = FlatAxis()
+# ShapedAxis(::Tuple{<:Int}) = FlatAxis()
 
 const Shape = ShapedAxis
 
@@ -130,7 +130,8 @@ Axis(ax::ViewAxis) = ax.ax
 
 # Get rid of this
 Axis(::Number) = NullAxis()
-Axis(::NamedTuple{()}) = FlatAxis()
+# Axis(::NamedTuple{()}) = FlatAxis()
+Axis(::NamedTuple{()}) = ShapedAxis((0,))
 Axis(x) = FlatAxis()
 
 const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
