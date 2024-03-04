@@ -57,3 +57,6 @@ function LinearAlgebra.axpby!(α::Number, x::ComponentArray, β::Number, y::Comp
     axpby!(α, getdata(x), β, getdata(y))
     return ComponentArray(y, getaxes(y))
 end
+
+lmul!(a::Number, B::ComponentArray) = ComponentArray(lmul!(a, getdata(B)), getaxes(B))
+
