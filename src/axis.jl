@@ -140,12 +140,10 @@ Axis(ax::ViewAxis) = ax.ax
 # Get rid of this
 Axis(::Number) = NullAxis()
 Axis(::NamedTuple{()}) = FlatAxis()
-# Axis(::NamedTuple{()}) = ShapedAxis((0,))
 Axis(x) = FlatAxis()
 
 const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, Shaped1DAxis} where {IdxMap}
 const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape}, Shaped1DAxis} where {Shape, IdxMap}
-# const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
 const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, Shaped1DAxis} where {IdxMap}
 
 
@@ -160,16 +158,10 @@ reindex(i, offset) = i .+ offset
 reindex(ax::FlatAxis, _) = ax
 reindex(ax::Axis, offset) = Axis(map(x->reindex(x, offset), indexmap(ax)))
 reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
-# reindex(ax::ShapedAxis{Shape}, offset) where{Shape} = Shape + offset
-# reindex(ax::ShapedAxis, _) = ax
 
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)
 @inline Base.getindex(::AbstractAxis, idx::FlatIdx) = ComponentIndex(idx)
-# @inline function Base.getindex(::AbstractAxis, idx::FlatIdx) 
-#     @show idx typeof(idx)
-#     return ComponentIndex(idx)
-# end
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
     ComponentIndex(getproperty(IdxMap, s))
