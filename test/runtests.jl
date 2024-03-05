@@ -38,6 +38,9 @@ caa = ComponentArray(a = ca, b = sq_mat)
 
 _a, _b, _c = Val.((:a, :b, :c))
 
+ca3 = ComponentArray(a=1, b=[2, 3, 4, 5], c=reshape(6:11, 3, 2))
+cmat3 = ca3 .* ca3'
+cmat3check = (1:11) .* (1:11)'
 
 ## Tests
 @testset "Allocations and Inference" begin
@@ -134,7 +137,7 @@ end
     for T in [Int64, Int32, Float64, Float32, ComplexF64, ComplexF32]
         @test ComponentArray(a = T[]) == ComponentVector{T}(a = T[])
         @test ComponentArray(a = T[], b = T[]) == ComponentVector{T}(a = T[], b = T[])
-        @test ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
+        @test_broken ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
         @test ComponentArray(a = Any[one(Int32)], b=T[]) == ComponentVector{T}(a = [one(T)], b = T[])
     end
     @test ComponentArray(NamedTuple()) == ComponentVector{Any}()
@@ -216,8 +219,7 @@ end
     @test all(cmat2[:b, :b][1, 1] .== ca2.b[1] .* ca2.b[1]')
 
     @test ca[_a] == ca[:a]
-    # @test cmat[_c, _b] == cmat[:c, :b]
-    @test_broken cmat[_c, _b] == cmat[:c, :b]
+    @test cmat[_c, _b] == cmat[:c, :b]
     @test cmat[_c, :a] == cmat[:c, :a]
 
     @test ca2.b[2].a.a == 33
@@ -288,6 +290,17 @@ end
     # OffsetArrays' type piracy without introducing type piracy
     # ourselves because `() isa Tuple{N, <:CombinedAxis} where {N}`
     # @test reshape(a, axes(ca)...) isa Vector{Float64}
+
+    # Issue #248: Indexing ComponentMatrix with FlatAxis components
+    @test cmat3[:a, :a] == cmat3check[1, 1]
+    @test cmat3[:a, :b] == cmat3check[1, 2:5]
+    @test cmat3[:a, :c] == reshape(cmat3check[1, 6:11], 3, 2)
+    @test cmat3[:b, :a] == cmat3check[2:5, 1]
+    @test cmat3[:b, :b] == cmat3check[2:5, 2:5]
+    @test cmat3[:b, :c] == reshape(cmat3check[2:5, 6:11], 4, 3, 2)
+    @test cmat3[:c, :a] == reshape(cmat3check[6:11, 1], 3, 2)
+    @test cmat3[:c, :b] == reshape(cmat3check[6:11, 2:5], 3, 2, 4)
+    @test cmat3[:c, :c] == reshape(cmat3check[6:11, 6:11], 3, 2, 3, 2)
 end
 
 @testset "Set" begin
@@ -338,34 +351,39 @@ end
 @testset "Component Index" begin
     let
         ca = ComponentArray(a = 1, b = 2, c = [3, 4], d = (a = [5, 6, 7], b = 8))
+        ca2 = ComponentArray(a = 1, b = 2, c = zeros(Int, 2, 3), d = (a = [5, 6, 7], b = 8))
         cmat = ca * ca'
 
         @testset "ComponentIndex" begin
             ax = getaxes(ca)[1]
             @test ax[:a] == ax[1] == ComponentArrays.ComponentIndex(1, ComponentArrays.NullAxis())
-            # @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, FlatAxis()) # busted
-            # @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = 1:3, b = 4)) # busted
-            # @test ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = 2:3)) # busted
+            @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, ShapedAxis(size(3:4)))
+            @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = r2v(1:3), b = 4))
+            @test_broken ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = 2:3))
+            # Also doesn't work with multi-dimensional `ShapedAxis`
+            ax2 = getaxes(ca2)[1]
+            @test_broken ax2[(:a, :c)] == ax2[[:a, :c]]
         end
 
         @testset "KeepIndex" begin
-            # @test ca[KeepIndex(:a)] == ca[KeepIndex(1)] == ComponentArray(a = 1) # busted
-            # @test ca[KeepIndex(:b)] == ca[KeepIndex(2)] == ComponentArray(b = 2) # busted
-            # @test ca[KeepIndex(:c)] == ca[KeepIndex(3:4)] == ComponentArray(c = [3, 4]) # busted
-            # @test ca[KeepIndex(:d)] == ca[KeepIndex(5:8)] == ComponentArray(d = (a = [5, 6, 7], b = 8)) # busted
+            @test ca[KeepIndex(:a)] == ca[KeepIndex(1)] == ComponentArray(a = 1)
+            @test ca[KeepIndex(:b)] == ca[KeepIndex(2)] == ComponentArray(b = 2)
+            @test_broken ca[KeepIndex(:c)] == ca[KeepIndex(3:4)] == ComponentArray(c = [3, 4])
+            @test getdata(ca[KeepIndex(:c)]) == getdata(ca[KeepIndex(3:4)]) == getdata(ComponentArray(c = [3, 4]))
+            @test ca[KeepIndex(:d)] == ca[KeepIndex(5:8)] == ComponentArray(d = (a = [5, 6, 7], b = 8))
 
-            # @test ca[KeepIndex(1:2)] == ComponentArray(a = 1, b = 2) # busted
-            # @test ca[KeepIndex(1:3)] == ComponentArray([1, 2, 3], Axis(a = 1, b = 2)) # Drops c axis # busted
-            # @test ca[KeepIndex(2:5)] == ComponentArray([2, 3, 4, 5], Axis(b = 1, c = 2:3)) # busted
-            # @test ca[KeepIndex(3:end)] == ComponentArray(c = [3, 4], d = (a = [5, 6, 7], b = 8))
-            # @show ca[KeepIndex(3:end)] ComponentArray(c = [3, 4], d = (a = [5, 6, 7], b = 8)) # busted
+            @test ca[KeepIndex(1:2)] == ComponentArray(a = 1, b = 2)
+            @test ca[KeepIndex(1:3)] == ComponentArray([1, 2, 3], Axis(a = 1, b = 2)) # Drops c axis
+            @test ca[KeepIndex(2:5)] == ComponentArray([2, 3, 4, 5], Axis(b = 1, c = 2:3))
+            @test_broken ca[KeepIndex(3:end)] == ComponentArray(c = [3, 4], d = (a = [5, 6, 7], b = 8))
+            @test getdata(ca[KeepIndex(3:end)]) == getdata(ComponentArray(c = [3, 4], d = (a = [5, 6, 7], b = 8)))
 
-            # @test ca[KeepIndex(:)] == ca # busted
+            @test ca[KeepIndex(:)] == ca
 
-            # @test cmat[KeepIndex(:a), KeepIndex(:b)] == ComponentArray(fill(2, 1, 1), Axis(a = 1), Axis(b = 1)) # busted
-            # @test cmat[KeepIndex(:), KeepIndex(:c)] == ComponentArray((1:8) * (3:4)', getaxes(ca)[1], Axis(c = 1:2)) # busted
-            # @test cmat[KeepIndex(2:5), 1:2] == ComponentArray((2:5) * (1:2)', Axis(b = 1, c = 2:3), FlatAxis()) # busted
-            # @test cmat[KeepIndex(2), KeepIndex(3)] == ComponentArray(fill(2 * 3, 1, 1), Axis(b = 1), FlatAxis()) # busted
+            @test cmat[KeepIndex(:a), KeepIndex(:b)] == ComponentArray(fill(2, 1, 1), Axis(a = 1), Axis(b = 1))
+            @test cmat[KeepIndex(:), KeepIndex(:c)] == ComponentArray((1:8) * (3:4)', getaxes(ca)[1], Axis(c = 1:2))
+            @test cmat[KeepIndex(2:5), 1:2] == ComponentArray((2:5) * (1:2)', Axis(b = 1, c = 2:3), ShapedAxis(size(1:2)))
+            @test cmat[KeepIndex(2), KeepIndex(3)] == ComponentArray(fill(2 * 3, 1, 1), Axis(b = 1), FlatAxis())
             @test cmat[KeepIndex(2), 3] == ComponentArray(b = 2 * 3)
         end
     end

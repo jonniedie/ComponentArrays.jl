@@ -56,6 +56,7 @@ end
 function Base.show(io::IO, mime::MIME"text/plain", x::ComponentVector)
     len = length(x)
     ax = getaxes(x)[1]
+    # @show ax len
     if last_index(ax) == len
         _print_type_short(io, x)
         show(io, x)

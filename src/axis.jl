@@ -65,16 +65,23 @@ Preserves higher-dimensional array components in `ComponentArray`s (matrix compo
 example)
 """
 struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
+# struct ShapedAxis{Shape} <: AbstractAxis{NamedTuple()} end
 @inline ShapedAxis(Shape) = ShapedAxis{Shape}()
 # ShapedAxis(::Tuple{<:Int}) = FlatAxis()
-Base.keys(::ShapedAxis) = ()
+# Base.keys(::ShapedAxis) = ()
+#
+struct Shaped1DAxis{Shape} <: AbstractAxis{nothing} end
+ShapedAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
+Shaped1DAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
 
 const Shape = ShapedAxis
 
 unshape(ax) = ax
 unshape(ax::ShapedAxis) = Axis(indexmap(ax))
+unshape(ax::Shaped1DAxis) = Axis(indexmap(ax))
 
 Base.size(::ShapedAxis{Shape}) where {Shape} = Shape
+Base.size(::Shaped1DAxis{Shape}) where {Shape} = Shape
 
 
 
@@ -116,7 +123,7 @@ end
 ViewAxis{Inds,IdxMap,Ax}() where {Inds,IdxMap,Ax} = ViewAxis(Inds, Ax())
 ViewAxis(Inds, IdxMap) = ViewAxis(Inds, Axis(IdxMap))
 ViewAxis(Inds) = Inds
-Base.keys(::ViewAxis{Inds, nothing, Ax}) where {Inds, Ax} = ()
+# Base.keys(::ViewAxis{Inds, nothing, Ax}) where {Inds, Ax} = ()
 
 const View = ViewAxis
 const NullOrFlatView{Inds,IdxMap} = ViewAxis{Inds,IdxMap,<:NullorFlatAxis}
@@ -132,13 +139,14 @@ Axis(ax::ViewAxis) = ax.ax
 
 # Get rid of this
 Axis(::Number) = NullAxis()
-# Axis(::NamedTuple{()}) = FlatAxis()
-Axis(::NamedTuple{()}) = ShapedAxis((0,))
+Axis(::NamedTuple{()}) = FlatAxis()
+# Axis(::NamedTuple{()}) = ShapedAxis((0,))
 Axis(x) = FlatAxis()
 
-const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
-const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape}} where {Shape, IdxMap}
-const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
+const NotShapedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, Shaped1DAxis} where {IdxMap}
+const NotPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis, ShapedAxis{Shape}, Shaped1DAxis} where {Shape, IdxMap}
+# const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, NullAxis} where {IdxMap}
+const NotShapedOrPartitionedAxis = Union{Axis{IdxMap}, FlatAxis, Shaped1DAxis} where {IdxMap}
 
 
 Base.merge(axs::Vararg{Axis}) = Axis(merge(indexmap.(axs)...))
@@ -158,6 +166,10 @@ reindex(ax::ViewAxis, offset) = ViewAxis(viewindex(ax) .+ offset, indexmap(ax))
 # Get AbstractAxis index
 @inline Base.getindex(::AbstractAxis, idx) = ComponentIndex(idx)
 @inline Base.getindex(::AbstractAxis, idx::FlatIdx) = ComponentIndex(idx)
+# @inline function Base.getindex(::AbstractAxis, idx::FlatIdx) 
+#     @show idx typeof(idx)
+#     return ComponentIndex(idx)
+# end
 @inline Base.getindex(ax::AbstractAxis, ::Colon) = ComponentIndex(:, ax)
 @inline Base.getindex(::AbstractAxis{IdxMap}, s::Symbol) where IdxMap =
     ComponentIndex(getproperty(IdxMap, s))

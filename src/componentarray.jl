@@ -47,7 +47,8 @@ ComponentArray{T}(::UndefInitializer, ax::Axes) where {T,Axes<:Tuple} =
 
 # Entry from data array and AbstractAxis types dispatches to correct shapes and partitions
 # then packs up axes into a tuple for inner constructor
-ComponentArray(data, ::FlatAxis...) = data
+# ComponentArray(data, ::FlatAxis...) = data
+ComponentArray(data, ::Union{FlatAxis,Shaped1DAxis}...) = data
 ComponentArray(data, ax::NotShapedOrPartitionedAxis...) = ComponentArray(data, ax)
 ComponentArray(data, ax::NotPartitionedAxis...) = ComponentArray(maybe_reshape(data, ax...), unshape.(ax)...)
 function ComponentArray(data, ax::AbstractAxis...)
@@ -149,7 +150,6 @@ make_carray_args(::Type{T}, nt) where {T} = make_carray_args(Vector{T}, nt)
 function make_carray_args(A::Type{<:AbstractArray}, nt)
     init = allocate_numeric_container(nt)
     data, idx = make_idx(init, nt, 0)
-    # @show init data idx
     return (A(data), Axis(idx))
 end
 
@@ -161,17 +161,13 @@ function make_idx(data, nt::Union{NamedTuple, AbstractDict}, last_val)
         k => begin
             inds = make_idx(data, v, lv[])[2]
             lv[] = last_index(inds)
-            # @show data v lv[] inds
             inds
         end
         for (k, v) in pairs(nt)
     )...)
-    # @show kvs last_index(last_val)
-    # @show ViewAxis(last_index(last_val) .+ (1:len), kvs)
     return (data, ViewAxis(last_index(last_val) .+ (1:len), kvs))
 end
 function make_idx(data, pair::Pair, last_val)
-    # @show data pair last_val
     data, ax = make_idx(data, pair.second, last_val)
     len = recursive_length(data)
     return (data, ViewAxis(last_val:(last_val+len-1), Axis(pair.second)))
@@ -188,13 +184,11 @@ make_idx(data, x::ComponentVector, last_val) = (
     )
 )
 function make_idx(data, x::AbstractArray, last_val)
-    # @show data x last_val
     append!(data, x)
     out = last_index(last_val) .+ (1:length(x))
     return (data, ViewAxis(out, ShapedAxis(size(x))))
 end
 function make_idx(data, x::A, last_val) where {A<:AbstractArray{<:Union{NamedTuple, AbstractArray}}}
-    # @show data x last_val
     len = recursive_length(x)
     elem_len = len ÷ length(x)
     if eltype(x) |> isconcretetype && all(elem -> recursive_length(elem) == elem_len, x)
@@ -239,11 +233,8 @@ end
 # Reshape ComponentArrays with ShapedAxis axes
 maybe_reshape(data, ::NotShapedOrPartitionedAxis...) = data
 function maybe_reshape(data, axs::AbstractAxis...)
-    @show axs
-    shapes = filter_by_type(ShapedAxis, axs...) .|> size
-    @show shapes
+    shapes = filter_by_type(Union{ShapedAxis,Shaped1DAxis}, axs...) .|> size
     shapes = reduce((tup, s) -> (tup..., s...), shapes)
-    @show shapes
     return reshape(data, shapes)
 end
 
@@ -304,13 +295,14 @@ julia> getaxes(ca)
 ```
 """
 @inline getaxes(x::ComponentArray) = getfield(x, :axes)
-# @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
+@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (FlatAxis(), getaxes(x.parent)[1])
 # @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ShapedAxis((1,)), getaxes(x.parent)[1])
-@inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ViewAxis(1:1, ShapedAxis((1,))), getaxes(x.parent)[1])
+# @inline getaxes(x::AdjOrTrans{T, <:ComponentVector}) where T = (ViewAxis(1:1, ShapedAxis((1,))), getaxes(x.parent)[1])
 @inline getaxes(x::AdjOrTrans{T, <:ComponentMatrix}) where T = reverse(getaxes(x.parent))
 
 @inline getaxes(::Type{<:ComponentArray{T,N,A,Axes}}) where {T,N,A,Axes} = map(x->x(), (Axes.types...,))
-@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (ShapedAxis((1,)), getaxes(CA)[1]) |> typeof
+@inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (FlatAxis(), getaxes(CA)[1]) |> typeof
+# @inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentVector} = (ShapedAxis((1,)), getaxes(CA)[1]) |> typeof
 @inline getaxes(::Type{<:AdjOrTrans{T,CA}}) where {T,CA<:ComponentMatrix} = reverse(getaxes(CA)) |> typeof
 
 ## Field access through these functions to reserve dot-getting for keys
