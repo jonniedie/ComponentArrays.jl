@@ -65,11 +65,9 @@ Preserves higher-dimensional array components in `ComponentArray`s (matrix compo
 example)
 """
 struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
-# struct ShapedAxis{Shape} <: AbstractAxis{NamedTuple()} end
 @inline ShapedAxis(Shape) = ShapedAxis{Shape}()
 # ShapedAxis(::Tuple{<:Int}) = FlatAxis()
-# Base.keys(::ShapedAxis) = ()
-#
+
 struct Shaped1DAxis{Shape} <: AbstractAxis{nothing} end
 ShapedAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
 Shaped1DAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
@@ -123,7 +121,6 @@ end
 ViewAxis{Inds,IdxMap,Ax}() where {Inds,IdxMap,Ax} = ViewAxis(Inds, Ax())
 ViewAxis(Inds, IdxMap) = ViewAxis(Inds, Axis(IdxMap))
 ViewAxis(Inds) = Inds
-# Base.keys(::ViewAxis{Inds, nothing, Ax}) where {Inds, Ax} = ()
 
 const View = ViewAxis
 const NullOrFlatView{Inds,IdxMap} = ViewAxis{Inds,IdxMap,<:NullorFlatAxis}
