@@ -351,18 +351,19 @@ end
 @testset "Component Index" begin
     let
         ca = ComponentArray(a = 1, b = 2, c = [3, 4], d = (a = [5, 6, 7], b = 8))
-        ca2 = ComponentArray(a = 1, b = 2, c = zeros(Int, 2, 3), d = (a = [5, 6, 7], b = 8))
         cmat = ca * ca'
+
+        cidx = reshape((1:(2*3)) .+ 2, 2, 3)
+        ca2 = ComponentArray(a = 1, b = 2, c = cidx, d = (a = [9, 10, 11], b = 12))
 
         @testset "ComponentIndex" begin
             ax = getaxes(ca)[1]
             @test ax[:a] == ax[1] == ComponentArrays.ComponentIndex(1, ComponentArrays.NullAxis())
             @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, ShapedAxis(size(3:4)))
             @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = r2v(1:3), b = 4))
-            @test_broken ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = 2:3))
-            # Also doesn't work with multi-dimensional `ShapedAxis`
+            @test ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = r2v(2:3)))
             ax2 = getaxes(ca2)[1]
-            @test_broken ax2[(:a, :c)] == ax2[[:a, :c]]
+            @test ax2[(:a, :c)] == ax2[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3:8...], Axis(a = 1, c = ViewAxis(2:7, ShapedAxis((2,3)))))
         end
 
         @testset "KeepIndex" begin

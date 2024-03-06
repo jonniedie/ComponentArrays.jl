@@ -185,6 +185,7 @@ end
 
 _maybe_view_axis(inds, ax::Axis) = ViewAxis(inds, ax)
 _maybe_view_axis(inds, ::NullAxis) = inds[1]
+_maybe_view_axis(inds, ax::Union{ShapedAxis,Shaped1DAxis}) = ViewAxis(inds, ax)
 
 struct CombinedAxis{C,A} <: AbstractUnitRange{Int}
     component_axis::C
