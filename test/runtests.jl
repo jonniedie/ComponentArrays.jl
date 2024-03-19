@@ -137,7 +137,7 @@ end
     for T in [Int64, Int32, Float64, Float32, ComplexF64, ComplexF32]
         @test ComponentArray(a = T[]) == ComponentVector{T}(a = T[])
         @test ComponentArray(a = T[], b = T[]) == ComponentVector{T}(a = T[], b = T[])
-        @test_broken ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
+        @test ComponentArray(a = T[], b = (;)) == ComponentVector{T}(a = T[], b = T[])
         @test ComponentArray(a = Any[one(Int32)], b=T[]) == ComponentVector{T}(a = [one(T)], b = T[])
     end
     @test ComponentArray(NamedTuple()) == ComponentVector{Any}()
