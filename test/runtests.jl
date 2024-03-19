@@ -8,6 +8,8 @@ using StaticArrays
 using OffsetArrays
 using Test
 using Unitful
+using Functors
+import TruncatedStacktraces # This is loaded just to trigger the extension package
 
 
 ## Test setup
@@ -688,6 +690,14 @@ end
 
     x = ComponentArray(a = rand(4), c = rand(4))
     @test_throws ArgumentError axpby!(2, x, 3, y)
+end
+
+@testset "Functors" begin
+    for carray in (ca, ca_Float32, ca_MVector, ca_SVector, ca_composed, ca2, caa)
+        θ, re = Functors.functor(carray)
+        @test θ isa NamedTuple
+        @test re(θ) == carray
+    end
 end
 
 @testset "Autodiff" begin

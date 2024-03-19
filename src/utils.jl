@@ -50,3 +50,5 @@ recursive_eltype(x::AbstractArray{<:Any}) = isempty(x) ? Base.Bottom : mapreduce
 recursive_eltype(x::Dict) = isempty(x) ? Base.Bottom : mapreduce(recursive_eltype, promote_type, values(x))
 recursive_eltype(::AbstractArray{T,N}) where {T<:Number, N} = T
 recursive_eltype(x) = typeof(x)
+
+@inline __value(x) = x
