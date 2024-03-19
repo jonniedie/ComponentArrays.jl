@@ -11,14 +11,16 @@ using Unitful
 using Functors
 import TruncatedStacktraces # This is loaded just to trigger the extension package
 
+# Convert abstract unit range to a ViewAxis with ShapeAxis.
+r2v(r::AbstractUnitRange) = ViewAxis(r, ShapedAxis(size(r)))
 
 ## Test setup
 c = (a = (a = 1, b = [1.0, 4.4]), b = [0.4, 2, 1, 45])
 nt = (a = 100, b = [4, 1.3], c = c)
 nt2 = (a = 5, b = [(a = (a = 20, b = 1), b = 0), (a = (a = 33, b = 1), b = 0)], c = (a = (a = 2, b = [1, 2]), b = [1.0 2.0; 5 6]))
 
-ax = Axis(a = 1, b = 2:3, c = ViewAxis(4:10, (a = ViewAxis(1:3, (a = 1, b = 2:3)), b = 4:7)))
-ax_c = (a = ViewAxis(1:3, (a = 1, b = 2:3)), b = 4:7)
+ax = Axis(a = 1, b = r2v(2:3), c = ViewAxis(4:10, (a = ViewAxis(1:3, (a = 1, b = r2v(2:3))), b = r2v(4:7))))
+ax_c = (a = ViewAxis(1:3, (a = 1, b = r2v(2:3))), b = r2v(4:7))
 
 a = Float64[100, 4, 1.3, 1, 1, 4.4, 0.4, 2, 1, 45]
 sq_mat = collect(reshape(1:9, 3, 3))
@@ -38,6 +40,9 @@ caa = ComponentArray(a = ca, b = sq_mat)
 
 _a, _b, _c = Val.((:a, :b, :c))
 
+ca3 = ComponentArray(a=1, b=[2, 3, 4, 5], c=reshape(6:11, 3, 2))
+cmat3 = ca3 .* ca3'
+cmat3check = (1:11) .* (1:11)'
 
 ## Tests
 @testset "Allocations and Inference" begin
@@ -287,6 +292,17 @@ end
     # OffsetArrays' type piracy without introducing type piracy
     # ourselves because `() isa Tuple{N, <:CombinedAxis} where {N}`
     # @test reshape(a, axes(ca)...) isa Vector{Float64}
+
+    # Issue #248: Indexing ComponentMatrix with FlatAxis components
+    @test cmat3[:a, :a] == cmat3check[1, 1]
+    @test cmat3[:a, :b] == cmat3check[1, 2:5]
+    @test cmat3[:a, :c] == reshape(cmat3check[1, 6:11], 3, 2)
+    @test cmat3[:b, :a] == cmat3check[2:5, 1]
+    @test cmat3[:b, :b] == cmat3check[2:5, 2:5]
+    @test cmat3[:b, :c] == reshape(cmat3check[2:5, 6:11], 4, 3, 2)
+    @test cmat3[:c, :a] == reshape(cmat3check[6:11, 1], 3, 2)
+    @test cmat3[:c, :b] == reshape(cmat3check[6:11, 2:5], 3, 2, 4)
+    @test cmat3[:c, :c] == reshape(cmat3check[6:11, 6:11], 3, 2, 3, 2)
 end
 
 @testset "Set" begin
@@ -329,7 +345,7 @@ end
     temp = deepcopy(cmat)
     @test all((temp[:c, :c][:a, :a] .= 0) .== 0)
 
-    A = ComponentArray(zeros(Int, 4, 4), Axis(x = 1:4), Axis(x = 1:4))
+    A = ComponentArray(zeros(Int, 4, 4), Axis(x = r2v(1:4)), Axis(x = r2v(1:4)))
     A[1, :] .= 1
     @test A[1, :] == ComponentVector(x = ones(Int, 4))
 end
@@ -339,12 +355,17 @@ end
         ca = ComponentArray(a = 1, b = 2, c = [3, 4], d = (a = [5, 6, 7], b = 8))
         cmat = ca * ca'
 
+        cidx = reshape((1:(2*3)) .+ 2, 2, 3)
+        ca2 = ComponentArray(a = 1, b = 2, c = cidx, d = (a = [9, 10, 11], b = 12))
+
         @testset "ComponentIndex" begin
             ax = getaxes(ca)[1]
             @test ax[:a] == ax[1] == ComponentArrays.ComponentIndex(1, ComponentArrays.NullAxis())
-            @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, FlatAxis())
-            @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = 1:3, b = 4))
-            @test ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = 2:3))
+            @test ax[:c] == ax[3:4] == ComponentArrays.ComponentIndex(3:4, ShapedAxis(size(3:4)))
+            @test ax[:d] == ComponentArrays.ComponentIndex(5:8, Axis(a = r2v(1:3), b = 4))
+            @test ax[(:a, :c)] == ax[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3, 4], Axis(a = 1, c = r2v(2:3)))
+            ax2 = getaxes(ca2)[1]
+            @test ax2[(:a, :c)] == ax2[[:a, :c]] == ComponentArrays.ComponentIndex([1, 3:8...], Axis(a = 1, c = ViewAxis(2:7, ShapedAxis((2,3)))))
         end
 
         @testset "KeepIndex" begin
@@ -355,14 +376,14 @@ end
 
             @test ca[KeepIndex(1:2)] == ComponentArray(a = 1, b = 2)
             @test ca[KeepIndex(1:3)] == ComponentArray([1, 2, 3], Axis(a = 1, b = 2)) # Drops c axis
-            @test ca[KeepIndex(2:5)] == ComponentArray([2, 3, 4, 5], Axis(b = 1, c = 2:3))
+            @test ca[KeepIndex(2:5)] == ComponentArray([2, 3, 4, 5], Axis(b = 1, c = r2v(2:3)))
             @test ca[KeepIndex(3:end)] == ComponentArray(c = [3, 4], d = (a = [5, 6, 7], b = 8))
 
             @test ca[KeepIndex(:)] == ca
 
             @test cmat[KeepIndex(:a), KeepIndex(:b)] == ComponentArray(fill(2, 1, 1), Axis(a = 1), Axis(b = 1))
-            @test cmat[KeepIndex(:), KeepIndex(:c)] == ComponentArray((1:8) * (3:4)', getaxes(ca)[1], Axis(c = 1:2))
-            @test cmat[KeepIndex(2:5), 1:2] == ComponentArray((2:5) * (1:2)', Axis(b = 1, c = 2:3), FlatAxis())
+            @test cmat[KeepIndex(:), KeepIndex(:c)] == ComponentArray((1:8) * (3:4)', getaxes(ca)[1], Axis(c = r2v(1:2)))
+            @test cmat[KeepIndex(2:5), 1:2] == ComponentArray((2:5) * (1:2)', Axis(b = 1, c = r2v(2:3)), ShapedAxis(size(1:2)))
             @test cmat[KeepIndex(2), KeepIndex(3)] == ComponentArray(fill(2 * 3, 1, 1), Axis(b = 1), FlatAxis())
             @test cmat[KeepIndex(2), 3] == ComponentArray(b = 2 * 3)
         end
