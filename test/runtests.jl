@@ -687,6 +687,21 @@ end
     # Issue #193
     # Make sure we aren't doing type piracy on `reshape`
     @test ndims(dropdims(ones(1,1), dims=(1,2))) == 0
+
+    # Issue #254
+    x = ComponentVector(a=[1, 2])
+    y = ComponentVector(a=[3, 4])
+    xy = stack([x, y])
+    # The data in `xy` should be the same as what we'd get if we used plain Vectors:
+    @test getdata(xy) == stack(getdata.([x, y]))
+    # Check the axes.
+    xy_ax = getaxes(xy)
+    # Should have two axes since xy should be a ComponentMatrix.
+    @test length(xy_ax) == 2
+    # First axis should be the same as x.
+    @test xy_ax[1] == only(getaxes(x))
+    # Second axis should be a FlatAxis.
+    @test xy_ax[2] == FlatAxis()
 end
 
 @testset "axpy! / axpby!" begin
