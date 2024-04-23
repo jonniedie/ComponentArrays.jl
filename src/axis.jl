@@ -67,10 +67,12 @@ example)
 struct ShapedAxis{Shape} <: AbstractAxis{nothing} end
 @inline ShapedAxis(Shape) = ShapedAxis{Shape}()
 # ShapedAxis(::Tuple{<:Int}) = FlatAxis()
+Base.length(::ShapedAxis{Shape}) where{Shape} = prod(Shape)
 
 struct Shaped1DAxis{Shape} <: AbstractAxis{nothing} end
 ShapedAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
 Shaped1DAxis(shape::Tuple{<:Int}) = Shaped1DAxis{shape}()
+Base.length(::Shaped1DAxis{Shape}) where {Shape} = only(Shape)
 
 const Shape = ShapedAxis
 
@@ -199,6 +201,7 @@ _component_axis(ax) = FlatAxis()
 
 _array_axis(ax::CombinedAxis) = ax.array_axis
 _array_axis(ax) = ax
+_array_axis(ax::Int) = Shaped1DAxis((ax,))
 
 Base.first(ax::CombinedAxis) = first(_array_axis(ax))
 
