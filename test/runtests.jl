@@ -702,6 +702,49 @@ end
     @test xy_ax[1] == only(getaxes(x))
     # Second axis should be a FlatAxis.
     @test xy_ax[2] == FlatAxis()
+
+    # Does the dims argument to stack work?
+    # Using `dims=2` should be the same as the default value.
+    xy2 = stack([x, y]; dims=2)
+    @test xy2 == xy
+    # Using `dims=1` should stack things vertically.
+    xy3 = stack([x, y]; dims=1)
+    @test all(xy3[1, :a] .== xy[:a, 1])
+    @test all(xy3[2, :a] .== xy[:a, 2])
+
+    # But can we stack 2D arrays?
+    x = ComponentVector(a=[1, 2])
+    y = ComponentVector(b=[3, 4])
+    X = x .* y'
+    Y = x .* y' .+ 4
+    XY = stack([X, Y])
+    # The data in `XY` should be the same as what we'd get if we used plain Vectors:
+    @test getdata(XY) == stack(getdata.([X, Y]))
+    # Check the axes.
+    XY_ax = getaxes(XY)
+    # Should have three axes since XY should be a 3D ComponentArray.
+    @test length(XY_ax) == 3
+    # First two axes should be the same as XY.
+    @test XY_ax[1] == getaxes(XY)[1]
+    @test XY_ax[2] == getaxes(XY)[2]
+    # Third should be a FlatAxis.
+    @test XY_ax[3] == FlatAxis()
+    # Should test indexing too.
+    @test all(XY[:a, :b, 1] .== X)
+    @test all(XY[:a, :b, 2] .== Y)
+
+    # Make sure the dims argument works.
+    # Using `dims=3` should be the same as the default value.
+    XY_d3 = stack([X, Y]; dims=3)
+    @test XY_d3 == XY
+    # Using `dims=2` stacks along the second axis.
+    XY_d2 = stack([X, Y]; dims=2)
+    @test all(XY_d2[:a, 1, :b] .== XY[:a, :b, 1])
+    @test all(XY_d2[:a, 2, :b] .== XY[:a, :b, 2])
+    # Using `dims=1` stacks along the first axis.
+    XY_d1 = stack([X, Y]; dims=1)
+    @test all(XY_d1[1, :a, :b] .== XY[:a, :b, 1])
+    @test all(XY_d1[2, :a, :b] .== XY[:a, :b, 2])
 end
 
 @testset "axpy! / axpby!" begin
