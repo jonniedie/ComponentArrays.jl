@@ -286,7 +286,10 @@ end
     # We had to revert this because there is no way to work around
     # OffsetArrays' type piracy without introducing type piracy
     # ourselves because `() isa Tuple{N, <:CombinedAxis} where {N}`
-    # @test reshape(a, axes(ca)...) isa Vector{Float64}
+    @test_broken reshape(a, axes(ca)...) isa Vector{Float64}
+
+    # Issue #265: Multi-symbol indexing with matrix components
+    @test ca2.c[[:a, :b]].b isa AbstractMatrix
 end
 
 @testset "Set" begin
