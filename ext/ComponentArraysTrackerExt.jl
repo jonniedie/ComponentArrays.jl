@@ -10,6 +10,8 @@ end
 
 Tracker.extract_grad!(ca::ComponentArray) = Tracker.extract_grad!(getdata(ca))
 
+Tracker.data(ca::ComponentArray) = ComponentArray(Tracker.data(getdata(ca)), getaxes(ca))
+
 function Base.materialize(bc::Base.Broadcast.Broadcasted{Tracker.TrackedStyle, Nothing,
     typeof(zero), <:Tuple{<:ComponentVector}})
     ca = first(bc.args)
