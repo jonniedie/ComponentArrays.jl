@@ -117,3 +117,13 @@ end
 
     @test Δ isa AbstractVector{Float64}
 end
+
+@testset "Tracker untrack" begin
+    ps = Tracker.param(ComponentArray(; a = rand(2)))
+    @test eltype(getdata(ps)) <: Tracker.TrackedReal{Float64}
+
+    ps_data = Tracker.data(ps)
+    @test !(eltype(getdata(ps_data)) <: Tracker.TrackedReal{Float64})
+    @test eltype(getdata(ps_data)) <: Float64
+end
+
