@@ -404,7 +404,7 @@ end
 
     tr = Tracker.param(ca)
     ca_ = convert(typeof(ca), tr)
-    @test ca_.x == ca.x
+    @test ca_.a == ca.a
 end
 
 @testset "Broadcasting" begin
