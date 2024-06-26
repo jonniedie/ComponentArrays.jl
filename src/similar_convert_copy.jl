@@ -55,7 +55,7 @@ end
 function Base.convert(::Type{ComponentArray{T1,N,A1,Ax1}}, x::ComponentArray{T2,N,A2,Ax2}) where {T1,T2,N,A1,A2,Ax1,Ax2}
     return T1.(x)
 end
-function Base.convert(::Type{ComponentArray{T,N,A1,Ax1}}, x::ComponentArray{T,N,A2,Ax2}) where {T,N,A1,A2,Ax1,Ax2}
+function Base.convert(::Type{ComponentArray{T,N,A1,Ax}}, x::ComponentArray{T,N,A2,Ax}) where {T,N,A1,A2,Ax}
     return x
 end
 Base.convert(T::Type{<:Array}, x::ComponentArray) = convert(T, getdata(x))
