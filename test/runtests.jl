@@ -1,6 +1,7 @@
 using ComponentArrays
 using BenchmarkTools
 using ForwardDiff
+using Tracker
 using InvertedIndices
 using LabelledArrays
 using LinearAlgebra
@@ -400,6 +401,10 @@ end
 
     @test convert(Array, ca) == getdata(ca)
     @test convert(Matrix{Float32}, cmat) isa Matrix{Float32}
+
+    tr = Tracker.param(ca)
+    ca_ = convert(typeof(ca), tr)
+    @test ca_.a == ca.a
 end
 
 @testset "Broadcasting" begin
