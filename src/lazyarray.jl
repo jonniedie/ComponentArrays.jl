@@ -30,6 +30,8 @@ Base.propertynames(a::LazyArray) = propertynames(first(a))
 
 Base.keys(a::LazyArray) = Base.OneTo(length(a))
 
+Base.haskey(a::LazyArray, i::Integer) = i in keys(a)
+
 Base.iterate(a::LazyArray) = iterate(getfield(a, :gen))
 Base.iterate(a::LazyArray, state...) = iterate(getfield(a, :gen), state...)
 
