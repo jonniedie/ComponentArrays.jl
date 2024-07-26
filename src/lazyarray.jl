@@ -26,6 +26,10 @@ _un_iter(f, iter, idxs) = f(iter[idxs...])
 
 Base.getproperty(a::LazyArray, s::Symbol) = LazyArray(getproperty(item, s) for item in a)
 
+Base.propertynames(a::LazyArray) = propertynames(first(a))
+
+Base.keys(a::LazyArray) = Base.OneTo(length(a))
+
 Base.iterate(a::LazyArray) = iterate(getfield(a, :gen))
 Base.iterate(a::LazyArray, state...) = iterate(getfield(a, :gen), state...)
 

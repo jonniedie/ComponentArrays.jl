@@ -338,6 +338,17 @@ end
     @test A[1, :] == ComponentVector(x = ones(Int, 4))
 end
 
+@testset "Properties" begin
+    @test hasproperty(ca2, :a) # ComponentArray
+    @test hasproperty(ca2.b, :a) # LazyArray
+
+    @test propertynames(ca2) == (:a, :b, :c) # ComponentArray
+    @test propertynames(ca2.b) == (:a, :b) # LazyArray
+
+    @test keys(ca2) == (:a, :b, :c)
+    @test keys(ca2.b) == Base.OneTo(2)
+end
+
 @testset "Component Index" begin
     let
         ca = ComponentArray(a = 1, b = 2, c = [3, 4], d = (a = [5, 6, 7], b = 8))
