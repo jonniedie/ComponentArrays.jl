@@ -1,5 +1,5 @@
 import FiniteDiff, ForwardDiff, ReverseDiff, Tracker, Zygote
-using Optimisers
+using Optimisers, ArrayInterface
 using Test
 
 F(a, x) = sum(abs2, a) * x^3
@@ -127,3 +127,8 @@ end
     @test eltype(getdata(ps_data)) <: Float64
 end
 
+@testset "ArrayInterface restructure TrackedArray" begin
+    ps = ComponentArray(; a = rand(2), b = (; c = rand(2)))
+    ps_tracked = Tracker.param(ps)
+    @test ArrayInterface.restructure(ps, ps_tracked) isa ComponentVector{<:Any, <:Tracker.TrackedArray}
+end
