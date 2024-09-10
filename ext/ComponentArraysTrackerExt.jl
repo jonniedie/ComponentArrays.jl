@@ -1,5 +1,6 @@
 module ComponentArraysTrackerExt
 
+using ArrayInterface: ArrayInterface
 using ComponentArrays, Tracker
 
 function Tracker.param(ca::ComponentArray)
@@ -32,6 +33,12 @@ end
 
 @inline function Base.getproperty(x::ComponentVector{T, <:TrackedArray}, v::Val) where {T}
     return ComponentArrays._getindex(Base.getindex, x, v)
+end
+
+function ArrayInterface.restructure(x::ComponentVector,
+        y::ComponentVector{T, <:TrackedArray}) where {T}
+    getaxes(x) == getaxes(y) || error("Axes must match")
+    return y
 end
 
 end
