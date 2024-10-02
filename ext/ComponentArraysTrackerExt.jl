@@ -1,5 +1,6 @@
 module ComponentArraysTrackerExt
 
+using ArrayInterface: ArrayInterface
 using ComponentArrays, Tracker
 
 function Tracker.param(ca::ComponentArray)
@@ -9,6 +10,8 @@ function Tracker.param(ca::ComponentArray)
 end
 
 Tracker.extract_grad!(ca::ComponentArray) = Tracker.extract_grad!(getdata(ca))
+
+Tracker.data(ca::ComponentArray) = ComponentArray(Tracker.data(getdata(ca)), getaxes(ca))
 
 function Base.materialize(bc::Base.Broadcast.Broadcasted{Tracker.TrackedStyle, Nothing,
     typeof(zero), <:Tuple{<:ComponentVector}})
@@ -30,6 +33,12 @@ end
 
 @inline function Base.getproperty(x::ComponentVector{T, <:TrackedArray}, v::Val) where {T}
     return ComponentArrays._getindex(Base.getindex, x, v)
+end
+
+function ArrayInterface.restructure(x::ComponentVector,
+        y::ComponentVector{T, <:TrackedArray}) where {T}
+    getaxes(x) == getaxes(y) || error("Axes must match")
+    return y
 end
 
 end

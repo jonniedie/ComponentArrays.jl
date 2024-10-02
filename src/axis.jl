@@ -185,7 +185,7 @@ function Base.getindex(ax::AbstractAxis, syms::Union{NTuple{N,Symbol}, <:Abstrac
     return ComponentIndex(vcat(inds...), new_ax)
 end
 
-_maybe_view_axis(inds, ax::Axis) = ViewAxis(inds, ax)
+_maybe_view_axis(inds, ax::AbstractAxis) = ViewAxis(inds, ax)
 _maybe_view_axis(inds, ::NullAxis) = inds[1]
 _maybe_view_axis(inds, ax::Union{ShapedAxis,Shaped1DAxis}) = ViewAxis(inds, ax)
 

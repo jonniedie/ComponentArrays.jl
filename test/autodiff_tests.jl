@@ -1,5 +1,5 @@
 import FiniteDiff, ForwardDiff, ReverseDiff, Tracker, Zygote
-
+using Optimisers, ArrayInterface
 using Test
 
 F(a, x) = sum(abs2, a) * x^3
@@ -36,6 +36,22 @@ truth = ComponentArray(a = [32, 48], x = 156)
     ps = ComponentArray(;bias = rand(4))
     out = Zygote.gradient(x -> sum(x.^3 .+ ps.bias), Zygote.seed(rand(4),Val(12)))[1]
     @test out isa Vector{<:ForwardDiff.Dual}
+end
+
+@testset "Optimisers Update" begin
+    ca_ = deepcopy(ca)
+    opt_st = Optimisers.setup(Adam(0.01), ca_)
+    gs_zyg = only(Zygote.gradient(F_idx_val, ca_))
+    @test !(last(Optimisers.update(opt_st, ca_, gs_zyg)) ≈ ca)
+    Optimisers.update!(opt_st, ca_, gs_zyg)
+    @test !(ca_ ≈ ca)
+
+    ca_ = deepcopy(ca)
+    opt_st = Optimisers.setup(Adam(0.01), ca_)
+    gs_rdiff = ReverseDiff.gradient(F_idx_val, ca_)
+    @test !(last(Optimisers.update(opt_st, ca_, gs_rdiff)) ≈ ca)
+    Optimisers.update!(opt_st, ca_, gs_rdiff)
+    @test !(ca_ ≈ ca)
 end
 
 @testset "Projection" begin
@@ -76,18 +92,43 @@ end
     @test ∂r ≈ ∂r_ca
 end
 
+function F_prop(x)
+    @assert propertynames(x) == (:x, :y)
+    return sum(abs2, x.x .- x.y)
+end
 
-# # This is commented out because the gradient operation itself is broken due to Zygote's inability
-# # to support mutation and ComponentArray's use of mutation for construction from a NamedTuple.
-# # It would be nice to support this eventually, so I'll just leave this commented (because @test_broken
-# # wouldn't work here because the error happens before the test)
-# @testset "Issues" begin
-#     function mysum(x::AbstractVector)
-#         y = ComponentVector(x=x)
-#         return sum(y)
-#     end
+@testset "Preserve Properties" begin
+    x = ComponentArray(; x = [1.0, 5.0], y = [3.0, 4.0])
 
-#     Δ = Zygote.gradient(mysum, rand(10))
+    gs_z = only(Zygote.gradient(F_prop, x))
+    gs_rdiff = ReverseDiff.gradient(F_prop, x)
 
-#     @test Δ isa Vector{Float64}
-# end
+    @test gs_z ≈ gs_rdiff
+end
+
+@testset "Issues" begin
+    function mysum(x::AbstractVector)
+        y = ComponentVector(x=x)
+        z = ComponentVector(; z = x .^ 2)
+        return sum(y) + sum(abs2, z)
+    end
+
+    Δ = only(Zygote.gradient(mysum, rand(10)))
+
+    @test Δ isa AbstractVector{Float64}
+end
+
+@testset "Tracker untrack" begin
+    ps = Tracker.param(ComponentArray(; a = rand(2)))
+    @test eltype(getdata(ps)) <: Tracker.TrackedReal{Float64}
+
+    ps_data = Tracker.data(ps)
+    @test !(eltype(getdata(ps_data)) <: Tracker.TrackedReal{Float64})
+    @test eltype(getdata(ps_data)) <: Float64
+end
+
+@testset "ArrayInterface restructure TrackedArray" begin
+    ps = ComponentArray(; a = rand(2), b = (; c = rand(2)))
+    ps_tracked = Tracker.param(ps)
+    @test ArrayInterface.restructure(ps, ps_tracked) isa ComponentVector{<:Any, <:Tracker.TrackedArray}
+end

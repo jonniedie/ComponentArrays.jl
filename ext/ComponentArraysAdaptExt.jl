@@ -3,7 +3,7 @@ module ComponentArraysAdaptExt
 using ComponentArrays, Adapt
 
 function Adapt.adapt_structure(to, x::ComponentArray)
-    data = Adapt.adapt_structure(to, getdata(x))
+    data = adapt(to, getdata(x))
     return ComponentArray(data, getaxes(x))
 end
 

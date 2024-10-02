@@ -20,7 +20,6 @@ makedocs(;
     repo="https://github.com/jonniedie/ComponentArrays.jl/blob/{commit}{path}#L{line}",
     sitename="ComponentArrays.jl",
     authors="Jonnie Diegelman",
-    assets=String[],
 )
 
 deploydocs(;

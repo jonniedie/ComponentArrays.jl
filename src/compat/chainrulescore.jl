@@ -41,7 +41,26 @@ end
 # Prevent double projection
 (p::ChainRulesCore.ProjectTo{ComponentArray})(dx::ComponentArray) = dx
 
-function (p::ChainRulesCore.ProjectTo{ComponentArray})(t::ChainRulesCore.Tangent{A, <:NamedTuple}) where {A}
+function (p::ChainRulesCore.ProjectTo{ComponentArray})(t::ChainRulesCore.Tangent{A,<:NamedTuple}) where {A}
     nt = Functors.fmap(ChainRulesCore.backing, ChainRulesCore.backing(t))
     return ComponentArray(nt)
+end
+
+function ChainRulesCore.rrule(::Type{CA}, nt::NamedTuple) where {CA<:ComponentArray}
+    y = CA(nt)
+
+    function ∇NamedTupleToComponentArray(Δ::AbstractArray)
+        if length(Δ) == length(y)
+            return ∇NamedTupleToComponentArray(ComponentArray(vec(Δ), getaxes(y)))
+        end
+        error("Got pullback input of shape $(size(Δ)) & type $(typeof(Δ)) for output " *
+              "of shape $(size(y)) & type $(typeof(y))")
+        return nothing
+    end
+
+    function ∇NamedTupleToComponentArray(Δ::ComponentArray)
+        return ChainRulesCore.NoTangent(), NamedTuple(Δ)
+    end
+
+    return y, ∇NamedTupleToComponentArray
 end

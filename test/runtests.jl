@@ -1,6 +1,7 @@
 using ComponentArrays
 using BenchmarkTools
 using ForwardDiff
+using Tracker
 using InvertedIndices
 using LabelledArrays
 using LinearAlgebra
@@ -8,6 +9,8 @@ using StaticArrays
 using OffsetArrays
 using Test
 using Unitful
+using Functors
+import TruncatedStacktraces # This is loaded just to trigger the extension package
 
 # Convert abstract unit range to a ViewAxis with ShapeAxis.
 r2v(r::AbstractUnitRange) = ViewAxis(r, ShapedAxis(size(r)))
@@ -301,6 +304,11 @@ end
     @test cmat3[:c, :a] == reshape(cmat3check[6:11, 1], 3, 2)
     @test cmat3[:c, :b] == reshape(cmat3check[6:11, 2:5], 3, 2, 4)
     @test cmat3[:c, :c] == reshape(cmat3check[6:11, 6:11], 3, 2, 3, 2)
+
+    @test_broken reshape(a, axes(ca)...) isa Vector{Float64}
+
+    # Issue #265: Multi-symbol indexing with matrix components
+    @test ca2.c[[:a, :b]].b isa AbstractMatrix
 end
 
 @testset "Set" begin
@@ -346,6 +354,20 @@ end
     A = ComponentArray(zeros(Int, 4, 4), Axis(x = r2v(1:4)), Axis(x = r2v(1:4)))
     A[1, :] .= 1
     @test A[1, :] == ComponentVector(x = ones(Int, 4))
+end
+
+@testset "Properties" begin
+    @test hasproperty(ca2, :a) # ComponentArray
+    @test hasproperty(ca2.b, :a) # LazyArray
+
+    @test propertynames(ca2) == (:a, :b, :c) # ComponentArray
+    @test propertynames(ca2.b) == (:a, :b) # LazyArray
+
+    @test haskey(ca2, :a) # ComponentArray
+    @test haskey(ca2.b, 1) # LazyArray
+
+    @test keys(ca2) == (:a, :b, :c)
+    @test keys(ca2.b) == Base.OneTo(2)
 end
 
 @testset "Component Index" begin
@@ -416,6 +438,10 @@ end
 
     @test convert(Array, ca) == getdata(ca)
     @test convert(Matrix{Float32}, cmat) isa Matrix{Float32}
+
+    tr = Tracker.param(ca)
+    ca_ = convert(typeof(ca), tr)
+    @test ca_.a == ca.a
 end
 
 @testset "Broadcasting" begin
@@ -833,6 +859,14 @@ end
 
     x = ComponentArray(a = rand(4), c = rand(4))
     @test_throws ArgumentError axpby!(2, x, 3, y)
+end
+
+@testset "Functors" begin
+    for carray in (ca, ca_Float32, ca_MVector, ca_SVector, ca_composed, ca2, caa)
+        θ, re = Functors.functor(carray)
+        @test θ isa NamedTuple
+        @test re(θ) == carray
+    end
 end
 
 @testset "Autodiff" begin
