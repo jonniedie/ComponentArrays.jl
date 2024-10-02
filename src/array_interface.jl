@@ -78,7 +78,7 @@ function Base.permutedims(x::ComponentArray, dims)
     axs = getaxes(x)
     return ComponentArray(permutedims(getdata(x), dims), map(i->axs[i], dims)...)
 end
-t
+
 ## Indexing
 Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)
 
