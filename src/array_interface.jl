@@ -79,6 +79,29 @@ function Base.permutedims(x::ComponentArray, dims)
     return ComponentArray(permutedims(getdata(x), dims), map(i->axs[i], dims)...)
 end
 
+function stack_ca(iter; dims=:)
+    # Check if all the component axes are the same in iter.
+    if all(arr -> getaxes(arr) == getaxes(first(iter)), iter)
+        # Create a new array with `FlatAxis()` in the `dims` dimension.
+        return _stack_ca(dims, iter)
+    else
+        # Fall back to plain arrays.
+        return stack(getdata.(iter); dims=dims)
+    end
+end
+
+function _stack_ca(dims::Colon, iter)
+    oldax = getaxes(first(iter))
+    return ComponentArray(stack(getdata.(iter)), oldax..., FlatAxis())
+end
+
+function _stack_ca(dims::Integer, iter)
+    oldax = getaxes(first(iter))
+    oldndims = length(oldax)
+    outax = ntuple(d -> d==dims ? FlatAxis() : oldax[d - (d>dims)], oldndims+1)
+    return ComponentArray(stack(getdata.(iter); dims=dims), outax...)
+end
+
 ## Indexing
 Base.IndexStyle(::Type{<:ComponentArray{T,N,<:A,<:Axes}}) where {T,N,A,Axes} = IndexStyle(A)
 
