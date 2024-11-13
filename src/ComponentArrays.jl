@@ -54,9 +54,4 @@ export @static_unpack
 
 include("compat/functors.jl")
 
-import PackageExtensionCompat: @require_extensions
-function __init__()
-    @require_extensions
-end
-
 end
