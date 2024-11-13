@@ -10,7 +10,6 @@ using OffsetArrays
 using Test
 using Unitful
 using Functors
-import TruncatedStacktraces # This is loaded just to trigger the extension package
 
 
 ## Test setup
