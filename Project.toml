@@ -1,7 +1,7 @@
 name = "ComponentArrays"
 uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 authors = ["Jonnie Diegelman <47193959+jonniedie@users.noreply.github.com>"]
-version = "0.15.17"
+version = "0.15.18"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -53,11 +53,10 @@ ReverseDiff = "1"
 SciMLBase = "1, 2"
 StaticArrayInterface = "1"
 StaticArraysCore = "1"
-Test = "1"
+Test = "1.10"
 Tracker = "0.2"
-TruncatedStacktraces = "1.4"
 Zygote = "0.6"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -70,5 +69,4 @@ ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
-TruncatedStacktraces = "781d530d-4396-4725-bb49-402e4bee1e77"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
