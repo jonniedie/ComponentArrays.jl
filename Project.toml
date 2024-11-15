@@ -4,6 +4,7 @@ authors = ["Jonnie Diegelman <47193959+jonniedie@users.noreply.github.com>"]
 version = "0.15.19"
 
 [deps]
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
@@ -14,7 +15,6 @@ StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 
 [weakdeps]
-Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
@@ -24,7 +24,6 @@ Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extensions]
-ComponentArraysAdaptExt = "Adapt"
 ComponentArraysGPUArraysExt = "GPUArrays"
 ComponentArraysOptimisersExt = "Optimisers"
 ComponentArraysRecursiveArrayToolsExt = "RecursiveArrayTools"

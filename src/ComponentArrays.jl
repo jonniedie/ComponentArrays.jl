@@ -3,6 +3,7 @@ module ComponentArrays
 import ChainRulesCore
 import StaticArrayInterface, ArrayInterface, Functors
 import ConstructionBase
+import Adapt
 
 using LinearAlgebra
 using StaticArraysCore: StaticArray, SArray, SVector, SMatrix

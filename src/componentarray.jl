@@ -58,6 +58,14 @@ function ComponentArray(data, ax::AbstractAxis...)
     return LazyArray(ComponentArray(x, axs...) for x in part_data)
 end
 
+function Adapt.adapt_structure(to, x::ComponentArray)
+    data = Adapt.adapt(to, getdata(x))
+    return ComponentArray(data, getaxes(x))
+end
+
+Adapt.adapt_storage(::Type{ComponentArray{T,N,A,Ax}}, xs::AT) where {T,N,A,Ax,AT<:AbstractArray} =
+    Adapt.adapt_storage(A, xs)
+
 # Entry from NamedTuple, Dict, or kwargs
 ComponentArray{T}(nt::NamedTuple) where T = ComponentArray(make_carray_args(T, nt)...)
 ComponentArray{T}(::NamedTuple{(), Tuple{}}) where T = ComponentArray(T[], (FlatAxis(),))
