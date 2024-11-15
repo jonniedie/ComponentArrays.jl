@@ -89,6 +89,8 @@ ComponentVector{T}(::UndefInitializer, ax) where {T} = ComponentArray{T}(undef, 
 ComponentVector(data::AbstractVector, ax) = ComponentArray(data, ax)
 ComponentVector(data::AbstractArray, ax) = throw(DimensionMismatch("A `ComponentVector` must be initialized with a 1-dimensional array. This array is $(ndims(data))-dimensional."))
 
+ConstructionBase.setproperties(x::ComponentVector, patch::NamedTuple) = ComponentVector(x; patch...)
+
 # Add new fields to component Vector
 function ComponentArray(x::ComponentVector; kwargs...)
     return foldl((x1, kwarg) -> _maybe_add_field(x1, kwarg), (kwargs...,); init=x)
