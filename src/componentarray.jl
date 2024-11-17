@@ -78,6 +78,7 @@ ComponentArray(x::ComponentArray) = x
 ComponentArray{T}(x::ComponentArray) where {T} = T.(x)
 (CA::Type{<:ComponentArray{T,N,A,Ax}})(x::ComponentArray) where {T,N,A,Ax} = ComponentArray(T.(getdata(x)), getaxes(x))
 
+function fill_componentarray_ka! end # defined in extensions
 
 ## Some aliases
 """

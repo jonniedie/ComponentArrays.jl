@@ -8,16 +8,24 @@ const GPUComponentVector{T,Ax} = ComponentArray{T,1,<:GPUArrays.AbstractGPUVecto
 const GPUComponentMatrix{T,Ax} = ComponentArray{T,2,<:GPUArrays.AbstractGPUMatrix,Ax}
 const GPUComponentVecorMat{T,Ax} = Union{GPUComponentVector{T,Ax},GPUComponentMatrix{T,Ax}}
 
-GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
+@static if pkgversion(GPUArrays) < v"11"
+    GPUArrays.backend(x::ComponentArray) = GPUArrays.backend(getdata(x))
 
-function Base.fill!(A::GPUComponentArray{T}, x) where {T}
-    length(A) == 0 && return A
-    GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
-        idx = GPUArrays.@linearidx(a)
-        @inbounds a[idx] = val
-        return
+    function Base.fill!(A::GPUComponentArray{T}, x) where {T}
+        length(A) == 0 && return A
+        GPUArrays.gpu_call(A, convert(T, x)) do ctx, a, val
+            idx = GPUArrays.@linearidx(a)
+            @inbounds a[idx] = val
+            return
+        end
+        return A
     end
-    A
+else
+    function Base.fill!(A::GPUComponentArray{T}, x) where {T}
+        length(A) == 0 && return A
+        ComponentArrays.fill_componentarray_ka!(A, x)
+        return A
+    end
 end
 
 LinearAlgebra.dot(x::GPUComponentArray, y::GPUComponentArray) = dot(getdata(x), getdata(y))
