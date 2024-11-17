@@ -2,13 +2,14 @@ module ComponentArrays
 
 import ChainRulesCore
 import StaticArrayInterface, ArrayInterface, Functors
+import ConstructionBase
+import Adapt
 
 using LinearAlgebra
 using StaticArraysCore: StaticArray, SArray, SVector, SMatrix
 
 const FlatIdx = Union{Integer, CartesianIndex, CartesianIndices, AbstractArray{<:Integer}}
 const FlatOrColonIdx = Union{FlatIdx, Colon}
-
 
 include("utils.jl")
 export fastindices # Deprecated
