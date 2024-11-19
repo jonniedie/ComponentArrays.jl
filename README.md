@@ -7,10 +7,10 @@
 
 
 [docs-dev-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-dev-url]: https://jonniedie.github.io/ComponentArrays.jl/dev
+[docs-dev-url]: https://sciml.github.io/ComponentArrays.jl/dev
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://jonniedie.github.io/ComponentArrays.jl/stable
+[docs-stable-url]: https://sciml.github.io/ComponentArrays.jl/stable
 
 [build-img]: https://img.shields.io/github/actions/workflow/status/jonniedie/ComponentArrays.jl/ci.yml
 [build-url]: https://github.com/jonniedie/docs/ComponentArrays.jl/workflows/ci.yml
