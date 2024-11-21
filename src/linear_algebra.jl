@@ -57,3 +57,14 @@ function LinearAlgebra.axpby!(α::Number, x::ComponentArray, β::Number, y::Comp
     axpby!(α, getdata(x), β, getdata(y))
     return ComponentArray(y, getaxes(y))
 end
+
+# Base.sum!
+function Base.sum!(f::Function, r::ComponentArray, A::AbstractArray; init::Bool = true)
+    sum!(f, getdata(r), A; init)
+end
+function Base.sum!(f::Function, r::AbstractArray, A::ComponentArray; init::Bool = true)
+    sum!(f, getdata(r), getdata(A); init)
+end
+function Base.sum!(f::Function, r::ComponentArray, A::ComponentArray; init::Bool = true)
+    sum!(f, getdata(r), getdata(A); init)
+end
